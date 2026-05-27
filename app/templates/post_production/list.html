@@ -25,7 +25,11 @@
                         <th>Couple Name</th>
                         <th>Event Date</th>
                         <th>Deadline</th>
-                        <th>Status</th>
+                        <th class="status-header">Status
+                            <span class="info-tooltip">ℹ️
+                                <span class="tooltip-text">If closure_date is set → Completed.<br>today &gt; deadline → Overdue.<br>Else → In Progress.</span>
+                            </span>
+                        </th>
                         <th>Completion</th>
                         <th>Actions</th>
                     </tr>
@@ -81,4 +85,18 @@
         </div>
     </div>
 </div>
+
+<script>
+document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+    const tooltipText = tooltip.querySelector('.tooltip-text');
+    
+    tooltip.addEventListener('mouseenter', () => {
+        const rect = tooltip.getBoundingClientRect();
+        tooltipText.style.top = (rect.bottom + 8) + 'px';
+        tooltipText.style.left = (rect.left + rect.width / 2) + 'px';
+        tooltipText.style.transform = 'translateX(-50%)';
+    });
+});
+</script>
+
 {% endblock %}

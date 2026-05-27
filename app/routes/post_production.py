@@ -67,6 +67,7 @@ async def create_post_production(
     event_date: str = Form(...),
     deadline: str = Form(...),
     event_name: str = Form(None),
+    closure_date: str = Form(None),
     data_copy: bool = Form(False),
     best_couple_edits_3_days: bool = Form(False),
     all_raw_images: bool = Form(False),
@@ -113,6 +114,7 @@ async def create_post_production(
             photobook_delivered=photobook_delivered,
             digital_portfolio_album=digital_portfolio_album,
             payment_recovery=payment_recovery,
+            closure_date=datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None,
             remarks=remarks,
             created_by="Admin"
         )
@@ -205,6 +207,7 @@ async def update_post_production(
     event_date: str = Form(...),
     deadline: str = Form(...),
     event_name: str = Form(None),
+    closure_date: str = Form(None),
     data_copy: bool = Form(False),
     best_couple_edits_3_days: bool = Form(False),
     all_raw_images: bool = Form(False),
@@ -236,6 +239,7 @@ async def update_post_production(
         record.couple_name = couple_name
         record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
         record.deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
+        record.closure_date = datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None
         record.event_name = event_name
         record.data_copy = data_copy
         record.best_couple_edits_3_days = best_couple_edits_3_days

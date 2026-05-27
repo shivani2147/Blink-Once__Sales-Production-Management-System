@@ -172,10 +172,16 @@
                 <!-- Closure -->
                 <fieldset class="form-section">
                     <legend>Closure Information</legend>
-                    
-                    <div class="form-group">
-                        <label for="remarks">Remarks</label>
-                        <textarea id="remarks" name="remarks" class="form-textarea" placeholder="Add closure remarks or notes...">{{ record.remarks if record else '' }}</textarea>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="closure_date">Closure Date</label>
+                            <input type="date" id="closure_date" name="closure_date" value="{{ record.closure_date.strftime('%Y-%m-%d') if record and record.closure_date else '' }}" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea id="remarks" name="remarks" class="form-textarea" placeholder="Add closure remarks or notes...">{{ record.remarks if record else '' }}</textarea>
+                        </div>
                     </div>
                 </fieldset>
                 
