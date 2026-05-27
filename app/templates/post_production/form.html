@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="form-container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Post-Production Deliverables</h2>
+            </div>
+            
+            <form method="post" action="{% if record %}/post-production/{{ record.id }}/edit{% else %}/post-production/add{% endif %}" class="form">
+                <!-- Basic Information -->
+                <fieldset class="form-section">
+                    <legend>Event Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="couple_name">Couple Name *</label>
+                        <input type="text" id="couple_name" name="couple_name" required value="{{ record.couple_name if record else '' }}" class="form-input">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event_date">Event Date *</label>
+                            <input type="date" id="event_date" name="event_date" required value="{{ record.event_date if record else '' }}" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deadline">Deadline *</label>
+                            <input type="date" id="deadline" name="deadline" required value="{{ record.deadline if record else '' }}" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="event_name">Event Name</label>
+                            <input type="text" id="event_name" name="event_name" value="{{ record.event_name if record else '' }}" class="form-input" placeholder="e.g., Summer Wedding, Pre-Wedding">
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Post-Production Deliverables -->
+                <fieldset class="form-section">
+                    <legend>Deliverables Tracking</legend>
+                    
+                    <div style="columns: 2; gap: 20px;">
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data_copy" {% if record and record.data_copy %}checked{% endif %}>
+                                <span>Data Copy</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="best_couple_edits_3_days" {% if record and record.best_couple_edits_3_days %}checked{% endif %}>
+                                <span>Best Couple Edits (3 Days)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="all_raw_images" {% if record and record.all_raw_images %}checked{% endif %}>
+                                <span>All Raw Images</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="save_the_date" {% if record and record.save_the_date %}checked{% endif %}>
+                                <span>Save The Date</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="invite" {% if record and record.invite %}checked{% endif %}>
+                                <span>Invite</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="countdown" {% if record and record.countdown %}checked{% endif %}>
+                                <span>Countdown</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="celebrity_ai_reel" {% if record and record.celebrity_ai_reel %}checked{% endif %}>
+                                <span>Celebrity AI Reel</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="one_teaser" {% if record and record.one_teaser %}checked{% endif %}>
+                                <span>1 Teaser</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="one_film" {% if record and record.one_film %}checked{% endif %}>
+                                <span>1 Film</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="one_reel" {% if record and record.one_reel %}checked{% endif %}>
+                                <span>1 Reel</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="full_length_film" {% if record and record.full_length_film %}checked{% endif %}>
+                                <span>Full Length Film</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="edited_images_selection" {% if record and record.edited_images_selection %}checked{% endif %}>
+                                <span>Edited Images Selection</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="edited_images_delivered" {% if record and record.edited_images_delivered %}checked{% endif %}>
+                                <span>Edited Images Delivered</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="poster" {% if record and record.poster %}checked{% endif %}>
+                                <span>Poster</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="albums_picture_selection" {% if record and record.albums_picture_selection %}checked{% endif %}>
+                                <span>Albums Picture Selection</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="photobook_delivered" {% if record and record.photobook_delivered %}checked{% endif %}>
+                                <span>Photobook Delivered</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="digital_portfolio_album" {% if record and record.digital_portfolio_album %}checked{% endif %}>
+                                <span>Digital Portfolio Album</span>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="payment_recovery" {% if record and record.payment_recovery %}checked{% endif %}>
+                                <span>Payment Recovery</span>
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Closure -->
+                <fieldset class="form-section">
+                    <legend>Closure Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="remarks">Remarks</label>
+                        <textarea id="remarks" name="remarks" class="form-textarea" placeholder="Add closure remarks or notes...">{{ record.remarks if record else '' }}</textarea>
+                    </div>
+                </fieldset>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{% if record %}Update Record{% else %}Create Record{% endif %}</button>
+                    <a href="/post-production" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

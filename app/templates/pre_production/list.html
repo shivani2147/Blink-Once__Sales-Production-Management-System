@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="/pre-production/add" class="btn btn-primary">+ Add New Record</a>
+        
+        <!-- Search Form -->
+        <form method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search by couple name..." value="{{ search_query }}" class="search-input">
+            <button type="submit" class="btn btn-secondary">Search</button>
+            {% if search_query %}
+                <a href="/pre-production" class="btn btn-ghost">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Records Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Couple Name</th>
+                        <th>Email</th>
+                        <th>Event Type</th>
+                        <th>Event Date</th>
+                        <th>Phone</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for record in records %}
+                        <tr>
+                            <td><strong>{{ record.couple_name }}</strong></td>
+                            <td>{{ record.client_email }}</td>
+                            <td>{{ record.event_type }}</td>
+                            <td>{{ record.event_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ record.phone_number }}</td>
+                            <td>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: {{ record.get_completion_percentage() }}%; background: linear-gradient(90deg, #4CAF50, #45a049);"></div>
+                                </div>
+                                <small>{{ record.get_completion_percentage() }}%</small>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/pre-production/{{ record.id }}" class="btn-icon" title="View">👁️</a>
+                                    <a href="/pre-production/{{ record.id }}/edit" class="btn-icon" title="Edit">✏️</a>
+                                    <form method="post" action="/pre-production/{{ record.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                                        <button type="submit" class="btn-icon" title="Delete">🗑️</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <p>No pre-production records found</p>
+                            <a href="/pre-production/add" class="btn btn-primary">Create First Record</a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

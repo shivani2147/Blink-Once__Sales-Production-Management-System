@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="form-container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Pre-Production Details</h2>
+            </div>
+            
+            <form method="post" action="{% if record %}/pre-production/{{ record.id }}/edit{% else %}/pre-production/add{% endif %}" class="form">
+                <!-- Basic Information -->
+                <fieldset class="form-section">
+                    <legend>Client Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="couple_name">Couple Name *</label>
+                        <input type="text" id="couple_name" name="couple_name" required value="{{ record.couple_name if record else '' }}" class="form-input">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="client_email">Client Email *</label>
+                            <input type="email" id="client_email" name="client_email" required value="{{ record.client_email if record else '' }}" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone_number">Phone Number *</label>
+                            <input type="tel" id="phone_number" name="phone_number" required value="{{ record.phone_number if record else '' }}" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event_type">Event Type *</label>
+                            <select id="event_type" name="event_type" required class="form-input">
+                                <option value="">Select Event Type</option>
+                                <option value="Wedding" {% if record and record.event_type == 'Wedding' %}selected{% endif %}>Wedding</option>
+                                <option value="Pre-Wedding Shoot" {% if record and record.event_type == 'Pre-Wedding Shoot' %}selected{% endif %}>Pre-Wedding Shoot</option>
+                                <option value="Engagement" {% if record and record.event_type == 'Engagement' %}selected{% endif %}>Engagement</option>
+                                <option value="Event" {% if record and record.event_type == 'Event' %}selected{% endif %}>Event</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="event_date">Event Date *</label>
+                            <input type="date" id="event_date" name="event_date" required value="{{ record.event_date if record else '' }}" class="form-input">
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Pre-Production Status -->
+                <fieldset class="form-section">
+                    <legend>Pre-Production Checklist</legend>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="referral_program" {% if record and record.referral_program %}checked{% endif %}>
+                            <span>Referral Program</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="advance_retainer_received" {% if record and record.advance_retainer_received %}checked{% endif %}>
+                            <span>Advance/Retainer Received</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="welcome_call" {% if record and record.welcome_call %}checked{% endif %}>
+                            <span>Welcome Call</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="team_booking" {% if record and record.team_booking %}checked{% endif %}>
+                            <span>Team Booking</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="story_designing_call" {% if record and record.story_designing_call %}checked{% endif %}>
+                            <span>Story Designing Call</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="heartfelt_email_cra" {% if record and record.heartfelt_email_cra %}checked{% endif %}>
+                            <span>Heartfelt Email (CRA)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="terms_confirmation_cra" {% if record and record.terms_confirmation_cra %}checked{% endif %}>
+                            <span>Terms & Conditions Confirmation (CRA)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="invoicing_cra" {% if record and record.invoicing_cra %}checked{% endif %}>
+                            <span>Invoicing (CRA)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="sending_jd_to_team" {% if record and record.sending_jd_to_team %}checked{% endif %}>
+                            <span>Sending JD to Team</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="music_choice_link_cra" {% if record and record.music_choice_link_cra %}checked{% endif %}>
+                            <span>Music Choice Link (CRA)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="invitation_video" {% if record and record.invitation_video %}checked{% endif %}>
+                            <span>Invitation Video</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="whatsapp_group" {% if record and record.whatsapp_group %}checked{% endif %}>
+                            <span>WhatsApp Group</span>
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <!-- Notes -->
+                <fieldset class="form-section">
+                    <legend>Additional Notes</legend>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-textarea" placeholder="Add any additional notes...">{{ record.notes if record else '' }}</textarea>
+                    </div>
+                </fieldset>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{% if record %}Update Record{% else %}Create Record{% endif %}</button>
+                    <a href="/pre-production" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

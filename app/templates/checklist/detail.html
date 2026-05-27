@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="detail-container">
+        <!-- Header with Actions -->
+        <div class="detail-header">
+            <div>
+                <h2>{{ record.couple_name }}</h2>
+                <p class="breadcrumb">Checklist / {{ record.event_date.strftime('%Y-%m-%d') }}</p>
+            </div>
+            <div class="detail-actions">
+                <a href="/checklist/{{ record.id }}/edit" class="btn btn-primary">Edit</a>
+                <form method="post" action="/checklist/{{ record.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this checklist?');">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                <a href="/checklist" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-section">
+            <h3>Checklist Completion</h3>
+            <div class="progress-bar-large">
+                <div class="progress-fill" style="width: {{ completion_percentage }}%; background: linear-gradient(90deg, #9C27B0, #7B1FA2);"></div>
+            </div>
+            <p class="progress-text">{{ completion_percentage }}% Complete</p>
+        </div>
+        
+        <!-- Details Grid -->
+        <div class="details-grid">
+            <div class="detail-card">
+                <h3>Event Information</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Event Date:</span>
+                    <span class="detail-value">{{ record.event_date.strftime('%d %B %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">
+                        {% if record.checklist_status == 'completed' %}
+                            <span class="badge badge-success">✓ Completed</span>
+                        {% elif record.checklist_status == 'in-progress' %}
+                            <span class="badge badge-info">In Progress</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if record.assigned_team %}
+                <div class="detail-row">
+                    <span class="detail-label">Team Members:</span>
+                    <span class="detail-value">{{ record.assigned_team }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="detail-card">
+                <h3>Equipment Status</h3>
+                <label class="detail-checkbox {% if record.equipments_ready %}checked{% endif %}">
+                    <input type="checkbox" disabled {% if record.equipments_ready %}checked{% endif %}>
+                    <span>All Equipment Ready</span>
+                </label>
+                {% if record.equipment_notes %}
+                <p class="notes-text" style="margin-top: 10px;">{{ record.equipment_notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Role Assignments -->
+        <div class="detail-card">
+            <h3>Role Assignments</h3>
+            
+            <div class="role-grid">
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.traditional_videographer %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.traditional_videographer %}checked{% endif %}>
+                        <span><strong>Traditional Videographer</strong></span>
+                    </label>
+                    {% if record.videographer_notes %}
+                    <p class="role-notes">{{ record.videographer_notes }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.traditional_photographer %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.traditional_photographer %}checked{% endif %}>
+                        <span><strong>Traditional Photographer</strong></span>
+                    </label>
+                    {% if record.photographer_notes %}
+                    <p class="role-notes">{{ record.photographer_notes }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.candid_photographer %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.candid_photographer %}checked{% endif %}>
+                        <span><strong>Candid Photographer</strong></span>
+                    </label>
+                    {% if record.candid_notes %}
+                    <p class="role-notes">{{ record.candid_notes }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.cinematographer %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.cinematographer %}checked{% endif %}>
+                        <span><strong>Cinematographer</strong></span>
+                    </label>
+                    {% if record.cinematographer_notes %}
+                    <p class="role-notes">{{ record.cinematographer_notes }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.drone_shooter %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.drone_shooter %}checked{% endif %}>
+                        <span><strong>Drone Shooter</strong></span>
+                    </label>
+                    {% if record.drone_notes %}
+                    <p class="role-notes">{{ record.drone_notes }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="role-item">
+                    <label class="detail-checkbox {% if record.pre_wedding_shoot %}checked{% endif %}">
+                        <input type="checkbox" disabled {% if record.pre_wedding_shoot %}checked{% endif %}>
+                        <span><strong>Pre-Wedding Shoot</strong></span>
+                    </label>
+                    {% if record.pre_wedding_notes %}
+                    <p class="role-notes">{{ record.pre_wedding_notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notes Section -->
+        {% if record.notes %}
+        <div class="detail-card">
+            <h3>Additional Notes</h3>
+            <p class="notes-text">{{ record.notes }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Metadata -->
+        <div class="detail-card metadata-card">
+            <h3>Record Information</h3>
+            <div class="metadata-grid">
+                <div>
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">{{ record.created_at.strftime('%d %B %Y, %H:%M') }}</span>
+                </div>
+                <div>
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">{{ record.updated_at.strftime('%d %B %Y, %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+    
+    .role-item {
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 4px solid #9C27B0;
+    }
+    
+    .role-notes {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+{% endblock %}

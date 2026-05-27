@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="/on-production/add" class="btn btn-primary">+ Add New Record</a>
+        
+        <!-- Search Form -->
+        <form method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search by couple name..." value="{{ search_query }}" class="search-input">
+            <button type="submit" class="btn btn-secondary">Search</button>
+            {% if search_query %}
+                <a href="/on-production" class="btn btn-ghost">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Records Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Couple Name</th>
+                        <th>Event Date</th>
+                        <th>Phone</th>
+                        <th>Payment</th>
+                        <th>Team Coordination</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for record in records %}
+                        <tr>
+                            <td><strong>{{ record.couple_name }}</strong></td>
+                            <td>{{ record.event_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ record.phone_number }}</td>
+                            <td>
+                                {% if record.payment_received %}
+                                    <span class="badge badge-success">✓ Received</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.assigned_team_members %}
+                                    <small>{{ record.assigned_team_members[:30] }}...</small>
+                                {% else %}
+                                    <small class="text-muted">Not assigned</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: {{ record.get_completion_percentage() }}%; background: linear-gradient(90deg, #2196F3, #1976D2);"></div>
+                                </div>
+                                <small>{{ record.get_completion_percentage() }}%</small>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/on-production/{{ record.id }}" class="btn-icon" title="View">👁️</a>
+                                    <a href="/on-production/{{ record.id }}/edit" class="btn-icon" title="Edit">✏️</a>
+                                    <form method="post" action="/on-production/{{ record.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                                        <button type="submit" class="btn-icon" title="Delete">🗑️</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <p>No on-production records found</p>
+                            <a href="/on-production/add" class="btn btn-primary">Create First Record</a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

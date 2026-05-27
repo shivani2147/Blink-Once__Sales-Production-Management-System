@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon">⚠️</div>
+            <h1>An Error Occurred</h1>
+            <p class="error-message">{{ error }}</p>
+            <div class="error-actions">
+                <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 60vh;
+        padding: 20px;
+    }
+    
+    .error-card {
+        background: white;
+        padding: 50px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+    }
+    
+    .error-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+    
+    .error-card h1 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .error-message {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+    
+    .error-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

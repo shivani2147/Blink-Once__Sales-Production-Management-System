@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ProductionFlow CRM{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>ProductionFlow</h1>
+                <p class="subtitle">CRM</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link {% if page_title == 'Dashboard' %}active{% endif %}">
+                    <span class="icon">📊</span>
+                    <span class="label">Dashboard</span>
+                </a>
+                <a href="/pre-production" class="nav-link {% if page_title.startswith('Pre-Production') %}active{% endif %}">
+                    <span class="icon">📋</span>
+                    <span class="label">Pre-Production</span>
+                </a>
+                <a href="/on-production" class="nav-link {% if page_title.startswith('On-Production') %}active{% endif %}">
+                    <span class="icon">🎬</span>
+                    <span class="label">On-Production</span>
+                </a>
+                <a href="/post-production" class="nav-link {% if page_title.startswith('Post-Production') %}active{% endif %}">
+                    <span class="icon">✂️</span>
+                    <span class="label">Post-Production</span>
+                </a>
+                <a href="/checklist" class="nav-link {% if page_title.startswith('Checklist') %}active{% endif %}">
+                    <span class="icon">✓</span>
+                    <span class="label">Checklist</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <div class="header-left">
+                    <h2>{{ page_title }}</h2>
+                </div>
+                <div class="header-right">
+                    <span class="user-info">Admin User</span>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

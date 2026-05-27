@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">📋</div>
+            <div class="kpi-content">
+                <h3>Pre-Production</h3>
+                <p class="kpi-number">{{ pre_prod_total }}</p>
+                <small>Total Records</small>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">🎬</div>
+            <div class="kpi-content">
+                <h3>On-Production</h3>
+                <p class="kpi-number">{{ on_prod_total }}</p>
+                <small>Total Records</small>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">✂️</div>
+            <div class="kpi-content">
+                <h3>Post-Production</h3>
+                <p class="kpi-number">{{ post_prod_total }}</p>
+                <small>Total Records</small>
+            </div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-icon">✓</div>
+            <div class="kpi-content">
+                <h3>Checklists</h3>
+                <p class="kpi-number">{{ checklist_total }}</p>
+                <small>Total Records</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts Section -->
+    <div class="alerts-section">
+        <div class="alert alert-warning">
+            <strong>⏰ Pending Tasks</strong>
+            <p>{{ pending_pre_prod }} pre-production tasks and {{ pending_post_prod }} post-production tasks awaiting completion</p>
+        </div>
+        
+        {% if overdue_tasks > 0 %}
+        <div class="alert alert-danger">
+            <strong>🔴 Overdue Tasks</strong>
+            <p>{{ overdue_tasks }} post-production deliverables are past deadline</p>
+        </div>
+        {% endif %}
+        
+        {% if upcoming_events > 0 %}
+        <div class="alert alert-info">
+            <strong>📅 Upcoming Events</strong>
+            <p>{{ upcoming_events }} events scheduled in the next 7 days</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Summary Tables -->
+    <div class="summary-grid">
+        <!-- Recent Pre-Production Records -->
+        <div class="summary-card">
+            <div class="card-header">
+                <h3>Recent Pre-Production Records</h3>
+                <a href="/pre-production" class="btn-link">View All →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Couple Name</th>
+                            <th>Event Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_records %}
+                            {% for record in recent_records %}
+                            <tr>
+                                <td><a href="/pre-production/{{ record.id }}">{{ record.couple_name }}</a></td>
+                                <td>{{ record.event_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="badge" style="width: {{ record.get_completion_percentage() }}%; background: linear-gradient(90deg, #4CAF50, #45a049); color: white; padding: 2px 8px; border-radius: 12px; display: inline-block;">
+                                        {{ record.get_completion_percentage() }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No records yet</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Overdue Post-Production Tasks -->
+        <div class="summary-card">
+            <div class="card-header">
+                <h3>Overdue Post-Production</h3>
+                <a href="/post-production" class="btn-link">View All →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Couple Name</th>
+                            <th>Deadline</th>
+                            <th>Days Overdue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if overdue_post_prod %}
+                            {% for record in overdue_post_prod %}
+                            <tr class="danger-row">
+                                <td><a href="/post-production/{{ record.id }}">{{ record.couple_name }}</a></td>
+                                <td>{{ record.deadline.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% set days_overdue = (now().date() - record.deadline).days %}
+                                    <span class="badge badge-danger">{{ days_overdue }} days</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No overdue tasks</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set current date for template
+    window.now = () => new Date();
+</script>
+{% endblock %}

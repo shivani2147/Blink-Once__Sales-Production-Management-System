@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="form-container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Checklist Details</h2>
+            </div>
+            
+            <form method="post" action="{% if record %}/checklist/{{ record.id }}/edit{% else %}/checklist/add{% endif %}" class="form">
+                <!-- Basic Information -->
+                <fieldset class="form-section">
+                    <legend>Event Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="couple_name">Couple Name *</label>
+                        <input type="text" id="couple_name" name="couple_name" required value="{{ record.couple_name if record else '' }}" class="form-input">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event_date">Event Date *</label>
+                            <input type="date" id="event_date" name="event_date" required value="{{ record.event_date if record else '' }}" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="checklist_status">Status</label>
+                            <select id="checklist_status" name="checklist_status" class="form-input">
+                                <option value="pending" {% if not record or record.checklist_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="in-progress" {% if record and record.checklist_status == 'in-progress' %}selected{% endif %}>In Progress</option>
+                                <option value="completed" {% if record and record.checklist_status == 'completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Equipment Checklist -->
+                <fieldset class="form-section">
+                    <legend>Equipment Checklist</legend>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipments_ready" {% if record and record.equipments_ready %}checked{% endif %}>
+                            <span>All Equipment Ready</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="equipment_notes">Equipment Notes</label>
+                        <textarea id="equipment_notes" name="equipment_notes" class="form-textarea" placeholder="Add equipment details, issues, or special notes...">{{ record.equipment_notes if record else '' }}</textarea>
+                    </div>
+                </fieldset>
+                
+                <!-- Role-Based Responsibilities -->
+                <fieldset class="form-section">
+                    <legend>Role Assignments & Responsibilities</legend>
+                    
+                    <!-- Videographer -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="traditional_videographer" {% if record and record.traditional_videographer %}checked{% endif %}>
+                            <span><strong>Traditional Videographer</strong></span>
+                        </label>
+                        <textarea name="videographer_notes" class="form-textarea form-textarea-small" placeholder="Notes for videographer role...">{{ record.videographer_notes if record else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Photographer -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="traditional_photographer" {% if record and record.traditional_photographer %}checked{% endif %}>
+                            <span><strong>Traditional Photographer</strong></span>
+                        </label>
+                        <textarea name="photographer_notes" class="form-textarea form-textarea-small" placeholder="Notes for photographer role...">{{ record.photographer_notes if record else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Candid Photographer -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="candid_photographer" {% if record and record.candid_photographer %}checked{% endif %}>
+                            <span><strong>Candid Photographer</strong></span>
+                        </label>
+                        <textarea name="candid_notes" class="form-textarea form-textarea-small" placeholder="Notes for candid photographer role...">{{ record.candid_notes if record else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Cinematographer -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="cinematographer" {% if record and record.cinematographer %}checked{% endif %}>
+                            <span><strong>Cinematographer</strong></span>
+                        </label>
+                        <textarea name="cinematographer_notes" class="form-textarea form-textarea-small" placeholder="Notes for cinematographer role...">{{ record.cinematographer_notes if record else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Drone Shooter -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="drone_shooter" {% if record and record.drone_shooter %}checked{% endif %}>
+                            <span><strong>Drone Shooter</strong></span>
+                        </label>
+                        <textarea name="drone_notes" class="form-textarea form-textarea-small" placeholder="Notes for drone shooter role...">{{ record.drone_notes if record else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Pre-Wedding Shoot -->
+                    <div class="responsibility-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="pre_wedding_shoot" {% if record and record.pre_wedding_shoot %}checked{% endif %}>
+                            <span><strong>Pre-Wedding Shoot</strong></span>
+                        </label>
+                        <textarea name="pre_wedding_notes" class="form-textarea form-textarea-small" placeholder="Notes for pre-wedding shoot...">{{ record.pre_wedding_notes if record else '' }}</textarea>
+                    </div>
+                </fieldset>
+                
+                <!-- Team Assignment -->
+                <fieldset class="form-section">
+                    <legend>Team Assignment</legend>
+                    
+                    <div class="form-group">
+                        <label for="assigned_team">Assigned Team Members</label>
+                        <input type="text" id="assigned_team" name="assigned_team" placeholder="e.g., John Doe, Sarah Smith, Mike Johnson" value="{{ record.assigned_team if record else '' }}" class="form-input">
+                    </div>
+                </fieldset>
+                
+                <!-- Additional Notes -->
+                <fieldset class="form-section">
+                    <legend>Additional Notes</legend>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-textarea" placeholder="Add any additional notes or instructions...">{{ record.notes if record else '' }}</textarea>
+                    </div>
+                </fieldset>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{% if record %}Update Checklist{% else %}Create Checklist{% endif %}</button>
+                    <a href="/checklist" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .responsibility-group {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .form-textarea-small {
+        min-height: 80px;
+        margin-top: 8px;
+    }
+</style>
+{% endblock %}

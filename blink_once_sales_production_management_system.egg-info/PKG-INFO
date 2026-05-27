@@ -1,3 +1,20 @@
+Metadata-Version: 2.4
+Name: blink-once-sales-production-management-system
+Version: 1.0.0
+Summary: Professional Sales & Production Management System for Creative Production Companies - Built with FastAPI, SQLAlchemy, and Microsoft SQL Server
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi==0.104.1
+Requires-Dist: uvicorn==0.24.0
+Requires-Dist: sqlalchemy==2.0.23
+Requires-Dist: pyodbc==5.1.0
+Requires-Dist: jinja2==3.1.2
+Requires-Dist: python-multipart==0.0.6
+Requires-Dist: pydantic==2.5.0
+Requires-Dist: pydantic-settings==2.1.0
+Requires-Dist: starlette==0.27.0
+Requires-Dist: typing-extensions==4.8.0
+
 # ProductionFlow CRM
 
 ## Project Overview
