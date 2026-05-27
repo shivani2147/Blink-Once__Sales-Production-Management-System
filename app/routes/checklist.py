@@ -63,8 +63,8 @@ async def add_checklist_form(request: Request):
 
 @router.post("/add")
 async def create_checklist(
-    couple_name: str = Form(...),
-    event_date: str = Form(...),
+    couple_name: str = Form(None),
+    event_date: str = Form(None),
     equipments_ready: bool = Form(False),
     equipment_notes: str = Form(None),
     traditional_videographer: bool = Form(False),
@@ -88,7 +88,7 @@ async def create_checklist(
     try:
         record = Checklist(
             couple_name=couple_name,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else None,
             equipments_ready=equipments_ready,
             equipment_notes=equipment_notes,
             traditional_videographer=traditional_videographer,
@@ -192,8 +192,8 @@ async def edit_checklist_form(
 @router.post("/{record_id}/edit")
 async def update_checklist(
     record_id: int,
-    couple_name: str = Form(...),
-    event_date: str = Form(...),
+    couple_name: str = Form(None),
+    event_date: str = Form(None),
     equipments_ready: bool = Form(False),
     equipment_notes: str = Form(None),
     traditional_videographer: bool = Form(False),
@@ -221,7 +221,7 @@ async def update_checklist(
             return {"error": "Checklist not found"}, 404
         
         record.couple_name = couple_name
-        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else None
         record.equipments_ready = equipments_ready
         record.equipment_notes = equipment_notes
         record.traditional_videographer = traditional_videographer
