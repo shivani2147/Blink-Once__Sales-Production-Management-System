@@ -72,16 +72,6 @@
                     </div>
                 </fieldset>
                 
-                <!-- Additional Notes -->
-                <fieldset class="form-section">
-                    <legend>Additional Notes</legend>
-                    
-                    <div class="form-group">
-                        <label for="notes">Notes</label>
-                        <textarea id="notes" name="notes" class="form-textarea" placeholder="Add any additional notes or instructions...">{{ record.notes if record else '' }}</textarea>
-                    </div>
-                </fieldset>
-                
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">{% if record %}Update Checklist{% else %}Create Checklist{% endif %}</button>

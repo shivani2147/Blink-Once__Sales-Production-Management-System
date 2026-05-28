@@ -8,7 +8,7 @@
         
         <!-- Search Form -->
         <form method="get" class="search-form">
-            <input type="text" name="search" placeholder="Search by couple name..." value="{{ search_query }}" class="search-input">
+            <input type="text" name="search" placeholder="Search by assigned team or notes..." value="{{ search_query }}" class="search-input">
             <button type="submit" class="btn btn-secondary">Search</button>
             {% if search_query %}
                 <a href="/checklist" class="btn btn-ghost">Clear</a>
@@ -22,9 +22,6 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Couple Name</th>
-                        <th>Event Date</th>
-                        <th>Status</th>
                         <th>Assigned Team</th>
                         <th>Completion</th>
                         <th>Actions</th>
@@ -34,29 +31,18 @@
                     {% if records %}
                         {% for record in records %}
                         <tr>
-                            <td><strong>{{ record.couple_name }}</strong></td>
-                            <td>{{ record.event_date.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                {% if record.checklist_status == 'completed' %}
-                                    <span class="badge badge-success">✓ Completed</span>
-                                {% elif record.checklist_status == 'in-progress' %}
-                                    <span class="badge badge-info">In Progress</span>
-                                {% else %}
-                                    <span class="badge badge-warning">Pending</span>
-                                {% endif %}
-                            </td>
                             <td>
                                 {% if record.assigned_team %}
-                                    <small>{{ record.assigned_team[:30] }}...</small>
+                                    <small>{{ record.assigned_team }}</small>
                                 {% else %}
                                     <small class="text-muted">Not assigned</small>
                                 {% endif %}
                             </td>
                             <td>
                                 <div class="progress-bar" style="width: 100px;">
-                                    <div class="progress-fill" style="width: {{ record.get_completion_percentage() }}%; background: linear-gradient(90deg, #9C27B0, #7B1FA2);"></div>
+                                    <div class="progress-fill" style="width: {{ record.get_info_completion_percentage() }}%; background: linear-gradient(90deg, #9C27B0, #7B1FA2);"></div>
                                 </div>
-                                <small>{{ record.get_completion_percentage() }}%</small>
+                                <small>{{ record.get_info_completion_percentage() }}%</small>
                             </td>
                             <td>
                                 <div class="action-buttons">
@@ -71,7 +57,7 @@
                         {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="6" class="empty-state">
+                        <td colspan="3" class="empty-state">
                             <p>No checklists found</p>
                             <a href="/checklist/add" class="btn btn-primary">Create First Checklist</a>
                         </td>

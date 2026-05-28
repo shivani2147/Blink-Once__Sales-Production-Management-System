@@ -6,8 +6,8 @@
         <!-- Header with Actions -->
         <div class="detail-header">
             <div>
-                <h2>{{ record.couple_name }}</h2>
-                <p class="breadcrumb">Checklist / {{ record.event_date.strftime('%Y-%m-%d') }}</p>
+                <h2>Checklist Information</h2>
+                <p class="breadcrumb">Checklist</p>
             </div>
             <div class="detail-actions">
                 <a href="/checklist/{{ record.id }}/edit" class="btn btn-primary">Edit</a>
@@ -18,23 +18,10 @@
             </div>
         </div>
         
-        <!-- Progress Bar -->
-        <div class="progress-section">
-            <h3>Checklist Completion</h3>
-            <div class="progress-bar-large">
-                <div class="progress-fill" style="width: {{ completion_percentage }}%; background: linear-gradient(90deg, #9C27B0, #7B1FA2);"></div>
-            </div>
-            <p class="progress-text">{{ completion_percentage }}% Complete</p>
-        </div>
-        
         <!-- Details Grid -->
         <div class="details-grid">
             <div class="detail-card">
-                <h3>Event Information</h3>
-                <div class="detail-row">
-                    <span class="detail-label">Event Date:</span>
-                    <span class="detail-value">{{ record.event_date.strftime('%d %B %Y') }}</span>
-                </div>
+                <h3>Information</h3>
                 <div class="detail-row">
                     <span class="detail-label">Status:</span>
                     <span class="detail-value">
@@ -56,13 +43,11 @@
             </div>
             
             <div class="detail-card">
-                <h3>Equipment Status</h3>
-                <label class="detail-checkbox {% if record.equipments_ready %}checked{% endif %}">
-                    <input type="checkbox" disabled {% if record.equipments_ready %}checked{% endif %}>
-                    <span>All Equipment Ready</span>
-                </label>
+                <h3>Equipment Notes</h3>
                 {% if record.equipment_notes %}
                 <p class="notes-text" style="margin-top: 10px;">{{ record.equipment_notes }}</p>
+                {% else %}
+                <p class="notes-text text-muted" style="margin-top: 10px;">No equipment information provided.</p>
                 {% endif %}
             </div>
         </div>
@@ -73,74 +58,60 @@
             
             <div class="role-grid">
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.traditional_videographer %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.traditional_videographer %}checked{% endif %}>
-                        <span><strong>Traditional Videographer</strong></span>
-                    </label>
+                    <h4>Traditional Videographer</h4>
                     {% if record.videographer_notes %}
                     <p class="role-notes">{{ record.videographer_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
                 
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.traditional_photographer %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.traditional_photographer %}checked{% endif %}>
-                        <span><strong>Traditional Photographer</strong></span>
-                    </label>
+                    <h4>Traditional Photographer</h4>
                     {% if record.photographer_notes %}
                     <p class="role-notes">{{ record.photographer_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
                 
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.candid_photographer %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.candid_photographer %}checked{% endif %}>
-                        <span><strong>Candid Photographer</strong></span>
-                    </label>
+                    <h4>Candid Photographer</h4>
                     {% if record.candid_notes %}
                     <p class="role-notes">{{ record.candid_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
                 
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.cinematographer %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.cinematographer %}checked{% endif %}>
-                        <span><strong>Cinematographer</strong></span>
-                    </label>
+                    <h4>Cinematographer</h4>
                     {% if record.cinematographer_notes %}
                     <p class="role-notes">{{ record.cinematographer_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
                 
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.drone_shooter %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.drone_shooter %}checked{% endif %}>
-                        <span><strong>Drone Shooter</strong></span>
-                    </label>
+                    <h4>Drone Shooter</h4>
                     {% if record.drone_notes %}
                     <p class="role-notes">{{ record.drone_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
                 
                 <div class="role-item">
-                    <label class="detail-checkbox {% if record.pre_wedding_shoot %}checked{% endif %}">
-                        <input type="checkbox" disabled {% if record.pre_wedding_shoot %}checked{% endif %}>
-                        <span><strong>Pre-Wedding Shoot</strong></span>
-                    </label>
+                    <h4>Pre-Wedding Shoot</h4>
                     {% if record.pre_wedding_notes %}
                     <p class="role-notes">{{ record.pre_wedding_notes }}</p>
+                    {% else %}
+                    <p class="role-notes text-muted">No details provided.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
-        
-        <!-- Notes Section -->
-        {% if record.notes %}
-        <div class="detail-card">
-            <h3>Additional Notes</h3>
-            <p class="notes-text">{{ record.notes }}</p>
-        </div>
-        {% endif %}
         
         <!-- Metadata -->
         <div class="detail-card metadata-card">

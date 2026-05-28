@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.database import get_db
 from app.models import Checklist
 from datetime import datetime
@@ -29,7 +30,7 @@ async def list_checklists(
         query = db.query(Checklist).order_by(Checklist.created_at.desc())
         
         if search:
-            query = query.filter(Checklist.couple_name.ilike(f"%{search}%"))
+            query = query.filter(Checklist.assigned_team.ilike(f"%{search}%"))
         
         records = query.all()
         
@@ -87,8 +88,8 @@ async def create_checklist(
     """Create new checklist."""
     try:
         record = Checklist(
-            couple_name=couple_name,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else None,
+            couple_name=couple_name or "",
+            event_date=datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else datetime.utcnow().date(),
             equipments_ready=equipments_ready,
             equipment_notes=equipment_notes,
             traditional_videographer=traditional_videographer,
@@ -220,8 +221,10 @@ async def update_checklist(
         if not record:
             return {"error": "Checklist not found"}, 404
         
-        record.couple_name = couple_name
-        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else None
+        if couple_name is not None:
+            record.couple_name = couple_name
+        if event_date:
+            record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
         record.equipments_ready = equipments_ready
         record.equipment_notes = equipment_notes
         record.traditional_videographer = traditional_videographer

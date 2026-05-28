@@ -196,3 +196,13 @@ class Checklist(Base):
         ]
         completed = sum(1 for field in fields if field)
         return int((completed / len(fields)) * 100) if fields else 0
+
+    def get_info_completion_percentage(self):
+        """Calculate completion percentage based on checklist information fields."""
+        fields = [
+            self.equipment_notes, self.videographer_notes, self.photographer_notes,
+            self.candid_notes, self.cinematographer_notes, self.drone_notes,
+            self.pre_wedding_notes, self.assigned_team
+        ]
+        completed = sum(1 for field in fields if field and str(field).strip())
+        return int((completed / len(fields)) * 100) if fields else 0
