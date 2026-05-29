@@ -561,13 +561,42 @@ html, body {
 
 /* Form Container */
 .form-container {
-    margin-bottom: 30px;
+    max-width: 900px;
+    margin: 0 auto 30px;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.form-header h1 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.form-header p {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.data-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .form-section {
-    border: none;
-    padding: 25px;
-    border-bottom: 2px solid var(--border-color);
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #fafafa;
 }
 
 .form-section:last-of-type {
@@ -582,9 +611,23 @@ html, body {
     display: block;
 }
 
+.form-section h3 {
+    margin: 0 0 1.5rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
 /* Form Groups */
 .form-group {
+    display: flex;
+    flex-direction: column;
     margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
 }
 
 .form-row {
@@ -601,25 +644,32 @@ html, body {
     margin-bottom: 8px;
 }
 
+.form-group input,
+.form-group select,
+.form-group textarea,
 .form-input,
 .form-textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
 .form-input:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-textarea {
+.form-textarea,
+.form-group textarea {
     resize: vertical;
     min-height: 120px;
 }
@@ -629,39 +679,28 @@ html, body {
     margin-bottom: 15px;
 }
 
-.checkbox-label {
+.checkbox-group label {
     display: flex;
     align-items: center;
-    gap: 10px;
     cursor: pointer;
-    font-size: 14px;
-    padding: 10px;
-    border-radius: 6px;
-    transition: background 0.3s ease;
+    font-weight: 400;
 }
 
-.checkbox-label:hover {
-    background: var(--light-bg);
-}
-
-.checkbox-label input[type="checkbox"] {
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: var(--primary-color);
-}
-
-.checkbox-label span {
-    color: var(--dark-text);
 }
 
 /* Form Actions */
 .form-actions {
     display: flex;
-    gap: 10px;
-    padding: 25px;
-    background: var(--light-bg);
-    border-top: 1px solid var(--border-color);
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
 }
 
 /* ============================================
