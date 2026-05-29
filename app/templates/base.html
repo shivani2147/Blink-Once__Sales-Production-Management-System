@@ -17,27 +17,83 @@
             </div>
             
             <nav class="sidebar-nav">
+                <!-- Dashboard Link -->
                 <a href="/dashboard" class="nav-link {% if page_title == 'Dashboard' %}active{% endif %}">
                     <span class="icon">📊</span>
                     <span class="label">Dashboard</span>
                 </a>
-                <a href="/pre-production" class="nav-link {% if page_title.startswith('Pre-Production') %}active{% endif %}">
-                    <span class="icon">📋</span>
-                    <span class="label">Pre-Production</span>
-                </a>
-                <a href="/on-production" class="nav-link {% if page_title.startswith('On-Production') %}active{% endif %}">
-                    <span class="icon">🎬</span>
-                    <span class="label">On-Production</span>
-                </a>
-                <a href="/post-production" class="nav-link {% if page_title.startswith('Post-Production') %}active{% endif %}">
-                    <span class="icon">✂️</span>
-                    <span class="label">Post-Production</span>
-                </a>
-                <a href="/checklist" class="nav-link {% if page_title.startswith('Checklist') %}active{% endif %}">
-                    <span class="icon">✓</span>
-                    <span class="label">Checklist</span>
-                </a>
+                
+                <!-- Service Steps Mechanism Dropdown -->
+                <div class="nav-group">
+                    <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
+                        <span class="icon">🎯</span>
+                        <span class="label">Service Steps Mechanism</span>
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/pre-production" class="nav-dropdown-link {% if page_title.startswith('Pre-Production') %}active{% endif %}">
+                            <span class="icon-small">📋</span>
+                            <span>Pre-Production</span>
+                        </a>
+                        <a href="/on-production" class="nav-dropdown-link {% if page_title.startswith('On-Production') %}active{% endif %}">
+                            <span class="icon-small">🎬</span>
+                            <span>On-Production</span>
+                        </a>
+                        <a href="/post-production" class="nav-dropdown-link {% if page_title.startswith('Post-Production') %}active{% endif %}">
+                            <span class="icon-small">✂️</span>
+                            <span>Post-Production</span>
+                        </a>
+                        <a href="/checklist" class="nav-dropdown-link {% if page_title.startswith('Checklist') %}active{% endif %}">
+                            <span class="icon-small">✓</span>
+                            <span>Checklist Management</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Yearly Financial Data Dropdown -->
+                <div class="nav-group">
+                    <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
+                        <span class="icon">💰</span>
+                        <span class="label">Yearly Financial Data</span>
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/financial/monthly/" class="nav-dropdown-link {% if page_title == 'Monthly Financial Reports' %}active{% endif %}">
+                            <span class="icon-small">📊</span>
+                            <span>Monthly Financial Reports</span>
+                        </a>
+                        <a href="/financial/followup/" class="nav-dropdown-link {% if page_title == '3 Months Client Follow-up' %}active{% endif %}">
+                            <span class="icon-small">📞</span>
+                            <span>3 Months Client Follow-up</span>
+                        </a>
+                        <a href="/financial/investment/" class="nav-dropdown-link {% if page_title == 'Investment To Grow Company' %}active{% endif %}">
+                            <span class="icon-small">📈</span>
+                            <span>Investment To Grow Company</span>
+                        </a>
+                        <a href="/financial/editing/" class="nav-dropdown-link {% if page_title == 'Clients Editing' %}active{% endif %}">
+                            <span class="icon-small">✏️</span>
+                            <span>Clients Editing</span>
+                        </a>
+                        <a href="/financial/camera-rent/" class="nav-dropdown-link {% if page_title == 'Camera Rent' %}active{% endif %}">
+                            <span class="icon-small">📷</span>
+                            <span>Camera Rent</span>
+                        </a>
+                        <a href="/financial/upcoming-shoots/" class="nav-dropdown-link {% if page_title == 'Upcoming Clients Shoot' %}active{% endif %}">
+                            <span class="icon-small">🎥</span>
+                            <span>Upcoming Clients Shoot</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
+            
+            <script>
+                function toggleDropdown(button) {
+                    const menu = button.nextElementSibling;
+                    const arrow = button.querySelector('.arrow');
+                    const isOpen = menu.classList.toggle('show');
+                    arrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            </script>
         </aside>
         
         <!-- Main Content -->

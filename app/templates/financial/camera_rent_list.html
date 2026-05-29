@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-title">
+        <h1>Camera Rent</h1>
+        <p>Track rental income and equipment usage</p>
+    </div>
+    <a href="/financial/camera-rent/create" class="btn btn-primary">+ Add Rental</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💰</div>
+        <div class="card-content">
+            <div class="card-label">Total Rental Income</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_rental_income) }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📅</div>
+        <div class="card-content">
+            <div class="card-label">Total Days Rented</div>
+            <div class="card-value">{{ total_days_rented }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🎯</div>
+        <div class="card-content">
+            <div class="card-label">Rental Count</div>
+            <div class="card-value">{{ rental_count }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⏳</div>
+        <div class="card-content">
+            <div class="card-label">Pending Payments</div>
+            <div class="card-value">₹{{ "%.2f"|format(pending_payments) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Rentals Table -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Equipment</th>
+                <th>Days</th>
+                <th>Amount (₹)</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if rentals %}
+                {% for rental in rentals %}
+                <tr>
+                    <td>{{ rental.date.strftime('%d %b %Y') }}</td>
+                    <td><strong>{{ rental.client_name }}</strong></td>
+                    <td>{{ rental.description_of_goods }}</td>
+                    <td>{{ rental.days }}</td>
+                    <td>₹{{ "%.2f"|format(rental.total_amount) }}</td>
+                    <td><span class="badge {% if rental.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ rental.payment_status }}</span></td>
+                    <td><span class="badge {% if rental.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ rental.work_status }}</span></td>
+                    <td class="action-buttons">
+                        <a href="/financial/camera-rent/{{ rental.id }}/edit" class="btn-icon">✏️</a>
+                        <a href="/financial/camera-rent/{{ rental.id }}/delete" class="btn-icon btn-danger" onclick="return confirm('Are you sure?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center text-muted">No rentals found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

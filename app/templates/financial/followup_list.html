@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-title">
+        <h1>3 Months Client Follow-up</h1>
+        <p>Track leads and conversion analytics for 3-month period</p>
+    </div>
+    <a href="/financial/followup/create" class="btn btn-primary">+ Add New Lead</a>
+</div>
+
+<!-- Analytics Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🎯</div>
+        <div class="card-content">
+            <div class="card-label">Total Leads</div>
+            <div class="card-value">{{ total_leads }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">✓</div>
+        <div class="card-content">
+            <div class="card-label">Converted</div>
+            <div class="card-value">{{ done_count }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📊</div>
+        <div class="card-content">
+            <div class="card-label">Conversion Rate</div>
+            <div class="card-value">{{ conversion_rate }}%</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">💰</div>
+        <div class="card-content">
+            <div class="card-label">Total Amount</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_amount) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Leads Table -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Event Type</th>
+                <th>Platform</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Negotiation</th>
+                <th>Confirmation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if followups %}
+                {% for followup in followups %}
+                <tr>
+                    <td>{{ followup.date.strftime('%d %b %Y') }}</td>
+                    <td><strong>{{ followup.client_name }}</strong></td>
+                    <td>{{ followup.event_type }}</td>
+                    <td><span class="badge badge-info">{{ followup.platform }}</span></td>
+                    <td>₹{{ "%.2f"|format(followup.total_amount) }}</td>
+                    <td><span class="badge {% if followup.status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ followup.status }}</span></td>
+                    <td>{% if followup.negotiation %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-secondary">No</span>{% endif %}</td>
+                    <td>{% if followup.confirmation %}<span class="badge badge-success">Confirmed</span>{% else %}<span class="badge badge-secondary">Pending</span>{% endif %}</td>
+                    <td class="action-buttons">
+                        <a href="/financial/followup/{{ followup.id }}/edit" class="btn-icon">✏️</a>
+                        <a href="/financial/followup/{{ followup.id }}/delete" class="btn-icon btn-danger" onclick="return confirm('Are you sure?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="9" class="text-center text-muted">No leads found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-secondary {
+    background: #e2e3e5;
+    color: #383d41;
+}
+</style>
+{% endblock %}

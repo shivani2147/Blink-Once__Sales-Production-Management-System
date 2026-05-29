@@ -206,3 +206,163 @@ class Checklist(Base):
         ]
         completed = sum(1 for field in fields if field and str(field).strip())
         return int((completed / len(fields)) * 100) if fields else 0
+
+
+# YEARLY FINANCIAL DATA MODELS
+
+class MonthlyFinancialReport(Base):
+    """Monthly Financial Report for tracking revenue, expenses, and profit."""
+    __tablename__ = "monthly_financial_reports"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    month = Column(Date, nullable=False, index=True)  # First day of the month
+    client_name = Column(String(255), nullable=False, index=True)
+    event_type = Column(String(255), nullable=False)
+    event_date = Column(Date, nullable=False)
+    
+    # Financial fields
+    total_amount = Column(Float, nullable=False, default=0.0)
+    paid_amount = Column(Float, nullable=False, default=0.0)
+    pending_amount = Column(Float, nullable=False, default=0.0)
+    freelancer_amount = Column(Float, nullable=False, default=0.0)
+    expenses = Column(Float, nullable=False, default=0.0)
+    profit = Column(Float, nullable=False, default=0.0)
+    
+    # Status tracking
+    payment_status = Column(String(50), nullable=False)  # Online, Cash
+    work_status = Column(String(50), nullable=False, default="Pending")  # Pending, Done
+    
+    # Additional fields
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+    
+    def calculate_pending(self):
+        """Calculate pending amount."""
+        self.pending_amount = self.total_amount - self.paid_amount
+        return self.pending_amount
+    
+    def calculate_profit(self):
+        """Calculate profit."""
+        self.profit = self.total_amount - self.freelancer_amount - self.expenses
+        return self.profit
+
+
+class ThreeMonthsClientFollowup(Base):
+    """3 Months Client Follow-up for lead tracking and conversion."""
+    __tablename__ = "three_months_client_followup"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    client_name = Column(String(255), nullable=False, index=True)
+    event_type = Column(String(255), nullable=False)
+    event_date = Column(Date, nullable=False)
+    location = Column(String(255), nullable=True)
+    phone_number = Column(String(20), nullable=False)
+    
+    # Financial tracking
+    client_budget = Column(Float, nullable=False, default=0.0)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    # Lead tracking
+    platform = Column(String(100), nullable=False)  # JD, Meta Ads, Word of Mouth
+    negotiation = Column(Boolean, default=False)
+    confirmation = Column(Boolean, default=False)
+    
+    # Status tracking
+    status = Column(String(50), nullable=False)  # Done, Pending, Rejected, Not replied, etc.
+    
+    # Additional fields
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class InvestmentToGrowCompany(Base):
+    """Investment To Grow Company for tracking investments and expenses."""
+    __tablename__ = "investment_to_grow_company"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    service = Column(String(255), nullable=False)  # Type of investment
+    amount = Column(Float, nullable=False, default=0.0)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    # Additional fields
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class ClientsEditing(Base):
+    """Clients Editing for tracking editing workload and revenue."""
+    __tablename__ = "clients_editing"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    client_name = Column(String(255), nullable=False, index=True)
+    editing_type = Column(String(255), nullable=False)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    # Status tracking
+    payment_status = Column(String(50), nullable=False)  # Online, Cash
+    work_status = Column(String(50), nullable=False, default="Pending")  # Pending, Done
+    
+    # Additional fields
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class CameraRent(Base):
+    """Camera Rent for tracking rental income and equipment usage."""
+    __tablename__ = "camera_rent"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    client_name = Column(String(255), nullable=False, index=True)
+    description_of_goods = Column(String(255), nullable=False)
+    days = Column(Integer, nullable=False, default=1)
+    phone_number = Column(String(20), nullable=False)
+    aadhar_card_no = Column(String(20), nullable=True)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    # Status tracking
+    payment_status = Column(String(50), nullable=False)  # Online, Cash
+    work_status = Column(String(50), nullable=False, default="Pending")  # Pending, Done
+    
+    # Additional fields
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class UpcomingClientsShoot(Base):
+    """Upcoming Clients Shoot for shoot scheduling and pipeline management."""
+    __tablename__ = "upcoming_clients_shoot"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    client_name = Column(String(255), nullable=False, index=True)
+    event_type = Column(String(255), nullable=False)
+    event_date = Column(Date, nullable=False, index=True)
+    phone_number = Column(String(20), nullable=False)
+    total_amount = Column(Float, nullable=False, default=0.0)
+    
+    # Lead tracking
+    negotiation = Column(Boolean, default=False)
+    confirmation = Column(Boolean, default=False)
+    
+    # Status tracking
+    status = Column(String(50), nullable=False)  # Pending, Done, Rejected
+    
+    # Additional fields
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)

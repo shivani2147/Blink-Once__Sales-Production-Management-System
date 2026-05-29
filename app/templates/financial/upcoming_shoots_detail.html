@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1>Upcoming Shoot Details</h1>
+        <a href="/financial/upcoming-shoots/" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-section">
+            <h3>Shoot Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Date Added:</span>
+                    <span class="value">{{ shoot.date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Client Name:</span>
+                    <span class="value">{{ shoot.client_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Event Type:</span>
+                    <span class="value">{{ shoot.event_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Event Date:</span>
+                    <span class="value">{{ shoot.event_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Phone:</span>
+                    <span class="value">{{ shoot.phone_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Amount:</span>
+                    <span class="value">₹{{ "%.2f"|format(shoot.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Status</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Negotiation:</span>
+                    <span class="badge {% if shoot.negotiation %}badge-success{% else %}badge-secondary{% endif %}">{% if shoot.negotiation %}Done{% else %}Pending{% endif %}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Confirmation:</span>
+                    <span class="badge {% if shoot.confirmation %}badge-success{% else %}badge-secondary{% endif %}">{% if shoot.confirmation %}Confirmed{% else %}Pending{% endif %}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Status:</span>
+                    <span class="badge badge-warning">{{ shoot.status }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if shoot.notes %}
+        <div class="detail-section">
+            <h3>Notes</h3>
+            <p>{{ shoot.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-actions">
+        <a href="/financial/upcoming-shoots/{{ shoot.id }}/edit" class="btn btn-primary">Edit</a>
+        <a href="/financial/upcoming-shoots/{{ shoot.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+    </div>
+</div>
+{% endblock %}

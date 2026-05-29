@@ -17,7 +17,19 @@ from app.config import APP_TITLE, APP_VERSION, APP_DESCRIPTION, DEBUG, RELOAD
 from app.database import init_db
 
 # Import route handlers
-from app.routes import dashboard, pre_production, on_production, post_production, checklist
+from app.routes import (
+    dashboard, 
+    pre_production, 
+    on_production, 
+    post_production, 
+    checklist,
+    monthly_financial,
+    client_followup,
+    investment,
+    editing,
+    camera_rent,
+    upcoming_shoots
+)
 
 # Create FastAPI application
 app = FastAPI(
@@ -39,6 +51,14 @@ app.include_router(pre_production.router)
 app.include_router(on_production.router)
 app.include_router(post_production.router)
 app.include_router(checklist.router)
+
+# Include financial data routers
+app.include_router(monthly_financial.router)
+app.include_router(client_followup.router)
+app.include_router(investment.router)
+app.include_router(editing.router)
+app.include_router(camera_rent.router)
+app.include_router(upcoming_shoots.router)
 
 
 @app.on_event("startup")

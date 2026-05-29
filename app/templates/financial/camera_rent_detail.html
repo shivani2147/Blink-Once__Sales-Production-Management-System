@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1>Camera Rent Details</h1>
+        <a href="/financial/camera-rent/" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-section">
+            <h3>Rental Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ rental.date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Client Name:</span>
+                    <span class="value">{{ rental.client_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Equipment:</span>
+                    <span class="value">{{ rental.description_of_goods }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Days:</span>
+                    <span class="value">{{ rental.days }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Amount:</span>
+                    <span class="value">₹{{ "%.2f"|format(rental.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Contact Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Phone:</span>
+                    <span class="value">{{ rental.phone_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Aadhar:</span>
+                    <span class="value">{{ rental.aadhar_card_no or 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Status</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Payment:</span>
+                    <span class="badge badge-info">{{ rental.payment_status }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Work Status:</span>
+                    <span class="badge {% if rental.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ rental.work_status }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-actions">
+        <a href="/financial/camera-rent/{{ rental.id }}/edit" class="btn btn-primary">Edit</a>
+        <a href="/financial/camera-rent/{{ rental.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+    </div>
+</div>
+{% endblock %}

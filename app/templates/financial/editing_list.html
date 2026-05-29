@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-title">
+        <h1>Clients Editing</h1>
+        <p>Track editing workload and revenue</p>
+    </div>
+    <a href="/financial/editing/create" class="btn btn-primary">+ Add Editing Project</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💰</div>
+        <div class="card-content">
+            <div class="card-label">Total Revenue</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_revenue) }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">✓</div>
+        <div class="card-content">
+            <div class="card-label">Completed</div>
+            <div class="card-value">{{ done_count }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">⏳</div>
+        <div class="card-content">
+            <div class="card-label">Pending</div>
+            <div class="card-value">{{ pending_count }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📊</div>
+        <div class="card-content">
+            <div class="card-label">Completion Rate</div>
+            <div class="card-value">{{ completion_rate }}%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Editing Projects Table -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Editing Type</th>
+                <th>Amount (₹)</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if projects %}
+                {% for project in projects %}
+                <tr>
+                    <td>{{ project.date.strftime('%d %b %Y') }}</td>
+                    <td><strong>{{ project.client_name }}</strong></td>
+                    <td>{{ project.editing_type }}</td>
+                    <td>₹{{ "%.2f"|format(project.total_amount) }}</td>
+                    <td><span class="badge {% if project.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ project.payment_status }}</span></td>
+                    <td><span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span></td>
+                    <td class="action-buttons">
+                        <a href="/financial/editing/{{ project.id }}/edit" class="btn-icon">✏️</a>
+                        <a href="/financial/editing/{{ project.id }}/delete" class="btn-icon btn-danger" onclick="return confirm('Are you sure?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">No editing projects found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

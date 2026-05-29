@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-title">
+        <h1>Investment To Grow Company</h1>
+        <p>Track investments and company growth expenses</p>
+    </div>
+    <a href="/financial/investment/create" class="btn btn-primary">+ Add Investment</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📈</div>
+        <div class="card-content">
+            <div class="card-label">Total Investment</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_investment) }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📊</div>
+        <div class="card-content">
+            <div class="card-label">Total Amount</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_amount_sum) }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🎯</div>
+        <div class="card-content">
+            <div class="card-label">Investment Count</div>
+            <div class="card-value">{{ investment_count }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Investments Table -->
+<div class="table-responsive">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Service</th>
+                <th>Amount (₹)</th>
+                <th>Total Amount (₹)</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if investments %}
+                {% for investment in investments %}
+                <tr>
+                    <td>{{ investment.date.strftime('%d %b %Y') }}</td>
+                    <td><strong>{{ investment.service }}</strong></td>
+                    <td>₹{{ "%.2f"|format(investment.amount) }}</td>
+                    <td>₹{{ "%.2f"|format(investment.total_amount) }}</td>
+                    <td>{{ investment.description or '-' }}</td>
+                    <td class="action-buttons">
+                        <a href="/financial/investment/{{ investment.id }}/edit" class="btn-icon">✏️</a>
+                        <a href="/financial/investment/{{ investment.id }}/delete" class="btn-icon btn-danger" onclick="return confirm('Are you sure?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">No investments recorded yet.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

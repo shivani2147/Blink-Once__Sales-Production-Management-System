@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1>Editing Project Details</h1>
+        <a href="/financial/editing/" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-section">
+            <h3>Project Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ project.date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Client Name:</span>
+                    <span class="value">{{ project.client_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Editing Type:</span>
+                    <span class="value">{{ project.editing_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Amount:</span>
+                    <span class="value">₹{{ "%.2f"|format(project.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Status</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Payment:</span>
+                    <span class="badge badge-info">{{ project.payment_status }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Work Status:</span>
+                    <span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if project.description %}
+        <div class="detail-section">
+            <h3>Description</h3>
+            <p>{{ project.description }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-actions">
+        <a href="/financial/editing/{{ project.id }}/edit" class="btn btn-primary">Edit</a>
+        <a href="/financial/editing/{{ project.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+    </div>
+</div>
+{% endblock %}

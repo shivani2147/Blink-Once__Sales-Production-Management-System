@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if is_edit %}Edit{% else %}Schedule{% endif %} Shoot</h1>
+        <p>Add upcoming shoot to the event pipeline</p>
+    </div>
+
+    <form method="post" class="data-form">
+        <div class="form-section">
+            <h3>Shoot Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="date_input">Date Added</label>
+                    <input type="date" id="date_input" name="date_input" required 
+                           value="{% if shoot %}{{ shoot.date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="client_name">Client Name</label>
+                    <input type="text" id="client_name" name="client_name" required 
+                           value="{% if shoot %}{{ shoot.client_name }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="event_type">Event Type</label>
+                    <input type="text" id="event_type" name="event_type" required 
+                           value="{% if shoot %}{{ shoot.event_type }}{% endif %}" placeholder="e.g., Wedding, Corporate">
+                </div>
+                <div class="form-group">
+                    <label for="event_date">Event Date</label>
+                    <input type="date" id="event_date" name="event_date" required 
+                           value="{% if shoot %}{{ shoot.event_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required 
+                           value="{% if shoot %}{{ shoot.phone_number }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="total_amount">Amount (₹)</label>
+                    <input type="number" id="total_amount" name="total_amount" step="0.01" required 
+                           value="{% if shoot %}{{ shoot.total_amount }}{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Status & Tracking</h3>
+            <div class="form-grid">
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="negotiation" value="1" {% if shoot and shoot.negotiation %}checked{% endif %}>
+                        <span>Negotiation Done</span>
+                    </label>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="confirmation" value="1" {% if shoot and shoot.confirmation %}checked{% endif %}>
+                        <span>Confirmation Received</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="status">Shoot Status</label>
+                    <select id="status" name="status" required>
+                        <option value="">Select Status</option>
+                        <option value="Pending" {% if shoot and shoot.status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Done" {% if shoot and shoot.status == 'Done' %}selected{% endif %}>Done</option>
+                        <option value="Rejected" {% if shoot and shoot.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Additional Notes</h3>
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" rows="4">{% if shoot %}{{ shoot.notes }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/financial/upcoming-shoots/" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Shoot{% else %}Schedule Shoot{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

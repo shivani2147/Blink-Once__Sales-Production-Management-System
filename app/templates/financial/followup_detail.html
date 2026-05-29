@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1>Client Follow-up Details</h1>
+        <a href="/financial/followup/" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-section">
+            <h3>Lead Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ followup.date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Client Name:</span>
+                    <span class="value">{{ followup.client_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Event Type:</span>
+                    <span class="value">{{ followup.event_type }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Event Date:</span>
+                    <span class="value">{{ followup.event_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Location:</span>
+                    <span class="value">{{ followup.location or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Phone:</span>
+                    <span class="value">{{ followup.phone_number }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Financial Details</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Client Budget:</span>
+                    <span class="value">₹{{ "%.2f"|format(followup.client_budget) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Total Amount:</span>
+                    <span class="value">₹{{ "%.2f"|format(followup.total_amount) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Platform:</span>
+                    <span class="badge badge-info">{{ followup.platform }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>Status</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">Negotiation:</span>
+                    <span class="badge {% if followup.negotiation %}badge-success{% else %}badge-secondary{% endif %}">{% if followup.negotiation %}Done{% else %}Pending{% endif %}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Confirmation:</span>
+                    <span class="badge {% if followup.confirmation %}badge-success{% else %}badge-secondary{% endif %}">{% if followup.confirmation %}Confirmed{% else %}Pending{% endif %}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Status:</span>
+                    <span class="badge badge-warning">{{ followup.status }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if followup.comment %}
+        <div class="detail-section">
+            <h3>Comments</h3>
+            <p>{{ followup.comment }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-actions">
+        <a href="/financial/followup/{{ followup.id }}/edit" class="btn btn-primary">Edit</a>
+        <a href="/financial/followup/{{ followup.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+    </div>
+</div>
+{% endblock %}

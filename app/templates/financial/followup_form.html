@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if is_edit %}Edit{% else %}Create{% endif %} Client Follow-up</h1>
+        <p>Track leads and conversion status</p>
+    </div>
+
+    <form method="post" class="data-form">
+        <div class="form-section">
+            <h3>Lead Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="date_input">Date</label>
+                    <input type="date" id="date_input" name="date_input" required 
+                           value="{% if followup %}{{ followup.date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="client_name">Client Name</label>
+                    <input type="text" id="client_name" name="client_name" required 
+                           value="{% if followup %}{{ followup.client_name }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="event_type">Event Type</label>
+                    <input type="text" id="event_type" name="event_type" required 
+                           value="{% if followup %}{{ followup.event_type }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="event_date">Event Date</label>
+                    <input type="date" id="event_date" name="event_date" required 
+                           value="{% if followup %}{{ followup.event_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" 
+                           value="{% if followup %}{{ followup.location }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required 
+                           value="{% if followup %}{{ followup.phone_number }}{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Financial Details</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="client_budget">Client Budget (₹)</label>
+                    <input type="number" id="client_budget" name="client_budget" step="0.01" required 
+                           value="{% if followup %}{{ followup.client_budget }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="total_amount">Total Amount (₹)</label>
+                    <input type="number" id="total_amount" name="total_amount" step="0.01" required 
+                           value="{% if followup %}{{ followup.total_amount }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="platform">Platform</label>
+                    <select id="platform" name="platform" required>
+                        <option value="">Select Platform</option>
+                        {% for platform in platform_options %}
+                        <option value="{{ platform }}" {% if followup and followup.platform == platform %}selected{% endif %}>{{ platform }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Status & Tracking</h3>
+            <div class="form-grid">
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="negotiation" value="1" {% if followup and followup.negotiation %}checked{% endif %}>
+                        <span>Negotiation Done</span>
+                    </label>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="confirmation" value="1" {% if followup and followup.confirmation %}checked{% endif %}>
+                        <span>Confirmation Received</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="status">Lead Status</label>
+                    <select id="status" name="status" required>
+                        <option value="">Select Status</option>
+                        {% for status_opt in status_options %}
+                        <option value="{{ status_opt }}" {% if followup and followup.status == status_opt %}selected{% endif %}>{{ status_opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Comments</h3>
+            <div class="form-group">
+                <label for="comment">Comment</label>
+                <textarea id="comment" name="comment" rows="4">{% if followup %}{{ followup.comment }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/financial/followup/" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Lead{% else %}Create Lead{% endif %}</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
