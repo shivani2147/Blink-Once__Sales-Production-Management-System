@@ -25,7 +25,18 @@
                 </div>
                 <div class="detail-item">
                     <span class="label">Event Date:</span>
-                    <span class="value">{{ followup.event_date.strftime('%d %b %Y') }}</span>
+                    <span class="value">
+                        {% set event_dates = followup.event_date_list %}
+                        {% if event_dates|length > 1 %}
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                {% for event_date in event_dates %}
+                                    <span class="badge badge-info">{{ event_date }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ followup.event_date.strftime('%d %b %Y') if followup.event_date else 'N/A' }}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Location:</span>

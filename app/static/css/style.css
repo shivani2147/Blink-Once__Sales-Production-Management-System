@@ -870,6 +870,46 @@ html, body {
     background: var(--light-bg);
 }
 
+.event-date-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.date-input-group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.date-input-group input[type="date"] {
+    flex: 1;
+    min-width: 0;
+}
+
+.date-input-group .remove-date-btn {
+    min-width: auto;
+}
+
+.small-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+    line-height: 1.2;
+    margin-top: 1.5rem;
+    border-radius: 0.75rem;
+}
+
+.small-action-button:not(:first-child) {
+    margin-left: 0;
+}
+
 .btn-icon {
     background: transparent;
     border: none;

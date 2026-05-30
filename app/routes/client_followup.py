@@ -11,6 +11,7 @@ from app.models import ThreeMonthsClientFollowup
 from datetime import datetime, date, timedelta
 import os
 from sqlalchemy import func
+import json
 
 router = APIRouter(prefix="/financial/followup", tags=["3 Months Client Follow-up"])
 
@@ -132,11 +133,26 @@ async def create_followup(
 ):
     """Create new client follow-up."""
     try:
+        # Parse event_date (JSON array or single date)
+        event_date_list = []
+        try:
+            event_date_list = json.loads(event_date)
+            if not isinstance(event_date_list, list):
+                event_date_list = [event_date]
+        except:
+            event_date_list = [event_date]
+        
+        # Use first date for the database field
+        first_event_date = event_date_list[0] if event_date_list else event_date
+        
+        # Store all dates as JSON string
+        event_date_json = json.dumps(event_date_list)
+        
         followup = ThreeMonthsClientFollowup(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             client_name=client_name,
             event_type=event_type,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date_json,
             location=location,
             phone_number=phone_number,
             client_budget=client_budget,
@@ -163,6 +179,19 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
+        
+        # Parse event_date to get list of dates
+        event_date_list = []
+        try:
+            # Try to parse as JSON (multiple dates)
+            event_date_list = json.loads(str(followup.event_date))
+            if not isinstance(event_date_list, list):
+                event_date_list = [followup.event_date.strftime('%Y-%m-%d')]
+        except:
+            # Fallback to single date
+            event_date_list = [followup.event_date.strftime('%Y-%m-%d')]
+        
+        followup.event_date_list = event_date_list
         
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
@@ -203,10 +232,22 @@ async def edit_followup(
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
         
+        # Parse event_date (JSON array or single date)
+        event_date_list = []
+        try:
+            event_date_list = json.loads(event_date)
+            if not isinstance(event_date_list, list):
+                event_date_list = [event_date]
+        except:
+            event_date_list = [event_date]
+        
+        # Store all dates as JSON string
+        event_date_json = json.dumps(event_date_list)
+        
         followup.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         followup.client_name = client_name
         followup.event_type = event_type
-        followup.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        followup.event_date = event_date_json
         followup.location = location
         followup.phone_number = phone_number
         followup.client_budget = client_budget
@@ -246,6 +287,25 @@ async def detail_followup(request: Request, followup_id: int, db: Session = Depe
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
+        
+        # Parse event_date to get list of dates
+        event_date_list = []
+        try:
+            # Try to parse as JSON (multiple dates)
+            event_date_list = json.loads(str(followup.event_date))
+            if not isinstance(event_date_list, list):
+                event_date_list = [followup.event_date.strftime('%d %b %Y') if isinstance(followup.event_date, date) else followup.event_date]
+            else:
+                # Convert dates to formatted strings
+                event_date_list = [datetime.strptime(d, '%Y-%m-%d').strftime('%d %b %Y') if isinstance(d, str) else d for d in event_date_list]
+        except:
+            # Fallback to single date
+            if isinstance(followup.event_date, date):
+                event_date_list = [followup.event_date.strftime('%d %b %Y')]
+            else:
+                event_date_list = [str(followup.event_date)]
+        
+        followup.event_date_list = event_date_list
         
         return templates.TemplateResponse("financial/followup_detail.html", {
             "request": request,

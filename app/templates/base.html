@@ -93,6 +93,23 @@
                     const isOpen = menu.classList.toggle('show');
                     arrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
                 }
+
+                // Auto-expand dropdowns if their submenu is active
+                document.addEventListener('DOMContentLoaded', function() {
+                    const navGroups = document.querySelectorAll('.nav-group');
+                    navGroups.forEach(group => {
+                        const menu = group.querySelector('.nav-dropdown-menu');
+                        const button = group.querySelector('.nav-dropdown-toggle');
+                        const arrow = button.querySelector('.arrow');
+                        
+                        // Check if any submenu item is active
+                        const hasActiveSubmenu = menu.querySelector('.nav-dropdown-link.active');
+                        if (hasActiveSubmenu) {
+                            menu.classList.add('show');
+                            arrow.style.transform = 'rotate(180deg)';
+                        }
+                    });
+                });
             </script>
         </aside>
         
@@ -116,5 +133,96 @@
     </div>
     
     {% block extra_js %}{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function normalizeEventDate(value) {
+                if (!value) {
+                    return '';
+                }
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : value;
+                } catch (error) {
+                    return value;
+                }
+            }
+
+            function getDateValues(container) {
+                return Array.from(container.querySelectorAll('.event_date_input'))
+                    .map(input => input.value)
+                    .filter(Boolean);
+            }
+
+            function updateHiddenValue(container) {
+                const hidden = container.querySelector('.event_date_hidden');
+                if (!hidden) return;
+                const values = getDateValues(container);
+                hidden.value = values.length ? values[0] : '';
+            }
+
+            function updateRemoveButtons(container) {
+                const groups = container.querySelectorAll('.date-input-group');
+                groups.forEach((group, index) => {
+                    const removeBtn = group.querySelector('.remove-date-btn');
+                    if (removeBtn) {
+                        removeBtn.style.display = groups.length > 1 ? 'inline-flex' : 'none';
+                    }
+                });
+            }
+
+            function createDateInputRow() {
+                const group = document.createElement('div');
+                group.className = 'date-input-group';
+                group.innerHTML = `
+                    <input type="date" class="form-input event_date_input" required>
+                    <button type="button" class="btn btn-sm btn-danger remove-date-btn">Remove</button>
+                `;
+                const removeBtn = group.querySelector('.remove-date-btn');
+                removeBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    group.remove();
+                    const container = group.closest('.event-date-container');
+                    if (container) {
+                        updateHiddenValue(container);
+                        updateRemoveButtons(container);
+                    }
+                });
+                return group;
+            }
+
+            document.querySelectorAll('.add-event-date-btn').forEach(function(button) {
+                const container = button.closest('.event-date-container');
+                if (!container) return;
+                const form = button.closest('form');
+                if (!form) return;
+
+                const initialInput = container.querySelector('.event_date_input');
+                const hiddenField = container.querySelector('.event_date_hidden');
+                if (!initialInput || !hiddenField) return;
+
+                hiddenField.value = initialInput.value || '';
+
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const newRow = createDateInputRow();
+                    container.insertBefore(newRow, button);
+                    updateHiddenValue(container);
+                    updateRemoveButtons(container);
+                });
+
+                container.addEventListener('input', function(event) {
+                    if (event.target.matches('.event_date_input')) {
+                        updateHiddenValue(container);
+                    }
+                });
+
+                form.addEventListener('submit', function() {
+                    updateHiddenValue(container);
+                });
+
+                updateRemoveButtons(container);
+            });
+        });
+    </script>
 </body>
 </html>

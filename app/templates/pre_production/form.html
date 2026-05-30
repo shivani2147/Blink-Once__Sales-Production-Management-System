@@ -44,7 +44,13 @@
                         
                         <div class="form-group">
                             <label for="event_date">Event Date *</label>
-                            <input type="date" id="event_date" name="event_date" required value="{{ record.event_date if record else '' }}" class="form-input">
+                            <div class="event-date-container">
+                                <div class="date-input-group">
+                                    <input type="date" id="event_date" class="form-input event_date_input" required value="{{ record.event_date if record else '' }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary small-action-button add-event-date-btn">+ Add Another Date</button>
+                                <input type="hidden" name="event_date" class="event_date_hidden">
+                            </div>
                         </div>
                     </div>
                 </fieldset>

@@ -75,7 +75,15 @@
                     <td>{{ followup.date.strftime('%d %b %Y') }}</td>
                     <td><strong>{{ followup.client_name }}</strong></td>
                     <td>{{ followup.event_type }}</td>
-                    <td>{{ followup.event_date.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% set event_date_value = followup.event_date %}
+                        {% if event_date_value is string and event_date_value.startswith('[') %}
+                            {% set dates = event_date_value | from_json %}
+                            {{ dates[0] if dates|length == 1 else dates|length ~ ' dates' }}
+                        {% else %}
+                            {{ event_date_value.strftime('%d %b %Y') if event_date_value is not string else event_date_value }}
+                        {% endif %}
+                    </td>
                     <td>{{ followup.location or 'N/A' }}</td>
                     <td>{{ followup.phone_number }}</td>
                     <td>₹{{ "%.2f"|format(followup.client_budget) }}</td>
