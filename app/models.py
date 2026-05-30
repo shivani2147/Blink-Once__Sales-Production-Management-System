@@ -268,7 +268,7 @@ class ThreeMonthsClientFollowup(Base):
     # Lead tracking
     platform = Column(String(100), nullable=False)  # JD, Meta Ads, Word of Mouth
     negotiation = Column(Boolean, default=False)
-    confirmation = Column(Boolean, default=False)
+    confirmation = Column(Float, nullable=False, default=0.0)
     
     # Status tracking
     status = Column(String(50), nullable=False)  # Done, Pending, Rejected, Not replied, etc.
@@ -344,7 +344,7 @@ class CameraRent(Base):
 
 class UpcomingClientsShoot(Base):
     """Upcoming Clients Shoot for shoot scheduling and pipeline management."""
-    __tablename__ = "upcoming_clients_shoot"
+    __tablename__ = "upcoming_shoots"
     
     id = Column(Integer, primary_key=True, index=True)
     date = Column(Date, nullable=False, index=True)

@@ -64,8 +64,8 @@
                     <span class="badge {% if followup.negotiation %}badge-success{% else %}badge-secondary{% endif %}">{% if followup.negotiation %}Done{% else %}Pending{% endif %}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="label">Confirmation:</span>
-                    <span class="badge {% if followup.confirmation %}badge-success{% else %}badge-secondary{% endif %}">{% if followup.confirmation %}Confirmed{% else %}Pending{% endif %}</span>
+                    <span class="label">Confirmation Amount:</span>
+                    <span class="value">₹{{ "%.2f"|format(followup.confirmation) }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Status:</span>

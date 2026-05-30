@@ -58,6 +58,11 @@
                            value="{% if followup %}{{ followup.total_amount }}{% endif %}">
                 </div>
                 <div class="form-group">
+                    <label for="confirmation">Confirmation Amount (₹)</label>
+                    <input type="number" id="confirmation" name="confirmation" step="0.01" required 
+                           value="{% if followup %}{{ followup.confirmation }}{% else %}{% endif %}">
+                </div>
+                <div class="form-group">
                     <label for="platform">Platform</label>
                     <select id="platform" name="platform" required>
                         <option value="">Select Platform</option>
@@ -76,12 +81,6 @@
                     <label>
                         <input type="checkbox" name="negotiation" value="1" {% if followup and followup.negotiation %}checked{% endif %}>
                         <span>Negotiation Done</span>
-                    </label>
-                </div>
-                <div class="form-group checkbox-group">
-                    <label>
-                        <input type="checkbox" name="confirmation" value="1" {% if followup and followup.confirmation %}checked{% endif %}>
-                        <span>Confirmation Received</span>
                     </label>
                 </div>
                 <div class="form-group">

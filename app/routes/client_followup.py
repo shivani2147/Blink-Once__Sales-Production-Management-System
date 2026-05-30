@@ -45,6 +45,9 @@ async def list_followups(request: Request, db: Session = Depends(get_db)):
         total_budget = db.query(func.sum(ThreeMonthsClientFollowup.client_budget)).filter(
             ThreeMonthsClientFollowup.date >= three_months_ago
         ).scalar() or 0.0
+        total_confirmation = db.query(func.sum(ThreeMonthsClientFollowup.confirmation)).filter(
+            ThreeMonthsClientFollowup.date >= three_months_ago
+        ).scalar() or 0.0
         total_amount = db.query(func.sum(ThreeMonthsClientFollowup.total_amount)).filter(
             ThreeMonthsClientFollowup.date >= three_months_ago
         ).scalar() or 0.0
@@ -61,16 +64,25 @@ async def list_followups(request: Request, db: Session = Depends(get_db)):
             count = sum(1 for f in followups if f.status == status)
             if count > 0:
                 status_stats[status] = count
+
+        # Determine the highest performing platform by number of leads
+        if platform_stats:
+            top_platform, top_platform_count = max(platform_stats.items(), key=lambda item: item[1])
+        else:
+            top_platform, top_platform_count = "N/A", 0
         
         return templates.TemplateResponse("financial/followup_list.html", {
             "request": request,
             "page_title": "3 Months Client Follow-up",
+            "top_platform": top_platform,
+            "top_platform_count": top_platform_count,
             "followups": followups,
             "total_leads": total_leads,
             "done_count": done_count,
             "pending_count": pending_count,
             "conversion_rate": round(conversion_rate, 2),
             "total_budget": total_budget,
+            "total_confirmation": total_confirmation,
             "total_amount": total_amount,
             "platform_stats": platform_stats,
             "status_stats": status_stats,
@@ -114,7 +126,7 @@ async def create_followup(
     total_amount: float = Form(...),
     platform: str = Form(...),
     negotiation: bool = Form(default=False),
-    confirmation: bool = Form(default=False),
+    confirmation: float = Form(0.0),
     status: str = Form(...),
     comment: str = Form(default=""),
 ):
@@ -181,7 +193,7 @@ async def edit_followup(
     total_amount: float = Form(...),
     platform: str = Form(...),
     negotiation: bool = Form(default=False),
-    confirmation: bool = Form(default=False),
+    confirmation: float = Form(0.0),
     status: str = Form(...),
     comment: str = Form(default=""),
 ):
