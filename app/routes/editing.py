@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import ClientsEditing
 from datetime import datetime, date
 import os
-from sqlalchemy import func
+from sqlalchemy import func, extract
 
 router = APIRouter(prefix="/financial/editing", tags=["Clients Editing"])
 
@@ -20,15 +20,36 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_editing(request: Request, db: Session = Depends(get_db)):
+async def list_editing(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all editing projects with analytics."""
     try:
-        editing_projects = db.query(ClientsEditing).order_by(
+        query = db.query(ClientsEditing).order_by(
             ClientsEditing.date.desc()
-        ).all()
+        )
         
-        # Calculate totals
-        total_revenue = db.query(func.sum(ClientsEditing.total_amount)).scalar() or 0.0
+        if search:
+            query = query.filter(ClientsEditing.client_name.ilike(f"%{search}%"))
+        if year:
+            try:
+                query = query.filter(extract('year', ClientsEditing.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                query = query.filter(extract('month', ClientsEditing.date) == int(month))
+            except ValueError:
+                pass
+        
+        editing_projects = query.all()
+        
+        # Calculate totals for filtered results
+        total_revenue = sum(p.total_amount for p in editing_projects) if editing_projects else 0.0
         pending_count = sum(1 for p in editing_projects if p.work_status == "Pending")
         done_count = sum(1 for p in editing_projects if p.work_status == "Done")
         completion_rate = (done_count / len(editing_projects) * 100) if len(editing_projects) > 0 else 0
@@ -47,6 +68,9 @@ async def list_editing(request: Request, db: Session = Depends(get_db)):
             "completion_rate": round(completion_rate, 2),
             "online_payment": online_payment,
             "cash_payment": cash_payment,
+            "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {

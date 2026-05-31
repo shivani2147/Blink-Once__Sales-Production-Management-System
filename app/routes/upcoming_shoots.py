@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import UpcomingClientsShoot
 from datetime import datetime, date, timedelta
 import os
-from sqlalchemy import func
+from sqlalchemy import func, extract
 
 router = APIRouter(prefix="/financial/upcoming-shoots", tags=["Upcoming Clients Shoot"])
 
@@ -20,13 +20,34 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_upcoming_shoots(request: Request, db: Session = Depends(get_db)):
+async def list_upcoming_shoots(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all upcoming shoots with analytics."""
     try:
         today = date.today()
-        upcoming_shoots = db.query(UpcomingClientsShoot).filter(
+        query = db.query(UpcomingClientsShoot).filter(
             UpcomingClientsShoot.event_date >= today
-        ).order_by(UpcomingClientsShoot.event_date).all()
+        )
+        
+        if search:
+            query = query.filter(UpcomingClientsShoot.client_name.ilike(f"%{search}%"))
+        if year:
+            try:
+                query = query.filter(extract('year', UpcomingClientsShoot.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                query = query.filter(extract('month', UpcomingClientsShoot.date) == int(month))
+            except ValueError:
+                pass
+        
+        upcoming_shoots = query.order_by(UpcomingClientsShoot.event_date).all()
         
         # Calculate analytics
         total_shoots = len(upcoming_shoots)
@@ -57,6 +78,9 @@ async def list_upcoming_shoots(request: Request, db: Session = Depends(get_db)):
             "rejected_count": rejected_count,
             "confirmed_shoots": confirmed_shoots,
             "this_week_shoots": this_week_shoots,
+            "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {

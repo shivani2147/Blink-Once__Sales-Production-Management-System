@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import CameraRent
 from datetime import datetime, date
 import os
-from sqlalchemy import func
+from sqlalchemy import func, extract
 
 router = APIRouter(prefix="/financial/camera-rent", tags=["Camera Rent"])
 
@@ -20,15 +20,36 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_camera_rent(request: Request, db: Session = Depends(get_db)):
+async def list_camera_rent(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all camera rentals with analytics."""
     try:
-        rentals = db.query(CameraRent).order_by(CameraRent.date.desc()).all()
+        query = db.query(CameraRent).order_by(CameraRent.date.desc())
         
-        # Calculate totals
-        total_rental_income = db.query(func.sum(CameraRent.total_amount)).scalar() or 0.0
-        total_days_rented = db.query(func.sum(CameraRent.days)).scalar() or 0
-        paid_count = sum(1 for r in rentals if r.payment_status == "Online" or r.payment_status == "Cash")
+        if search:
+            query = query.filter(CameraRent.client_name.ilike(f"%{search}%"))
+        if year:
+            try:
+                query = query.filter(extract('year', CameraRent.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                query = query.filter(extract('month', CameraRent.date) == int(month))
+            except ValueError:
+                pass
+        
+        rentals = query.all()
+        
+        # Calculate totals for filtered results
+        total_rental_income = sum(r.total_amount for r in rentals) if rentals else 0.0
+        total_days_rented = sum(r.days for r in rentals) if rentals else 0
+        paid_count = sum(1 for r in rentals if r.payment_status in ("Online", "Cash"))
         pending_payments = sum(r.total_amount for r in rentals if r.payment_status != "Done")
         
         return templates.TemplateResponse("financial/camera_rent_list.html", {
@@ -39,6 +60,9 @@ async def list_camera_rent(request: Request, db: Session = Depends(get_db)):
             "total_days_rented": total_days_rented,
             "rental_count": len(rentals),
             "pending_payments": pending_payments,
+            "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {

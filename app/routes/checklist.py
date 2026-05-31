@@ -23,6 +23,8 @@ templates = Jinja2Templates(directory=template_dir)
 async def list_checklists(
     request: Request,
     search: str = None,
+    year: str = None,
+    month: str = None,
     db: Session = Depends(get_db)
 ):
     """Display list of checklists."""
@@ -30,7 +32,15 @@ async def list_checklists(
         query = db.query(Checklist).order_by(Checklist.created_at.desc())
         
         if search:
-            query = query.filter(Checklist.assigned_team.ilike(f"%{search}%"))
+            query = query.filter(or_(
+                Checklist.assigned_team.ilike(f"%{search}%"),
+                Checklist.couple_name.ilike(f"%{search}%")
+            ))
+        if year or month:
+            if month:
+                month = month.zfill(2)
+            filter_pattern = f"{year or '%'}-{month or '%'}-%"
+            query = query.filter(Checklist.event_date.ilike(filter_pattern))
         
         records = query.all()
         
@@ -39,6 +49,8 @@ async def list_checklists(
             "page_title": "Checklists",
             "records": records,
             "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         }
         
         return templates.TemplateResponse("checklist/list.html", context)

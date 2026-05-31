@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import ThreeMonthsClientFollowup
 from datetime import datetime, date, timedelta
 import os
-from sqlalchemy import func
+from sqlalchemy import func, extract
 import json
 import re
 
@@ -75,15 +75,36 @@ def normalize_event_date_string(raw):
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_followups(request: Request, db: Session = Depends(get_db)):
+async def list_followups(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all 3 months client follow-ups with analytics."""
     try:
         today = date.today()
         three_months_ago = today - timedelta(days=90)
         
-        followups = db.query(ThreeMonthsClientFollowup).filter(
+        query = db.query(ThreeMonthsClientFollowup).filter(
             ThreeMonthsClientFollowup.date >= three_months_ago
-        ).order_by(ThreeMonthsClientFollowup.date.desc()).all()
+        )
+        
+        if search:
+            query = query.filter(ThreeMonthsClientFollowup.client_name.ilike(f"%{search}%"))
+        if year:
+            try:
+                query = query.filter(extract('year', ThreeMonthsClientFollowup.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                query = query.filter(extract('month', ThreeMonthsClientFollowup.date) == int(month))
+            except ValueError:
+                pass
+        
+        followups = query.order_by(ThreeMonthsClientFollowup.date.desc()).all()
         
         # Calculate analytics
         total_leads = len(followups)

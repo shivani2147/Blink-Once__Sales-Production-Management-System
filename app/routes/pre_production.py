@@ -22,6 +22,8 @@ templates = Jinja2Templates(directory=template_dir)
 async def list_pre_production(
     request: Request,
     search: str = None,
+    year: str = None,
+    month: str = None,
     db: Session = Depends(get_db)
 ):
     """Display list of pre-production records with search functionality."""
@@ -30,6 +32,11 @@ async def list_pre_production(
         
         if search:
             query = query.filter(PreProduction.couple_name.ilike(f"%{search}%"))
+        if year or month:
+            if month:
+                month = month.zfill(2)
+            pattern = f"{year or '%'}-{month or '%'}-%"
+            query = query.filter(PreProduction.event_date.ilike(pattern))
         
         records = query.all()
         
@@ -38,6 +45,8 @@ async def list_pre_production(
             "page_title": "Pre-Production",
             "records": records,
             "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         }
         
         return templates.TemplateResponse("pre_production/list.html", context)

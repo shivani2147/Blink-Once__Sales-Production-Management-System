@@ -20,16 +20,40 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_investments(request: Request, db: Session = Depends(get_db)):
+async def list_investments(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all investments with analytics."""
     try:
-        investments = db.query(InvestmentToGrowCompany).order_by(
+        query = db.query(InvestmentToGrowCompany).order_by(
             InvestmentToGrowCompany.date.desc()
-        ).all()
+        )
         
-        # Calculate totals
-        total_investment = db.query(func.sum(InvestmentToGrowCompany.amount)).scalar() or 0.0
-        total_amount_sum = db.query(func.sum(InvestmentToGrowCompany.total_amount)).scalar() or 0.0
+        if search:
+            query = query.filter(
+                InvestmentToGrowCompany.service.ilike(f"%{search}%") |
+                InvestmentToGrowCompany.description.ilike(f"%{search}%")
+            )
+        if year:
+            try:
+                query = query.filter(extract('year', InvestmentToGrowCompany.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                query = query.filter(extract('month', InvestmentToGrowCompany.date) == int(month))
+            except ValueError:
+                pass
+        
+        investments = query.all()
+        
+        # Calculate totals for filtered results
+        total_investment = sum(i.amount for i in investments) if investments else 0.0
+        total_amount_sum = sum(i.total_amount for i in investments) if investments else 0.0
         investment_count = len(investments)
         
         # Service-wise breakdown
@@ -48,6 +72,9 @@ async def list_investments(request: Request, db: Session = Depends(get_db)):
             "total_amount_sum": total_amount_sum,
             "investment_count": investment_count,
             "service_stats": service_stats,
+            "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {

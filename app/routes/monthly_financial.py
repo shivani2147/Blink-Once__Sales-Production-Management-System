@@ -49,22 +49,45 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def list_monthly_reports(request: Request, db: Session = Depends(get_db), month: str = None):
+async def list_monthly_reports(
+    request: Request,
+    db: Session = Depends(get_db),
+    search: str = None,
+    year: str = None,
+    month: str = None,
+):
     """List all monthly financial reports with filtering."""
     try:
-        query = db.query(MonthlyFinancialReport).order_by(MonthlyFinancialReport.month.desc())
+        query = db.query(MonthlyFinancialReport).order_by(
+            MonthlyFinancialReport.year.desc(), MonthlyFinancialReport.month.desc()
+        )
+        
+        if search:
+            query = query.filter(MonthlyFinancialReport.client_name.ilike(f"%{search}%"))
+        
+        if year:
+            try:
+                query = query.filter(MonthlyFinancialReport.year == int(year))
+            except ValueError:
+                pass
         
         if month:
-            query = query.filter(extract('year-month', MonthlyFinancialReport.month) == month)
+            import calendar
+            month_name = month
+            if month.isdigit():
+                month_num = int(month)
+                if 1 <= month_num <= 12:
+                    month_name = calendar.month_name[month_num]
+            query = query.filter(MonthlyFinancialReport.month == month_name)
         
         reports = query.all()
         
-        # Calculate totals
-        total_revenue = db.query(func.sum(MonthlyFinancialReport.total_amount)).scalar() or 0.0
-        total_paid = db.query(func.sum(MonthlyFinancialReport.paid_amount)).scalar() or 0.0
-        total_pending = db.query(func.sum(MonthlyFinancialReport.pending_amount)).scalar() or 0.0
-        total_expenses = db.query(func.sum(MonthlyFinancialReport.expenses)).scalar() or 0.0
-        total_profit = db.query(func.sum(MonthlyFinancialReport.profit)).scalar() or 0.0
+        # Calculate totals for filtered results
+        total_revenue = sum(r.total_amount for r in reports) if reports else 0.0
+        total_paid = sum(r.paid_amount for r in reports) if reports else 0.0
+        total_pending = sum(r.pending_amount for r in reports) if reports else 0.0
+        total_expenses = sum(r.expenses for r in reports) if reports else 0.0
+        total_profit = sum(r.profit for r in reports) if reports else 0.0
         
         return templates.TemplateResponse("financial/monthly_list.html", {
             "request": request,
@@ -79,6 +102,9 @@ async def list_monthly_reports(request: Request, db: Session = Depends(get_db), 
             "total_expenses_words": number_to_words(total_expenses),
             "total_profit": total_profit,
             "total_profit_words": number_to_words(total_profit),
+            "search_query": search or "",
+            "selected_year": year or "",
+            "selected_month": month or "",
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {

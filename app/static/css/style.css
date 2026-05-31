@@ -497,54 +497,66 @@ html, body {
 /* Tables */
 .table-responsive {
     overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
-.summary-table,
 .data-table {
     width: 100%;
     border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.summary-table thead,
 .data-table thead {
-    background: var(--light-bg);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
 }
 
-.summary-table th,
 .data-table th {
-    padding: 15px;
+    padding: 16px 18px;
     text-align: left;
     font-size: 13px;
     font-weight: 600;
-    color: var(--light-text);
+    color: white;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.summary-table td,
 .data-table td {
-    padding: 15px;
+    padding: 16px 18px;
     border-bottom: 1px solid var(--border-color);
     font-size: 14px;
+    color: var(--dark-text);
+    vertical-align: middle;
 }
 
-.summary-table tbody tr:hover,
 .data-table tbody tr:hover {
-    background: var(--light-bg);
+    background: rgba(102, 126, 234, 0.05);
     transition: background 0.3s ease;
 }
 
-.summary-table a,
 .data-table a {
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
 }
 
-.summary-table a:hover,
 .data-table a:hover {
     text-decoration: underline;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+    padding-left: 20px;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+    padding-right: 20px;
 }
 
 .status-header {
@@ -911,22 +923,37 @@ html, body {
 }
 
 .btn-icon {
-    background: transparent;
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
     border: none;
-    font-size: 18px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.2s ease;
     cursor: pointer;
-    padding: 8px;
-    transition: transform 0.2s ease;
 }
 
 .btn-icon:hover {
-    transform: scale(1.2);
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-icon.btn-danger:hover {
+    background: var(--danger-color);
+    color: white;
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 10px;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 /* ============================================
