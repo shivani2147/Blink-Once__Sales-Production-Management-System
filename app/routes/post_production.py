@@ -93,7 +93,7 @@ async def create_post_production(
     try:
         record = PostProduction(
             couple_name=couple_name,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date,
             deadline=datetime.strptime(deadline, "%Y-%m-%d").date(),
             event_name=event_name,
             data_copy=data_copy,
@@ -237,7 +237,7 @@ async def update_post_production(
             return {"error": "Record not found"}, 404
         
         record.couple_name = couple_name
-        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        record.event_date = event_date
         record.deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
         record.closure_date = datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None
         record.event_name = event_name

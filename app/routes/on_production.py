@@ -81,7 +81,7 @@ async def create_on_production(
     try:
         record = OnProduction(
             couple_name=couple_name,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date,
             phone_number=phone_number,
             client_review=client_review,
             payment_received=payment_received,
@@ -200,7 +200,7 @@ async def update_on_production(
             return {"error": "Record not found"}, 404
         
         record.couple_name = couple_name
-        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        record.event_date = event_date
         record.phone_number = phone_number
         record.client_review = client_review
         record.payment_received = payment_received

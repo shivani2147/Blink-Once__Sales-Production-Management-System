@@ -102,7 +102,7 @@ async def create_shoot(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             client_name=client_name,
             event_type=event_type,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date,
             phone_number=phone_number,
             total_amount=total_amount,
             negotiation=negotiation,
@@ -164,7 +164,7 @@ async def edit_shoot(
         shoot.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         shoot.client_name = client_name
         shoot.event_type = event_type
-        shoot.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        shoot.event_date = event_date
         shoot.phone_number = phone_number
         shoot.total_amount = total_amount
         shoot.negotiation = negotiation

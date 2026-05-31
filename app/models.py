@@ -16,7 +16,7 @@ class PreProduction(Base):
     couple_name = Column(String(255), nullable=False, index=True)
     client_email = Column(String(255), nullable=False)
     event_type = Column(String(255), nullable=False)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
     # Status tracking
@@ -57,7 +57,7 @@ class OnProduction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     couple_name = Column(String(255), nullable=False, index=True)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
     # Status tracking
@@ -95,7 +95,7 @@ class PostProduction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     couple_name = Column(String(255), nullable=False, index=True)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     deadline = Column(Date, nullable=False)
     event_name = Column(String(255), nullable=True)
     
@@ -152,7 +152,7 @@ class Checklist(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     couple_name = Column(String(255), nullable=False, index=True)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     
     # Equipment checklist
     equipments_ready = Column(Boolean, default=False)
@@ -215,10 +215,11 @@ class MonthlyFinancialReport(Base):
     __tablename__ = "monthly_financial_reports"
     
     id = Column(Integer, primary_key=True, index=True)
-    month = Column(Date, nullable=False, index=True)  # First day of the month
+    month = Column(String(50), nullable=False, index=True)  # Month name selected
+    year = Column(Integer, nullable=False, index=True)  # Year selected
     client_name = Column(String(255), nullable=False, index=True)
     event_type = Column(String(255), nullable=False)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     
     # Financial fields
     total_amount = Column(Float, nullable=False, default=0.0)
@@ -257,7 +258,7 @@ class ThreeMonthsClientFollowup(Base):
     date = Column(Date, nullable=False, index=True)
     client_name = Column(String(255), nullable=False, index=True)
     event_type = Column(String(255), nullable=False)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     location = Column(String(255), nullable=True)
     phone_number = Column(String(20), nullable=False)
     
@@ -350,7 +351,7 @@ class UpcomingClientsShoot(Base):
     date = Column(Date, nullable=False, index=True)
     client_name = Column(String(255), nullable=False, index=True)
     event_type = Column(String(255), nullable=False)
-    event_date = Column(Date, nullable=False, index=True)
+    event_date = Column(String(255), nullable=False, index=True)
     phone_number = Column(String(20), nullable=False)
     total_amount = Column(Float, nullable=False, default=0.0)
     

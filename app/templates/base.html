@@ -153,11 +153,23 @@
                     .filter(Boolean);
             }
 
+            function getDayNumbers(values) {
+                return values
+                    .map(value => {
+                        const parsedDate = new Date(value);
+                        return Number.isNaN(parsedDate.getDate()) ? null : parsedDate.getDate();
+                    })
+                    .filter(day => day !== null);
+            }
+
             function updateHiddenValue(container) {
                 const hidden = container.querySelector('.event_date_hidden');
                 if (!hidden) return;
                 const values = getDateValues(container);
-                hidden.value = values.length ? values[0] : '';
+                const days = getDayNumbers(values);
+                if (days.length) {
+                    hidden.value = days.join(', ');
+                }
             }
 
             function updateRemoveButtons(container) {
@@ -200,7 +212,19 @@
                 const hiddenField = container.querySelector('.event_date_hidden');
                 if (!initialInput || !hiddenField) return;
 
-                hiddenField.value = initialInput.value || '';
+                if (!hiddenField.value || !hiddenField.value.trim()) {
+                    hiddenField.value = initialInput.value || '';
+                }
+
+                const hiddenString = hiddenField.value ? hiddenField.value.trim() : '';
+                if (!initialInput.value && hiddenString && /^[\d,\s]+$/.test(hiddenString)) {
+                    const firstDay = hiddenString.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31)[0];
+                    if (firstDay) {
+                        const today = new Date();
+                        const yearMonth = today.toISOString().slice(0, 7);
+                        initialInput.value = `${yearMonth}-${String(firstDay).padStart(2, '0')}`;
+                    }
+                }
 
                 button.addEventListener('click', function(event) {
                     event.preventDefault();

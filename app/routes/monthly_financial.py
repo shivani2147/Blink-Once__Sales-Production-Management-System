@@ -14,6 +14,35 @@ from sqlalchemy import func, extract
 
 router = APIRouter(prefix="/financial/monthly", tags=["Monthly Financial Reports"])
 
+def number_to_words(amount: float) -> str:
+    try:
+        value = int(round(amount or 0))
+    except Exception:
+        return "zero rupees"
+
+    if value == 0:
+        return "zero rupees"
+
+    ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+    tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+    scales = [(10000000, "crore"), (100000, "lakh"), (1000, "thousand"), (100, "hundred")]
+
+    def int_to_words(n: int) -> str:
+        if n < 20:
+            return ones[n]
+        if n < 100:
+            return tens[n // 10] + (" " + ones[n % 10] if n % 10 else "")
+        for scale_value, scale_name in scales:
+            if n >= scale_value:
+                quotient, remainder = divmod(n, scale_value)
+                result = int_to_words(quotient) + " " + scale_name
+                if remainder:
+                    result += " " + int_to_words(remainder)
+                return result
+        return ""
+
+    return int_to_words(value) + " rupees"
+
 # Setup templates
 template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
 templates = Jinja2Templates(directory=template_dir)
@@ -42,10 +71,14 @@ async def list_monthly_reports(request: Request, db: Session = Depends(get_db), 
             "page_title": "Monthly Financial Reports",
             "reports": reports,
             "total_revenue": total_revenue,
+            "total_revenue_words": number_to_words(total_revenue),
             "total_paid": total_paid,
             "total_pending": total_pending,
+            "total_pending_words": number_to_words(total_pending),
             "total_expenses": total_expenses,
+            "total_expenses_words": number_to_words(total_expenses),
             "total_profit": total_profit,
+            "total_profit_words": number_to_words(total_profit),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -58,10 +91,11 @@ async def list_monthly_reports(request: Request, db: Session = Depends(get_db), 
 async def create_form(request: Request):
     """Display form to create new monthly financial report."""
     try:
-        # provide current year and month names (values include year for submission)
+        # provide current year and month names for dropdowns
         current_year = datetime.utcnow().year
         import calendar
-        months = [(f"{current_year}-{i:02d}-01", calendar.month_name[i]) for i in range(1, 13)]
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
         event_types = ["Wedding", "Corporate", "Pre-Wedding", "Birthday", "Other"]
 
         return templates.TemplateResponse("financial/monthly_form.html", {
@@ -69,6 +103,7 @@ async def create_form(request: Request):
             "page_title": "Create Monthly Financial Report",
             "is_edit": False,
             "months": months,
+            "years": years,
             "event_types": event_types,
             "current_year": current_year,
         })
@@ -83,14 +118,15 @@ async def create_form(request: Request):
 async def create_report(
     request: Request,
     db: Session = Depends(get_db),
+    year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
     event_date: str = Form(...),
     total_amount: float = Form(...),
     paid_amount: float = Form(...),
-    freelancer_amount: float = Form(...),
-    expenses: float = Form(...),
+    freelancer_amount: float = Form(default=0.0),
+    expenses: float = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     notes: str = Form(default=""),
@@ -98,10 +134,11 @@ async def create_report(
     """Create new monthly financial report."""
     try:
         report = MonthlyFinancialReport(
-            month=datetime.strptime(month, "%Y-%m-01").date(),
+            month=month,
+            year=year,
             client_name=client_name,
             event_type=event_type,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date,
             total_amount=total_amount,
             paid_amount=paid_amount,
             freelancer_amount=freelancer_amount,
@@ -132,13 +169,10 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
         # provide months and event types for dropdowns
         current_year = datetime.utcnow().year
         import calendar
-        months = [(f"{current_year}-{i:02d}-01", calendar.month_name[i]) for i in range(1, 13)]
-        # if report's year differs, add the report month value so selection matches
-        if report and report.month:
-            rep_val = report.month.strftime('%Y-%m-01')
-            rep_label = report.month.strftime('%B')
-            if rep_val not in [v for v, l in months]:
-                months.insert(0, (rep_val, rep_label))
+        years = list(range(2020, current_year + 1))
+        if report and report.year not in years:
+            years.insert(0, report.year)
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
 
         event_types = ["Wedding", "Corporate", "Pre-Wedding", "Birthday", "Other"]
 
@@ -162,14 +196,15 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
 async def edit_report(
     report_id: int,
     db: Session = Depends(get_db),
+    year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
     event_date: str = Form(...),
     total_amount: float = Form(...),
     paid_amount: float = Form(...),
-    freelancer_amount: float = Form(...),
-    expenses: float = Form(...),
+    freelancer_amount: float = Form(default=0.0),
+    expenses: float = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     notes: str = Form(default=""),
@@ -180,10 +215,11 @@ async def edit_report(
         if not report:
             raise HTTPException(status_code=404, detail="Report not found")
         
-        report.month = datetime.strptime(month, "%Y-%m-01").date()
+        report.year = year
+        report.month = month
         report.client_name = client_name
         report.event_type = event_type
-        report.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        report.event_date = event_date
         report.total_amount = total_amount
         report.paid_amount = paid_amount
         report.freelancer_amount = freelancer_amount

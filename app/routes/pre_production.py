@@ -89,7 +89,7 @@ async def create_pre_production(
             couple_name=couple_name,
             client_email=client_email,
             event_type=event_type,
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date(),
+            event_date=event_date,
             phone_number=phone_number,
             referral_program=referral_program,
             advance_retainer_received=advance_retainer_received,
@@ -221,7 +221,7 @@ async def update_pre_production(
         record.couple_name = couple_name
         record.client_email = client_email
         record.event_type = event_type
-        record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        record.event_date = event_date
         record.phone_number = phone_number
         record.referral_program = referral_program
         record.advance_retainer_received = advance_retainer_received

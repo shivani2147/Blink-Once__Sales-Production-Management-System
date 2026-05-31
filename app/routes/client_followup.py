@@ -12,6 +12,7 @@ from datetime import datetime, date, timedelta
 import os
 from sqlalchemy import func
 import json
+import re
 
 router = APIRouter(prefix="/financial/followup", tags=["3 Months Client Follow-up"])
 
@@ -24,6 +25,53 @@ STATUS_OPTIONS = ["Done", "Pending", "Rejected", "Not replied", "Quotation sent"
                   "Quotation needs to be sent", "Meeting in Office", "Need to speak", "Hold"]
 
 PLATFORM_OPTIONS = ["JD", "Meta Ads", "Word of Mouth"]
+
+
+def parse_event_date_days(raw):
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        raw_list = raw
+    else:
+        raw_text = str(raw).strip()
+        if not raw_text:
+            return []
+        if raw_text.startswith('['):
+            try:
+                raw_list = json.loads(raw_text)
+            except Exception:
+                raw_list = re.split(r'[\,;\s]+', raw_text)
+        else:
+            raw_list = re.split(r'[\,;\s]+', raw_text)
+
+    days = []
+    for item in raw_list:
+        if item is None:
+            continue
+        item_text = str(item).strip()
+        if not item_text:
+            continue
+        if item_text.isdigit():
+            day = int(item_text)
+            if 1 <= day <= 31:
+                days.append(str(day))
+            continue
+        try:
+            date_obj = datetime.fromisoformat(item_text)
+            days.append(str(date_obj.day))
+        except Exception:
+            try:
+                date_obj = datetime.strptime(item_text, '%Y-%m-%d')
+                days.append(str(date_obj.day))
+            except Exception:
+                pass
+
+    return [day for day in days if day]
+
+
+def normalize_event_date_string(raw):
+    days = parse_event_date_days(raw)
+    return ', '.join(days)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -133,26 +181,15 @@ async def create_followup(
 ):
     """Create new client follow-up."""
     try:
-        # Parse event_date (JSON array or single date)
-        event_date_list = []
-        try:
-            event_date_list = json.loads(event_date)
-            if not isinstance(event_date_list, list):
-                event_date_list = [event_date]
-        except:
-            event_date_list = [event_date]
-        
-        # Use first date for the database field
-        first_event_date = event_date_list[0] if event_date_list else event_date
-        
-        # Store all dates as JSON string
-        event_date_json = json.dumps(event_date_list)
-        
+        event_date_str = normalize_event_date_string(event_date)
+        if not event_date_str:
+            event_date_str = str(datetime.utcnow().day)
+
         followup = ThreeMonthsClientFollowup(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             client_name=client_name,
             event_type=event_type,
-            event_date=event_date_json,
+            event_date=event_date_str,
             location=location,
             phone_number=phone_number,
             client_budget=client_budget,
@@ -180,18 +217,7 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
         
-        # Parse event_date to get list of dates
-        event_date_list = []
-        try:
-            # Try to parse as JSON (multiple dates)
-            event_date_list = json.loads(str(followup.event_date))
-            if not isinstance(event_date_list, list):
-                event_date_list = [followup.event_date.strftime('%Y-%m-%d')]
-        except:
-            # Fallback to single date
-            event_date_list = [followup.event_date.strftime('%Y-%m-%d')]
-        
-        followup.event_date_list = event_date_list
+        followup.event_date_list = parse_event_date_days(followup.event_date)
         
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
@@ -232,22 +258,10 @@ async def edit_followup(
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
         
-        # Parse event_date (JSON array or single date)
-        event_date_list = []
-        try:
-            event_date_list = json.loads(event_date)
-            if not isinstance(event_date_list, list):
-                event_date_list = [event_date]
-        except:
-            event_date_list = [event_date]
-        
-        # Store all dates as JSON string
-        event_date_json = json.dumps(event_date_list)
-        
         followup.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         followup.client_name = client_name
         followup.event_type = event_type
-        followup.event_date = event_date_json
+        followup.event_date = normalize_event_date_string(event_date) or followup.event_date
         followup.location = location
         followup.phone_number = phone_number
         followup.client_budget = client_budget
@@ -288,24 +302,7 @@ async def detail_followup(request: Request, followup_id: int, db: Session = Depe
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
         
-        # Parse event_date to get list of dates
-        event_date_list = []
-        try:
-            # Try to parse as JSON (multiple dates)
-            event_date_list = json.loads(str(followup.event_date))
-            if not isinstance(event_date_list, list):
-                event_date_list = [followup.event_date.strftime('%d %b %Y') if isinstance(followup.event_date, date) else followup.event_date]
-            else:
-                # Convert dates to formatted strings
-                event_date_list = [datetime.strptime(d, '%Y-%m-%d').strftime('%d %b %Y') if isinstance(d, str) else d for d in event_date_list]
-        except:
-            # Fallback to single date
-            if isinstance(followup.event_date, date):
-                event_date_list = [followup.event_date.strftime('%d %b %Y')]
-            else:
-                event_date_list = [str(followup.event_date)]
-        
-        followup.event_date_list = event_date_list
+        followup.event_date_list = parse_event_date_days(followup.event_date)
         
         return templates.TemplateResponse("financial/followup_detail.html", {
             "request": request,

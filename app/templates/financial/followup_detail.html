@@ -33,8 +33,10 @@
                                     <span class="badge badge-info">{{ event_date }}</span>
                                 {% endfor %}
                             </div>
+                        {% elif event_dates|length == 1 %}
+                            {{ event_dates[0] }}
                         {% else %}
-                            {{ followup.event_date.strftime('%d %b %Y') if followup.event_date else 'N/A' }}
+                            N/A
                         {% endif %}
                     </span>
                 </div>

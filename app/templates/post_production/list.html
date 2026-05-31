@@ -39,7 +39,7 @@
                         {% for record in records %}
                         <tr {% if record.is_overdue() %}class="danger-row"{% endif %}>
                             <td><strong>{{ record.couple_name }}</strong></td>
-                            <td>{{ record.event_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ record.event_date if record.event_date is string else record.event_date.strftime('%Y-%m-%d') }}</td>
                             <td>
                                 {{ record.deadline.strftime('%Y-%m-%d') }}
                                 {% if record.is_overdue() %}

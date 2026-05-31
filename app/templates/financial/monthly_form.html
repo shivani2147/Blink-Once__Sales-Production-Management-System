@@ -8,16 +8,23 @@
     </div>
 
     <form method="post" class="data-form">
-        <div style="margin-bottom:1rem; font-weight:700; color:#333">Year: {{ current_year }}</div>
         <div class="form-section">
             <h3>Basic Information</h3>
             <div class="form-grid">
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <select id="year" name="year" required>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if report and report.year == y %}selected{% elif not report and current_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="month">Month</label>
                     <select id="month" name="month" required>
                         <option value="">Select Month</option>
                         {% for val, label in months %}
-                        <option value="{{ val }}" {% if report and report.month.strftime('%Y-%m-01') == val %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ val }}" {% if report and report.month == val %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -28,23 +35,20 @@
                 </div>
                 <div class="form-group">
                     <label for="event_type">Event Type</label>
-                    <select id="event_type" name="event_type" required>
-                        <option value="">Select Event Type</option>
-                        {% for et in event_types %}
-                        <option value="{{ et }}" {% if report and report.event_type == et %}selected{% endif %}>{{ et }}</option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" id="event_type" name="event_type" required value="{% if report %}{{ report.event_type }}{% endif %}" placeholder="e.g., Wedding, Corporate Event">
                 </div>
                 <div class="form-group">
                     <label for="event_date">Event Date</label>
                     <div class="event-date-container">
                         <div class="date-input-group">
-                            <input type="date" id="event_date" class="form-input event_date_input" required 
-                                   value="{% if report %}{{ report.event_date.strftime('%Y-%m-%d') }}{% endif %}">
+                            <input type="date" id="event_date" class="form-input event_date_input" required>
                         </div>
                         <button type="button" class="btn btn-sm btn-primary small-action-button add-event-date-btn">+ Add Another Date</button>
-                        <input type="hidden" name="event_date" class="event_date_hidden">
+                        <input type="hidden" name="event_date" class="event_date_hidden" value="{% if report %}{{ report.event_date }}{% endif %}">
                     </div>
+                    {% if report and report.event_date %}
+                        <p class="form-note">Stored event day(s): {{ report.event_date }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -64,12 +68,12 @@
                 </div>
                 <div class="form-group">
                     <label for="freelancer_amount">Freelancer Amount (₹)</label>
-                    <input type="number" id="freelancer_amount" name="freelancer_amount" step="0.01" required 
+                    <input type="number" id="freelancer_amount" name="freelancer_amount" step="0.01" 
                            value="{% if report %}{{ report.freelancer_amount }}{% endif %}" placeholder="0.00">
                 </div>
                 <div class="form-group">
                     <label for="expenses">Expenses (₹)</label>
-                    <input type="number" id="expenses" name="expenses" step="0.01" required 
+                    <input type="number" id="expenses" name="expenses" step="0.01" 
                            value="{% if report %}{{ report.expenses }}{% endif %}" placeholder="0.00">
                 </div>
                 <div class="form-group">
@@ -287,10 +291,82 @@
             el.addEventListener('change', recalc);
         });
 
-        // initial calc on load
-        document.addEventListener('DOMContentLoaded', recalc);
+        const yearEl = document.getElementById('year');
+        const monthEl = document.getElementById('month');
+        const eventDateContainer = document.querySelector('.event-date-container');
+
+        function getEventDateInputs() {
+            return eventDateContainer ? Array.from(eventDateContainer.querySelectorAll('.event_date_input')) : [];
+        }
+
+        function monthNameToNumber(name) {
+            const monthNames = [
+                'January','February','March','April','May','June',
+                'July','August','September','October','November','December'
+            ];
+            const index = monthNames.indexOf(name);
+            return index < 0 ? null : String(index + 1).padStart(2, '0');
+        }
+
+        function applyEventDateConstraints(input) {
+            if (!input || !monthEl || !yearEl) return;
+            const selectedMonthName = monthEl.value;
+            const selectedYear = yearEl.value;
+            if (!selectedMonthName || !selectedYear) return;
+
+            const monthNumber = monthNameToNumber(selectedMonthName);
+            if (!monthNumber) return;
+
+            const firstDay = `${selectedYear}-${monthNumber}-01`;
+            const lastDay = new Date(parseInt(selectedYear, 10), parseInt(monthNumber, 10), 0).toISOString().slice(0, 10);
+
+            input.min = firstDay;
+            input.max = lastDay;
+            if (!input.value || !input.value.startsWith(`${selectedYear}-${monthNumber}`)) {
+                input.value = firstDay;
+            }
+        }
+
+        function updateEventDateCalendar() {
+            const inputs = getEventDateInputs();
+            if (!inputs.length) return;
+            inputs.forEach(input => applyEventDateConstraints(input));
+        }
+
+        if (yearEl) {
+            yearEl.addEventListener('change', updateEventDateCalendar);
+        }
+
+        if (monthEl) {
+            monthEl.addEventListener('change', updateEventDateCalendar);
+        }
+
+        if (eventDateContainer) {
+            eventDateContainer.addEventListener('click', function(event) {
+                if (event.target.matches('.add-event-date-btn')) {
+                    setTimeout(updateEventDateCalendar, 0);
+                }
+            });
+
+            eventDateContainer.addEventListener('focusin', function(event) {
+                if (event.target.matches('.event_date_input')) {
+                    applyEventDateConstraints(event.target);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (yearEl) updateMonthValuesForYear(yearEl.value);
+            updateEventDateCalendar();
+            recalc();
+        });
+
         // also run immediately in case DOMContent already fired
-        setTimeout(recalc, 50);
+        setTimeout(() => {
+            if (yearEl) updateMonthValuesForYear(yearEl.value);
+            updateEventDateCalendar();
+            recalc();
+        }, 50);
     })();
 </script>
 {% endblock %}

@@ -63,7 +63,7 @@
                     <td>{{ shoot.date.strftime('%d %b %Y') }}</td>
                     <td><strong>{{ shoot.client_name }}</strong></td>
                     <td>{{ shoot.event_type }}</td>
-                    <td>{{ shoot.event_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ shoot.event_date if shoot.event_date is string else shoot.event_date.strftime('%d %b %Y') }}</td>
                     <td>₹{{ "%.2f"|format(shoot.total_amount) }}</td>
                     <td>{% if shoot.confirmation %}<span class="badge badge-success">Confirmed</span>{% else %}<span class="badge badge-warning">Pending</span>{% endif %}</td>
                     <td><span class="badge {% if shoot.status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ shoot.status }}</span></td>

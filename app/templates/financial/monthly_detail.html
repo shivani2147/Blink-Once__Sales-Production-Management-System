@@ -13,7 +13,7 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <span class="label">Month:</span>
-                    <span class="value">{{ report.month.strftime('%B %Y') }}</span>
+                    <span class="value">{{ report.month }} {{ report.year }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Client Name:</span>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="detail-item">
                     <span class="label">Event Date:</span>
-                    <span class="value">{{ report.event_date.strftime('%d %b %Y') }}</span>
+                    <span class="value">{{ report.event_date if report.event_date is string else report.event_date.strftime('%d %b %Y') }}</span>
                 </div>
             </div>
         </div>
