@@ -11,6 +11,7 @@ from app.models import ClientsEditing
 from datetime import datetime, date
 import os
 from sqlalchemy import func, extract
+from .monthly_financial import number_to_words
 
 router = APIRouter(prefix="/financial/editing", tags=["Clients Editing"])
 
@@ -50,6 +51,7 @@ async def list_editing(
         
         # Calculate totals for filtered results
         total_revenue = sum(p.total_amount for p in editing_projects) if editing_projects else 0.0
+        total_revenue_words = number_to_words(total_revenue)
         pending_count = sum(1 for p in editing_projects if p.work_status == "Pending")
         done_count = sum(1 for p in editing_projects if p.work_status == "Done")
         completion_rate = (done_count / len(editing_projects) * 100) if len(editing_projects) > 0 else 0
@@ -63,6 +65,7 @@ async def list_editing(
             "page_title": "Clients Editing",
             "projects": editing_projects,
             "total_revenue": total_revenue,
+            "total_revenue_words": total_revenue_words,
             "pending_count": pending_count,
             "done_count": done_count,
             "completion_rate": round(completion_rate, 2),

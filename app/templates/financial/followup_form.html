@@ -28,17 +28,17 @@
                 </div>
                 <div class="form-group">
                     <label for="event_date">Event Date</label>
-                    <div id="event_dates_container">
+                    <div class="event-date-container" id="event_dates_container" data-year="{% if followup %}{{ followup.date.year }}{% endif %}" data-month="{% if followup %}{{ followup.date.strftime('%m') }}{% endif %}">
                         <div class="date-input-group">
-                            <input type="date" class="event_date_input" required>
+                            <input type="date" class="form-input event_date_input" required>
                             <button type="button" class="btn btn-sm btn-danger remove-date-btn"
                                 style="display: none;">Remove</button>
                         </div>
+                        <button type="button" id="add_event_date" class="btn btn-sm btn-primary small-action-button add-event-date-btn">+ Add
+                            Another Date</button>
+                        <input type="hidden" id="event_date" name="event_date" class="event_date_hidden"
+                            value="{% if followup %}{{ followup.event_date }}{% endif %}">
                     </div>
-                    <button type="button" id="add_event_date" class="btn btn-sm btn-primary small-action-button">+ Add
-                        Another Date</button>
-                    <input type="hidden" id="event_date" name="event_date"
-                        value="{% if followup %}{{ followup.event_date }}{% endif %}">
                     {% if followup and followup.event_date %}
                     <p class="form-note">Stored event day(s): {{ followup.event_date }}</p>
                     {% endif %}
@@ -189,88 +189,4 @@
     }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const container = document.getElementById('event_dates_container');
-        const addBtn = document.getElementById('add_event_date');
-        const hiddenInput = document.getElementById('event_date');
-        const firstInput = container.querySelector('.event_date_input');
-
-        const storedEventDates = hiddenInput.value ? hiddenInput.value.trim() : '';
-        if (firstInput && !firstInput.value && storedEventDates && /^[\d,\s]+$/.test(storedEventDates)) {
-            const dayValue = storedEventDates.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31)[0];
-            if (dayValue) {
-                const today = new Date();
-                const yearMonth = today.toISOString().slice(0, 7);
-                firstInput.value = `${yearMonth}-${String(dayValue).padStart(2, '0')}`;
-            }
-        }
-
-        function updateHiddenInput() {
-            const dateValues = Array.from(container.querySelectorAll('.event_date_input'))
-                .map(input => input.value)
-                .filter(value => value);
-            const dayNumbers = dateValues
-                .map(dateValue => {
-                    const parsedDate = new Date(dateValue);
-                    return Number.isNaN(parsedDate.getDate()) ? null : parsedDate.getDate();
-                })
-                .filter(day => day !== null);
-            if (dayNumbers.length) {
-                hiddenInput.value = dayNumbers.join(', ');
-            }
-        }
-
-        function updateRemoveButtons() {
-            const dateInputs = container.querySelectorAll('.date-input-group');
-            dateInputs.forEach((group, index) => {
-                const removeBtn = group.querySelector('.remove-date-btn');
-                removeBtn.style.display = dateInputs.length > 1 ? 'block' : 'none';
-            });
-        }
-
-        addBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const newGroup = document.createElement('div');
-            newGroup.className = 'date-input-group';
-            newGroup.innerHTML = `
-            <input type="date" class="event_date_input" required>
-            <button type="button" class="btn btn-sm btn-danger remove-date-btn">Remove</button>
-        `;
-
-            const removeBtn = newGroup.querySelector('.remove-date-btn');
-            removeBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                newGroup.remove();
-                updateHiddenInput();
-                updateRemoveButtons();
-            });
-
-            const dateInput = newGroup.querySelector('.event_date_input');
-            dateInput.addEventListener('change', updateHiddenInput);
-
-            container.appendChild(newGroup);
-            updateRemoveButtons();
-            dateInput.focus();
-        });
-
-        // Add change listeners to existing inputs
-        container.querySelectorAll('.event_date_input').forEach(input => {
-            input.addEventListener('change', updateHiddenInput);
-        });
-
-        // Add listeners to remove buttons
-        container.querySelectorAll('.remove-date-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                btn.closest('.date-input-group').remove();
-                updateHiddenInput();
-                updateRemoveButtons();
-            });
-        });
-
-        updateRemoveButtons();
-        updateHiddenInput();
-    });
-</script>
 {% endblock %}

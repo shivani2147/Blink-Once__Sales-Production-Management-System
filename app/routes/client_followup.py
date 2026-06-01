@@ -203,23 +203,35 @@ async def create_followup(
 ):
     """Create new client follow-up."""
     try:
-        # Process event_date as full ISO dates; store the first selected date as a Date object
+        # Process event_date and determine day numbers and first event date object
+        days = []
+        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
         if event_date:
-            # event_date contains comma‑separated ISO dates from the hidden input
-            first_date_str = event_date.split(',')[0].strip()
-            try:
-                event_date_obj = datetime.strptime(first_date_str, "%Y-%m-%d").date()
-            except Exception:
-                # Fallback to today if parsing fails
-                event_date_obj = date.today()
-        else:
-            event_date_obj = date.today()
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                        if len(days) == 1:
+                            first_date_obj = d_obj
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            if parts and all(p.isdigit() for p in parts if p):
+                try:
+                    day_val = int(parts[0])
+                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
+                except ValueError:
+                    pass
+        event_date_str = ", ".join(days)
 
         followup = ThreeMonthsClientFollowup(
-            date = datetime.strptime(date_input, "%Y-%m-%d").date(),
+            date=first_date_obj,
             client_name=client_name,
             event_type=event_type,
-            event_date=event_date,  # Store comma-separated day numbers
+            event_date=event_date_str,
             location=location,
             phone_number=phone_number,
             client_budget=client_budget,
@@ -288,13 +300,34 @@ async def edit_followup(
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
         
-        followup.date = datetime.strptime(date_input, "%Y-%m-%d").date()
+        # Process event_date and determine day numbers and first event date object
+        days = []
+        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                        if len(days) == 1:
+                            first_date_obj = d_obj
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            if parts and all(p.isdigit() for p in parts if p):
+                try:
+                    day_val = int(parts[0])
+                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
+                except ValueError:
+                    pass
+        event_date_str = ", ".join(days)
+
+        followup.date = first_date_obj
         followup.client_name = client_name
         followup.event_type = event_type
-        if event_date:
-            followup.event_date = event_date  # Store comma-separated day numbers
-
-        # else keep existing
+        followup.event_date = event_date_str
         followup.location = location
         followup.phone_number = phone_number
         followup.client_budget = client_budget

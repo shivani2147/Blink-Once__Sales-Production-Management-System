@@ -16,6 +16,7 @@
         <div class="card-content">
             <div class="card-label">Total Investment</div>
             <div class="card-value">₹{{ "%.2f"|format(total_investment) }}</div>
+            <div class="card-subtext">{{ total_investment_words }}</div>
         </div>
     </div>
     <div class="summary-card">
@@ -23,6 +24,7 @@
         <div class="card-content">
             <div class="card-label">Total Amount</div>
             <div class="card-value">₹{{ "%.2f"|format(total_amount_sum) }}</div>
+            <div class="card-subtext">{{ total_amount_sum_words }}</div>
         </div>
     </div>
     <div class="summary-card">

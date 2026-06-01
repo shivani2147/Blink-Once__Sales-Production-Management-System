@@ -12,9 +12,9 @@
             <h3>Shoot Information</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="date_input">Date Added</label>
-                    <input type="date" id="date_input" name="date_input" required 
-                           value="{% if shoot %}{{ shoot.date.strftime('%Y-%m-%d') }}{% endif %}">
+                    <label for="date_input"><strong>Date :</strong></label>
+                    <span class="current-date-display" style="font-size: 1rem; color: #333; font-weight: 500;">{% if shoot %}{{ shoot.date.strftime('%d/%m/%Y') }}{% else %}{{ display_date }}{% endif %}</span>
+                    <input type="hidden" id="date_input" name="date_input" value="{% if shoot %}{{ shoot.date.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="client_name">Client Name</label>
@@ -93,4 +93,23 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const displaySpan = document.querySelector('.current-date-display');
+        const dateInput = document.getElementById('date_input');
+        if (displaySpan && dateInput && !displaySpan.textContent.trim()) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            displaySpan.textContent = `${dd}/${mm}/${yyyy}`;
+            if (!dateInput.value) {
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+    });
+</script>
 {% endblock %}

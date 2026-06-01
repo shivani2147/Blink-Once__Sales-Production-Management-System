@@ -428,6 +428,13 @@ html, body {
     color: #333;
 }
 
+.card-subtext {
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: #637381;
+    line-height: 1.3;
+}
+
 .filters-section {
     display: flex;
     gap: 1rem;

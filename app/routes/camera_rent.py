@@ -11,6 +11,7 @@ from app.models import CameraRent
 from datetime import datetime, date
 import os
 from sqlalchemy import func, extract
+from .monthly_financial import number_to_words
 
 router = APIRouter(prefix="/financial/camera-rent", tags=["Camera Rent"])
 
@@ -52,14 +53,19 @@ async def list_camera_rent(
         paid_count = sum(1 for r in rentals if r.payment_status in ("Online", "Cash"))
         pending_payments = sum(r.total_amount for r in rentals if r.payment_status != "Done")
         
+        total_rental_income_words = number_to_words(total_rental_income)
+        pending_payments_words = number_to_words(pending_payments)
+        
         return templates.TemplateResponse("financial/camera_rent_list.html", {
             "request": request,
             "page_title": "Camera Rent",
             "rentals": rentals,
             "total_rental_income": total_rental_income,
+            "total_rental_income_words": total_rental_income_words,
             "total_days_rented": total_days_rented,
             "rental_count": len(rentals),
             "pending_payments": pending_payments,
+            "pending_payments_words": pending_payments_words,
             "search_query": search or "",
             "selected_year": year or "",
             "selected_month": month or "",

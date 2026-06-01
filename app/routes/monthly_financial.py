@@ -159,12 +159,27 @@ async def create_report(
 ):
     """Create new monthly financial report."""
     try:
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         report = MonthlyFinancialReport(
             month=month,
             year=year,
             client_name=client_name,
             event_type=event_type,
-            event_date=event_date,
+            event_date=event_date_str,
             total_amount=total_amount,
             paid_amount=paid_amount,
             freelancer_amount=freelancer_amount,
@@ -241,11 +256,26 @@ async def edit_report(
         if not report:
             raise HTTPException(status_code=404, detail="Report not found")
         
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         report.year = year
         report.month = month
         report.client_name = client_name
         report.event_type = event_type
-        report.event_date = event_date
+        report.event_date = event_date_str
         report.total_amount = total_amount
         report.paid_amount = paid_amount
         report.freelancer_amount = freelancer_amount

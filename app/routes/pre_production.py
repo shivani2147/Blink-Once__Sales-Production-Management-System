@@ -6,9 +6,10 @@ from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import extract
 from app.database import get_db
 from app.models import PreProduction
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 router = APIRouter(prefix="/pre-production", tags=["Pre-Production"])
@@ -32,11 +33,10 @@ async def list_pre_production(
         
         if search:
             query = query.filter(PreProduction.couple_name.ilike(f"%{search}%"))
-        if year or month:
-            if month:
-                month = month.zfill(2)
-            pattern = f"{year or '%'}-{month or '%'}-%"
-            query = query.filter(PreProduction.event_date.ilike(pattern))
+        if year:
+            query = query.filter(extract('year', PreProduction.created_at) == int(year))
+        if month:
+            query = query.filter(extract('month', PreProduction.created_at) == int(month))
         
         records = query.all()
         
@@ -94,11 +94,26 @@ async def create_pre_production(
 ):
     """Create new pre-production record."""
     try:
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         record = PreProduction(
             couple_name=couple_name,
             client_email=client_email,
             event_type=event_type,
-            event_date=event_date,
+            event_date=event_date_str,
             phone_number=phone_number,
             referral_program=referral_program,
             advance_retainer_received=advance_retainer_received,
@@ -227,10 +242,25 @@ async def update_pre_production(
         if not record:
             return {"error": "Record not found"}, 404
         
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         record.couple_name = couple_name
         record.client_email = client_email
         record.event_type = event_type
-        record.event_date = event_date
+        record.event_date = event_date_str
         record.phone_number = phone_number
         record.referral_program = referral_program
         record.advance_retainer_received = advance_retainer_received

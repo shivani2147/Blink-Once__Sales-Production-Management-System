@@ -50,10 +50,15 @@ Confirmation Amount, Total Amount
 
 # Summary card amount in words
 
-do the same for "Client Follow-up" summary card
+in the "Investment To Grow Company", "Clients Editing", "Upcoming Clients Shoot
+" & "Camera Rent" pages ; 
+
+do the same for these page's summary card for the Amounts (write in words)
 
 monthly_list.html --> Summary Cards (card-subtext) 
-do the same for followup_list.html --> Summary Cards (card-subtext)
+do the same for other files--> Summary Cards (card-subtext)
+
+modify the code
 
 ========================================================================
 

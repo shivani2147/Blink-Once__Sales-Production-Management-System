@@ -149,18 +149,6 @@
     {% block extra_js %}{% endblock %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            function normalizeEventDate(value) {
-                if (!value) {
-                    return '';
-                }
-                try {
-                    const parsed = JSON.parse(value);
-                    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : value;
-                } catch (error) {
-                    return value;
-                }
-            }
-
             function getDateValues(container) {
                 return Array.from(container.querySelectorAll('.event_date_input'))
                     .map(input => input.value)
@@ -177,12 +165,14 @@
             }
 
             function updateHiddenValue(container) {
-                const hidden = container.querySelector('.event_date_hidden');
+                const hidden = container.querySelector('.event_date_hidden') || container.querySelector('[name="event_date"]') || document.getElementById('event_date');
                 if (!hidden) return;
                 const values = getDateValues(container);
                 const days = getDayNumbers(values);
                 if (days.length) {
                     hidden.value = days.join(', ');
+                } else {
+                    hidden.value = '';
                 }
             }
 
@@ -196,7 +186,7 @@
                 });
             }
 
-            function createDateInputRow() {
+            function createDateInputRow(container, year, month, day = '01') {
                 const group = document.createElement('div');
                 group.className = 'date-input-group';
                 group.innerHTML = `
@@ -207,51 +197,125 @@
                 removeBtn.addEventListener('click', function (event) {
                     event.preventDefault();
                     group.remove();
-                    const container = group.closest('.event-date-container');
-                    if (container) {
-                        updateHiddenValue(container);
-                        updateRemoveButtons(container);
-                    }
+                    updateHiddenValue(container);
+                    updateRemoveButtons(container);
+                });
+                const input = group.querySelector('.event_date_input');
+                input.value = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                input.addEventListener('change', function() {
+                    updateHiddenValue(container);
                 });
                 return group;
             }
 
-            document.querySelectorAll('.add-event-date-btn').forEach(function (button) {
-                const container = button.closest('.event-date-container');
+            document.querySelectorAll('.add-event-date-btn, #add_event_date').forEach(function (button) {
+                let container = button.closest('.event-date-container') || button.closest('#event_dates_container') || document.getElementById('event_dates_container');
                 if (!container) return;
                 const form = button.closest('form');
                 if (!form) return;
 
-                const initialInput = container.querySelector('.event_date_input');
-                const hiddenField = container.querySelector('.event_date_hidden');
-                if (!initialInput || !hiddenField) return;
+                const hiddenField = container.querySelector('.event_date_hidden') || container.querySelector('[name="event_date"]') || document.getElementById('event_date');
+                if (!hiddenField) return;
 
-                if (!hiddenField.value || !hiddenField.value.trim()) {
-                    hiddenField.value = initialInput.value || '';
+                // Determine Year and Month
+                let year = container.getAttribute('data-year');
+                let month = container.getAttribute('data-month');
+
+                // Fallbacks:
+                if (!year || !month) {
+                    const yearEl = form.querySelector('#year');
+                    const monthEl = form.querySelector('#month');
+                    if (yearEl && monthEl) {
+                        year = yearEl.value;
+                        const monthNames = [
+                            'January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December'
+                        ];
+                        const idx = monthNames.indexOf(monthEl.value);
+                        if (idx >= 0) {
+                            month = String(idx + 1).padStart(2, '0');
+                        }
+                    }
+                }
+                if (!year || !month) {
+                    const dateInput = form.querySelector('#date_input');
+                    if (dateInput && dateInput.value) {
+                        const parts = dateInput.value.split('-');
+                        if (parts.length === 3) {
+                            year = parts[0];
+                            month = parts[1];
+                        }
+                    }
+                }
+                if (!year || !month) {
+                    const today = new Date();
+                    year = String(today.getFullYear());
+                    month = String(today.getMonth() + 1).padStart(2, '0');
                 }
 
+                // Populate existing days
                 const hiddenString = hiddenField.value ? hiddenField.value.trim() : '';
-                if (!initialInput.value && hiddenString && /^[\d,\s]+$/.test(hiddenString)) {
-                    const firstDay = hiddenString.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31)[0];
-                    if (firstDay) {
+                if (hiddenString && /^[\d,\s]+$/.test(hiddenString)) {
+                    const days = hiddenString.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31);
+                    if (days.length > 0) {
+                        // Clear any default empty inputs in the container
+                        const existingGroups = container.querySelectorAll('.date-input-group');
+                        existingGroups.forEach(g => g.remove());
+
+                        // Re-create input row for each day
+                        days.forEach((day) => {
+                            const row = createDateInputRow(container, year, month, day);
+                            if (button.parentNode === container) {
+                                container.insertBefore(row, button);
+                            } else {
+                                const listContainer = container.querySelector('#event_dates_container') || container;
+                                listContainer.appendChild(row);
+                            }
+                        });
+                    }
+                } else {
+                    // Populate initial default date input if empty
+                    const existingInputs = container.querySelectorAll('.event_date_input');
+                    if (existingInputs.length === 0) {
                         const today = new Date();
-                        const yearMonth = today.toISOString().slice(0, 7);
-                        initialInput.value = `${yearMonth}-${String(firstDay).padStart(2, '0')}`;
+                        const defaultDay = today.getDate();
+                        const row = createDateInputRow(container, year, month, defaultDay);
+                        if (button.parentNode === container) {
+                            container.insertBefore(row, button);
+                        } else {
+                            const listContainer = container.querySelector('#event_dates_container') || container;
+                            listContainer.appendChild(row);
+                        }
                     }
                 }
 
                 button.addEventListener('click', function (event) {
                     event.preventDefault();
-                    const newRow = createDateInputRow();
-                    container.insertBefore(newRow, button);
+                    // Get current year/month in case they changed
+                    let currentYear = year;
+                    let currentMonth = month;
+                    const yearEl = form.querySelector('#year');
+                    const monthEl = form.querySelector('#month');
+                    if (yearEl && monthEl) {
+                        currentYear = yearEl.value;
+                        const monthNames = [
+                            'January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December'
+                        ];
+                        const idx = monthNames.indexOf(monthEl.value);
+                        if (idx >= 0) {
+                            currentMonth = String(idx + 1).padStart(2, '0');
+                        }
+                    }
+                    const newRow = createDateInputRow(container, currentYear, currentMonth, '01');
+                    if (button.parentNode === container) {
+                        container.insertBefore(newRow, button);
+                    } else {
+                        const listContainer = container.querySelector('#event_dates_container') || container;
+                        listContainer.appendChild(newRow);
+                    }
                     updateHiddenValue(container);
                     updateRemoveButtons(container);
-                });
-
-                container.addEventListener('input', function (event) {
-                    if (event.target.matches('.event_date_input')) {
-                        updateHiddenValue(container);
-                    }
                 });
 
                 form.addEventListener('submit', function () {
@@ -259,6 +323,7 @@
                 });
 
                 updateRemoveButtons(container);
+                updateHiddenValue(container);
             });
         });
     </script>

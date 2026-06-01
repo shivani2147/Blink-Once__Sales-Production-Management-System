@@ -38,7 +38,7 @@
                         
                         <div class="form-group">
                             <label for="event_date">Event Date *</label>
-                            <div class="event-date-container">
+                            <div class="event-date-container" data-year="{% if record %}{{ record.created_at.year }}{% endif %}" data-month="{% if record %}{{ record.created_at.strftime('%m') }}{% endif %}">
                                 <div class="date-input-group">
                                     <input type="date" id="event_date" class="form-input event_date_input" required>
                                 </div>

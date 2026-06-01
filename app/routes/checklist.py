@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, extract
 from app.database import get_db
 from app.models import Checklist
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 router = APIRouter(prefix="/checklist", tags=["Checklist"])
@@ -36,11 +36,10 @@ async def list_checklists(
                 Checklist.assigned_team.ilike(f"%{search}%"),
                 Checklist.couple_name.ilike(f"%{search}%")
             ))
-        if year or month:
-            if month:
-                month = month.zfill(2)
-            filter_pattern = f"{year or '%'}-{month or '%'}-%"
-            query = query.filter(Checklist.event_date.ilike(filter_pattern))
+        if year:
+            query = query.filter(extract('year', Checklist.created_at) == int(year))
+        if month:
+            query = query.filter(extract('month', Checklist.created_at) == int(month))
         
         records = query.all()
         
@@ -99,9 +98,24 @@ async def create_checklist(
 ):
     """Create new checklist."""
     try:
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         record = Checklist(
             couple_name=couple_name or "",
-            event_date=datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else datetime.utcnow().date(),
+            event_date=event_date_str,
             equipments_ready=equipments_ready,
             equipment_notes=equipment_notes,
             traditional_videographer=traditional_videographer,
@@ -236,7 +250,20 @@ async def update_checklist(
         if couple_name is not None:
             record.couple_name = couple_name
         if event_date:
-            record.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+            # Normalize event_date to day numbers
+            days = []
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            event_date_str = ", ".join(days)
+            record.event_date = event_date_str
         record.equipments_ready = equipments_ready
         record.equipment_notes = equipment_notes
         record.traditional_videographer = traditional_videographer

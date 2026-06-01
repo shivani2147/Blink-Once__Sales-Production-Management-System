@@ -16,6 +16,7 @@
         <div class="card-content">
             <div class="card-label">Total Rental Income</div>
             <div class="card-value">₹{{ "%.2f"|format(total_rental_income) }}</div>
+            <div class="card-subtext">{{ total_rental_income_words }}</div>
         </div>
     </div>
     <div class="summary-card">
@@ -37,6 +38,7 @@
         <div class="card-content">
             <div class="card-label">Pending Payments</div>
             <div class="card-value">₹{{ "%.2f"|format(pending_payments) }}</div>
+            <div class="card-subtext">{{ pending_payments_words }}</div>
         </div>
     </div>
 </div>

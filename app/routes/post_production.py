@@ -6,9 +6,10 @@ from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import extract
 from app.database import get_db
 from app.models import PostProduction
-from datetime import datetime
+from datetime import datetime, date
 import os
 
 router = APIRouter(prefix="/post-production", tags=["Post-Production"])
@@ -32,11 +33,10 @@ async def list_post_production(
         
         if search:
             query = query.filter(PostProduction.couple_name.ilike(f"%{search}%"))
-        if year or month:
-            if month:
-                month = month.zfill(2)
-            pattern = f"{year or '%'}-{month or '%'}-%"
-            query = query.filter(PostProduction.event_date.ilike(pattern))
+        if year:
+            query = query.filter(extract('year', PostProduction.created_at) == int(year))
+        if month:
+            query = query.filter(extract('month', PostProduction.created_at) == int(month))
         
         records = query.all()
         
@@ -100,9 +100,24 @@ async def create_post_production(
 ):
     """Create new post-production record."""
     try:
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         record = PostProduction(
             couple_name=couple_name,
-            event_date=event_date,
+            event_date=event_date_str,
             deadline=datetime.strptime(deadline, "%Y-%m-%d").date(),
             event_name=event_name,
             data_copy=data_copy,
@@ -245,8 +260,23 @@ async def update_post_production(
         if not record:
             return {"error": "Record not found"}, 404
         
+        # Normalize event_date to day numbers
+        days = []
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+        event_date_str = ", ".join(days)
+
         record.couple_name = couple_name
-        record.event_date = event_date
+        record.event_date = event_date_str
         record.deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
         record.closure_date = datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None
         record.event_name = event_name

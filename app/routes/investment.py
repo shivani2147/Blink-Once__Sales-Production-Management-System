@@ -13,6 +13,7 @@ from app.models import InvestmentToGrowCompany
 from datetime import datetime, date
 import os
 from sqlalchemy import func, extract
+from .monthly_financial import number_to_words
 
 router = APIRouter(prefix="/financial/investment", tags=["Investment To Grow Company"])
 
@@ -58,6 +59,9 @@ async def list_investments(
         total_amount_sum = sum(i.total_amount for i in investments) if investments else 0.0
         investment_count = len(investments)
         
+        total_investment_words = number_to_words(total_investment)
+        total_amount_sum_words = number_to_words(total_amount_sum)
+        
         # Service-wise breakdown
         service_stats = {}
         for investment in investments:
@@ -71,7 +75,9 @@ async def list_investments(
             "page_title": "Investment To Grow Company",
             "investments": investments,
             "total_investment": total_investment,
+            "total_investment_words": total_investment_words,
             "total_amount_sum": total_amount_sum,
+            "total_amount_sum_words": total_amount_sum_words,
             "investment_count": investment_count,
             "service_stats": service_stats,
             "search_query": search or "",

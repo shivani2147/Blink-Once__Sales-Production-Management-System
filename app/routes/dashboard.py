@@ -46,9 +46,23 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         # Get upcoming events (next 7 days)
         today = date.today()
         week_end = today + timedelta(days=7)
-        upcoming_events = db.query(PreProduction).filter(
-            (PreProduction.event_date >= today) & (PreProduction.event_date <= week_end)
-        ).count()
+        
+        def is_event_in_range(event_date_str, start_date, end_date):
+            if not event_date_str:
+                return False
+            try:
+                days = [int(d.strip()) for d in event_date_str.split(',') if d.strip().isdigit()]
+            except Exception:
+                return False
+            curr = start_date
+            while curr <= end_date:
+                if curr.day in days:
+                    return True
+                curr += timedelta(days=1)
+            return False
+            
+        all_pre_prod = db.query(PreProduction).all()
+        upcoming_events = sum(1 for p in all_pre_prod if is_event_in_range(p.event_date, today, week_end))
         
         # Get recent pre-production records
         recent_pre_prod = db.query(PreProduction).order_by(
@@ -88,10 +102,10 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         
         # Upcoming Shoots
         upcoming_shoots = db.query(UpcomingClientsShoot).filter(
-            UpcomingClientsShoot.event_date >= today
+            UpcomingClientsShoot.date >= today
         ).count()
         confirmed_shoots = db.query(UpcomingClientsShoot).filter(
-            UpcomingClientsShoot.event_date >= today,
+            UpcomingClientsShoot.date >= today,
             UpcomingClientsShoot.confirmation == True
         ).count()
         

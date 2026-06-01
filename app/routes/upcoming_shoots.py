@@ -11,6 +11,7 @@ from app.models import UpcomingClientsShoot
 from datetime import datetime, date, timedelta
 import os
 from sqlalchemy import func, extract
+from .monthly_financial import number_to_words
 
 router = APIRouter(prefix="/financial/upcoming-shoots", tags=["Upcoming Clients Shoot"])
 
@@ -31,7 +32,7 @@ async def list_upcoming_shoots(
     try:
         today = date.today()
         query = db.query(UpcomingClientsShoot).filter(
-            UpcomingClientsShoot.event_date >= today
+            UpcomingClientsShoot.date >= today
         )
         
         if search:
@@ -47,13 +48,28 @@ async def list_upcoming_shoots(
             except ValueError:
                 pass
         
-        upcoming_shoots = query.order_by(UpcomingClientsShoot.event_date).all()
+        upcoming_shoots = query.order_by(UpcomingClientsShoot.date).all()
         
         # Calculate analytics
         total_shoots = len(upcoming_shoots)
-        total_potential_revenue = db.query(func.sum(UpcomingClientsShoot.total_amount)).filter(
-            UpcomingClientsShoot.event_date >= today
-        ).scalar() or 0.0
+        # Apply same filters for potential revenue sum
+        revenue_query = db.query(func.sum(UpcomingClientsShoot.total_amount)).filter(
+            UpcomingClientsShoot.date >= today
+        )
+        if search:
+            revenue_query = revenue_query.filter(UpcomingClientsShoot.client_name.ilike(f"%{search}%"))
+        if year:
+            try:
+                revenue_query = revenue_query.filter(extract('year', UpcomingClientsShoot.date) == int(year))
+            except ValueError:
+                pass
+        if month:
+            try:
+                revenue_query = revenue_query.filter(extract('month', UpcomingClientsShoot.date) == int(month))
+            except ValueError:
+                pass
+        total_potential_revenue = revenue_query.scalar() or 0.0
+        total_potential_revenue_words = number_to_words(total_potential_revenue)
         
         # Status breakdown
         pending_count = sum(1 for s in upcoming_shoots if s.status == "Pending")
@@ -65,7 +81,7 @@ async def list_upcoming_shoots(
         
         # This week's shoots
         week_end = today + timedelta(days=7)
-        this_week_shoots = sum(1 for s in upcoming_shoots if s.event_date <= week_end)
+        this_week_shoots = sum(1 for s in upcoming_shoots if s.date <= week_end)
         
         return templates.TemplateResponse("financial/upcoming_shoots_list.html", {
             "request": request,
@@ -73,6 +89,7 @@ async def list_upcoming_shoots(
             "shoots": upcoming_shoots,
             "total_shoots": total_shoots,
             "total_potential_revenue": total_potential_revenue,
+            "total_potential_revenue_words": total_potential_revenue_words,
             "pending_count": pending_count,
             "done_count": done_count,
             "rejected_count": rejected_count,
@@ -93,10 +110,14 @@ async def list_upcoming_shoots(
 async def create_form(request: Request):
     """Display form to create new upcoming shoot."""
     try:
+        today = datetime.now().date()
+        display_date = today.strftime('%d/%m/%Y')
         return templates.TemplateResponse("financial/upcoming_shoots_form.html", {
             "request": request,
             "page_title": "Create Upcoming Shoot",
             "is_edit": False,
+            "current_date": today.isoformat(),
+            "display_date": display_date,
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -122,11 +143,35 @@ async def create_shoot(
 ):
     """Create new upcoming shoot."""
     try:
+        # Normalize event_date and determine first event date
+        days = []
+        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                        if len(days) == 1:
+                            first_date_obj = d_obj
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            if parts and all(p.isdigit() for p in parts if p):
+                try:
+                    day_val = int(parts[0])
+                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
+                except ValueError:
+                    pass
+        event_date_str = ", ".join(days)
+
         shoot = UpcomingClientsShoot(
-            date=datetime.strptime(date_input, "%Y-%m-%d").date(),
+            date=first_date_obj,
             client_name=client_name,
             event_type=event_type,
-            event_date=event_date,
+            event_date=event_date_str,
             phone_number=phone_number,
             total_amount=total_amount,
             negotiation=negotiation,
@@ -185,10 +230,34 @@ async def edit_shoot(
         if not shoot:
             raise HTTPException(status_code=404, detail="Shoot not found")
         
-        shoot.date = datetime.strptime(date_input, "%Y-%m-%d").date()
+        # Normalize event_date and determine first event date
+        days = []
+        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                        if len(days) == 1:
+                            first_date_obj = d_obj
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            if parts and all(p.isdigit() for p in parts if p):
+                try:
+                    day_val = int(parts[0])
+                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
+                except ValueError:
+                    pass
+        event_date_str = ", ".join(days)
+
+        shoot.date = first_date_obj
         shoot.client_name = client_name
         shoot.event_type = event_type
-        shoot.event_date = event_date
+        shoot.event_date = event_date_str
         shoot.phone_number = phone_number
         shoot.total_amount = total_amount
         shoot.negotiation = negotiation
