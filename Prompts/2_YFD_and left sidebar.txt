@@ -56,3 +56,16 @@ monthly_list.html --> Summary Cards (card-subtext)
 do the same for followup_list.html --> Summary Cards (card-subtext)
 
 ========================================================================
+
+# Multiple amounts in Amount field 
+
+in the "Create Investment" page 
+
+the user can put single or multiple amounts in the "Amount" field and the total amount should automatically  generate and displayed in the "Total Amount (₹)"
+Update the frontend, backend, validations, edit page, view page, reports, and calculations accordingly.
+
+tell me do I have to change anything in database table?
+because the datatype of amount is nvarchar
+
+========================================================================
+

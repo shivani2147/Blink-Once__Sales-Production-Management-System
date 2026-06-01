@@ -36,7 +36,7 @@
 
 <!-- Filters Section -->
 <form method="get" class="filters-section">
-    <input type="text" name="search" placeholder="🔍 Search by client name..." value="{{ search_query or '' }}" class="search-input">
+    <input type="text" name="search" placeholder="🔍 Search by Service name..." value="{{ search_query or '' }}" class="search-input">
     <select name="year" class="filter-select">
         <option value="" {% if not selected_year %}selected{% endif %}>All Years</option>
         <option value="2022" {% if selected_year == "2022" %}selected{% endif %}>2022</option>

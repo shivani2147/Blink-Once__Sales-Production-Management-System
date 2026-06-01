@@ -3,6 +3,8 @@ Investment To Grow Company routes - Track investments and expenses.
 """
 
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
+
+
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -105,17 +107,20 @@ async def create_investment(
     db: Session = Depends(get_db),
     date_input: str = Form(...),
     service: str = Form(...),
-    amount: float = Form(...),
-    total_amount: float = Form(...),
+    amount: str = Form(...),
+    total_amount: float = Form(...),  # still received but ignored
     description: str = Form(default=""),
 ):
     """Create new investment."""
     try:
+        # Parse comma-separated amounts and compute total
+        amount_values = [float(v.strip()) for v in amount.split(',') if v.strip()]
+        sum_amount = sum(amount_values)
         investment = InvestmentToGrowCompany(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             service=service,
-            amount=amount,
-            total_amount=total_amount,
+            amount=sum_amount,
+            total_amount=sum_amount,
             description=description,
         )
         
@@ -156,29 +161,50 @@ async def edit_investment(
     db: Session = Depends(get_db),
     date_input: str = Form(...),
     service: str = Form(...),
-    amount: float = Form(...),
-    total_amount: float = Form(...),
+    amount: str = Form(...),  # accept comma-separated amounts
+    total_amount: float = Form(...),  # ignored, will be recomputed
     description: str = Form(default=""),
 ):
-    """Update investment."""
+    """Update investment with comma-separated amount handling."""
     try:
         investment = db.query(InvestmentToGrowCompany).filter(
             InvestmentToGrowCompany.id == investment_id
         ).first()
         if not investment:
             raise HTTPException(status_code=404, detail="Investment not found")
-        
+
+        # Compute sum of amounts
+        amount_values = [float(v.strip()) for v in amount.split(',') if v.strip()]
+        sum_amount = sum(amount_values)
+
         investment.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         investment.service = service
-        investment.amount = amount
-        investment.total_amount = total_amount
+        investment.amount = sum_amount
+        investment.total_amount = sum_amount
         investment.description = description
-        
+
         db.commit()
         return RedirectResponse(url="/financial/investment/", status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+# @router.get("/{investment_id}/delete")
+# async def delete_investment(investment_id: int, db: Session = Depends(get_db)):
+#     """Delete investment."""
+#     try:
+#         investment = db.query(InvestmentToGrowCompany).filter(
+#             InvestmentToGrowCompany.id == investment_id
+#         ).first()
+#         if not investment:
+#             raise HTTPException(status_code=404, detail="Investment not found")
+        
+#         db.delete(investment)
+#         db.commit()
+        
+#         return RedirectResponse(url="/financial/investment/", status_code=302)
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{investment_id}/delete")
 async def delete_investment(investment_id: int, db: Session = Depends(get_db)):
@@ -189,10 +215,8 @@ async def delete_investment(investment_id: int, db: Session = Depends(get_db)):
         ).first()
         if not investment:
             raise HTTPException(status_code=404, detail="Investment not found")
-        
         db.delete(investment)
         db.commit()
-        
         return RedirectResponse(url="/financial/investment/", status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
