@@ -7,48 +7,32 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import SQLALCHEMY_DATABASE_URL
 
-# Create database engine
-try:
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        echo=False,  # Set to True for SQL query logging
-        pool_pre_ping=True,  # Verify connections before using
-        pool_size=10,
-        max_overflow=20,
-    )
-    print("Database engine created successfully")
-except Exception as e:
-    print(f"Error creating database engine: {e}")
-    raise
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20,
+)
 
-# Create session factory
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
 )
 
-# Base class for all models
 Base = declarative_base()
 
-
 def get_db():
-    """
-    Dependency function to provide database session to FastAPI routes.
-    Usage in routes: db: Session = Depends(get_db)
-    """
+    """Dependency function to provide database session to FastAPI routes."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-
 def init_db():
-    """
-    Initialize database by creating all tables defined in models.
-    Call this once at application startup.
-    """
+    """Initialize database by creating all tables defined in models."""
     try:
         Base.metadata.create_all(bind=engine)
         print("Database tables created successfully")

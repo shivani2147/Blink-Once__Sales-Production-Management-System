@@ -1,0 +1,58 @@
+apply "Create Monthly Financial Report" form layout and styling globally for all the other forms in Yearly Financial Data 
+
+now, apply "Monthly Financial Reports" UI and styling globally for all these :
+Client Follow-up
+Investment To Grow Company
+Clients Editing
+Upcoming Clients Shoot
+
+===========================================================
+
+# Event Date 
+
+Apply the same Event Date functionality used in "Create Monthly Financial Report" to every form and module throughout the application wherever an "Event Date" field exists.
+
+Users should be able to select multiple event dates. When saved, the system should extract only the day numbers and store them as a comma-separated string in the database.
+
+Example:
+Selected Dates:
+26 April 2026, 27 April 2026, 28 April 2026
+
+Stored in Database:
+26, 27, 28
+
+Displayed in Tables/Reports:
+26, 27, 28
+
+Update Create, Edit, View, Search, Filter, Export, and Report functionality accordingly across all modules.
+
+Database Requirement:
+Ensure all `event_date` columns are of type `VARCHAR(255)` (or larger if needed) so multiple day values can be stored.
+
+The application should automatically convert selected dates into comma-separated day numbers before saving and correctly parse/display them when editing or viewing records.
+
+SQL Query (run for each table containing event_date):
+
+ALTER TABLE table_name
+ALTER COLUMN event_date VARCHAR(255);
+
+
+=================================================================================
+
+# Search Option
+
+"search" option should also affect these things in summary card 
+
+Total Budget, 
+Confirmation Amount, Total Amount
+
+========================================================================
+
+# Summary card amount in words
+
+do the same for "Client Follow-up" summary card
+
+monthly_list.html --> Summary Cards (card-subtext) 
+do the same for followup_list.html --> Summary Cards (card-subtext)
+
+========================================================================

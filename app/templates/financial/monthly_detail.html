@@ -25,7 +25,8 @@
                 </div>
                 <div class="detail-item">
                     <span class="label">Event Date:</span>
-                    <span class="value">{{ report.event_date if report.event_date is string else report.event_date.strftime('%d %b %Y') }}</span>
+                    <span class="value">{{ report.event_date if report.event_date is string else
+                        report.event_date.strftime('%d %b %Y') }}</span>
                 </div>
             </div>
         </div>
@@ -65,11 +66,15 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <span class="label">Payment Status:</span>
-                    <span class="badge {% if report.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ report.payment_status }}</span>
+                    <span
+                        class="badge {% if report.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{
+                        report.payment_status }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Work Status:</span>
-                    <span class="badge {% if report.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ report.work_status }}</span>
+                    <span
+                        class="badge {% if report.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{
+                        report.work_status }}</span>
                 </div>
             </div>
         </div>
@@ -84,116 +89,125 @@
 
     <div class="detail-actions">
         <a href="/financial/monthly/{{ report.id }}/edit" class="btn btn-primary">Edit</a>
-        <a href="/financial/monthly/{{ report.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+        <a href="/financial/monthly/{{ report.id }}/delete" class="btn btn-danger"
+            onclick="return confirm('Are you sure?')">Delete</a>
     </div>
 </div>
 
 <style>
-.detail-container {
-    max-width: 900px;
-    margin: 0 auto;
-}
+    .detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
 
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
-}
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
 
-.detail-header h1 {
-    margin: 0;
-}
+    .detail-header h1 {
+        margin: 0;
+    }
 
-.detail-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 2rem;
-}
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
 
-.detail-section {
-    margin-bottom: 2rem;
-}
+    .detail-section {
+        margin-bottom: 2rem;
+    }
 
-.detail-section:last-of-type {
-    margin-bottom: 0;
-}
+    .detail-section:last-of-type {
+        margin-bottom: 0;
+    }
 
-.detail-section h3 {
-    margin: 0 0 1rem 0;
-    color: #333;
-    font-size: 1.1rem;
-}
+    .detail-section h3 {
+        margin: 0 0 1rem 0;
+        color: #333;
+        font-size: 1.1rem;
+    }
 
-.detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
 
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    background: #f9f9f9;
-    border-radius: 6px;
-}
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 6px;
+    }
 
-.detail-item .label {
-    font-weight: 600;
-    color: #666;
-}
+    .detail-item .label {
+        font-weight: 600;
+        color: #666;
+    }
 
-.detail-item .value {
-    color: #333;
-    font-weight: 500;
-}
+    .detail-item .value {
+        color: #333;
+        font-weight: 500;
+    }
 
-.text-success { color: #28a745; }
-.text-warning { color: #ffc107; }
-.text-primary { color: #007bff; }
+    .text-success {
+        color: #28a745;
+    }
 
-.detail-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid #f0f0f0;
-}
+    .text-warning {
+        color: #ffc107;
+    }
 
-.btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
+    .text-primary {
+        color: #007bff;
+    }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
+    .detail-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f0f0f0;
+    }
 
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
 
-.btn-secondary {
-    background: #e0e0e0;
-    color: #333;
-}
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
 </style>
 {% endblock %}

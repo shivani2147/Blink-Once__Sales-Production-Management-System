@@ -251,11 +251,12 @@ class MonthlyFinancialReport(Base):
 
 
 class ThreeMonthsClientFollowup(Base):
-    """3 Months Client Follow-up for lead tracking and conversion."""
+    """Client Follow-up for lead tracking and conversion."""
     __tablename__ = "three_months_client_followup"
     
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(Date, nullable=False, index=True)
+    # Updated to DateTime to accept datetime values during inserts
+    date = Column(Date, nullable=False, default=datetime.now().date(), index=True)
     client_name = Column(String(255), nullable=False, index=True)
     event_type = Column(String(255), nullable=False)
     event_date = Column(String(255), nullable=False)

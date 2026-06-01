@@ -75,7 +75,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         total_expenses = db.query(func.sum(MonthlyFinancialReport.expenses)).scalar() or 0.0
         total_profit = db.query(func.sum(MonthlyFinancialReport.profit)).scalar() or 0.0
         
-        # Lead Statistics (3 Months Follow-up)
+        # Lead Statistics (Client Follow-up)
         three_months_ago = today - timedelta(days=90)
         total_leads = db.query(ThreeMonthsClientFollowup).filter(
             ThreeMonthsClientFollowup.date >= three_months_ago

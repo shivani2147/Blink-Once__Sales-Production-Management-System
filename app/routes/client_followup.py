@@ -1,5 +1,5 @@
 """
-3 Months Client Follow-up routes - Lead tracking and conversion analytics.
+Client Follow-up routes - Lead tracking and conversion analytics.
 """
 
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
@@ -11,10 +11,10 @@ from app.models import ThreeMonthsClientFollowup
 from datetime import datetime, date, timedelta
 import os
 from sqlalchemy import func, extract
-import json
+from .monthly_financial import number_to_words
 import re
 
-router = APIRouter(prefix="/financial/followup", tags=["3 Months Client Follow-up"])
+router = APIRouter(prefix="/financial/followup", tags=["Client Follow-up"])
 
 # Setup templates
 template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
@@ -51,20 +51,7 @@ def parse_event_date_days(raw):
         item_text = str(item).strip()
         if not item_text:
             continue
-        if item_text.isdigit():
-            day = int(item_text)
-            if 1 <= day <= 31:
-                days.append(str(day))
-            continue
-        try:
-            date_obj = datetime.fromisoformat(item_text)
-            days.append(str(date_obj.day))
-        except Exception:
-            try:
-                date_obj = datetime.strptime(item_text, '%Y-%m-%d')
-                days.append(str(date_obj.day))
-            except Exception:
-                pass
+        days.append(item_text)
 
     return [day for day in days if day]
 
@@ -82,7 +69,7 @@ async def list_followups(
     year: str = None,
     month: str = None,
 ):
-    """List all 3 months client follow-ups with analytics."""
+    """List all client follow-ups with analytics."""
     try:
         today = date.today()
         three_months_ago = today - timedelta(days=90)
@@ -112,22 +99,24 @@ async def list_followups(
         pending_count = sum(1 for f in followups if f.status == "Pending")
         conversion_rate = (done_count / total_leads * 100) if total_leads > 0 else 0
         
-        total_budget = db.query(func.sum(ThreeMonthsClientFollowup.client_budget)).filter(
-            ThreeMonthsClientFollowup.date >= three_months_ago
-        ).scalar() or 0.0
-        total_confirmation = db.query(func.sum(ThreeMonthsClientFollowup.confirmation)).filter(
-            ThreeMonthsClientFollowup.date >= three_months_ago
-        ).scalar() or 0.0
-        total_amount = db.query(func.sum(ThreeMonthsClientFollowup.total_amount)).filter(
-            ThreeMonthsClientFollowup.date >= three_months_ago
-        ).scalar() or 0.0
-        
+        # Calculate totals based on filtered followups
+        total_leads_words = number_to_words(total_leads)
+
+        # Financial totals
+        total_budget = sum(f.client_budget for f in followups) if followups else 0.0
+        total_confirmation = sum(f.confirmation for f in followups) if followups else 0.0
+        total_amount = sum(f.total_amount for f in followups) if followups else 0.0
+        # Convert totals to words
+        total_budget_words = number_to_words(total_budget)
+        total_confirmation_words = number_to_words(total_confirmation)
+        total_amount_words = number_to_words(total_amount)
+
         # Platform performance
         platform_stats = {}
         for platform in PLATFORM_OPTIONS:
             count = sum(1 for f in followups if f.platform == platform)
             platform_stats[platform] = count
-        
+
         # Status-wise breakdown
         status_stats = {}
         for status in STATUS_OPTIONS:
@@ -138,12 +127,14 @@ async def list_followups(
         # Determine the highest performing platform by number of leads
         if platform_stats:
             top_platform, top_platform_count = max(platform_stats.items(), key=lambda item: item[1])
+            top_platform_count_words = number_to_words(top_platform_count)
         else:
-            top_platform, top_platform_count = "N/A", 0
+            top_platform, top_platform_count = "-", 0
+            top_platform_count_words = number_to_words(0)
         
         return templates.TemplateResponse("financial/followup_list.html", {
             "request": request,
-            "page_title": "3 Months Client Follow-up",
+            "page_title": "Client Follow-up",
             "top_platform": top_platform,
             "top_platform_count": top_platform_count,
             "followups": followups,
@@ -154,8 +145,14 @@ async def list_followups(
             "total_budget": total_budget,
             "total_confirmation": total_confirmation,
             "total_amount": total_amount,
+            "total_budget_words": total_budget_words,
+            "total_confirmation_words": total_confirmation_words,
+            "total_amount_words": total_amount_words,
             "platform_stats": platform_stats,
             "status_stats": status_stats,
+            "search_query": search,
+            "selected_year": year,
+            "selected_month": month,
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -166,14 +163,18 @@ async def list_followups(
 
 @router.get("/create", response_class=HTMLResponse)
 async def create_form(request: Request):
-    """Display form to create new follow-up."""
+    """Display form to create new follow-up with auto-filled current date."""
     try:
+        today = datetime.now().date()
+        display_date = today.strftime('%d/%m/%Y')
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
-            "page_title": "Create Client Follow-up",
+            "page_title": "Client Follow-up",
             "is_edit": False,
             "status_options": STATUS_OPTIONS,
             "platform_options": PLATFORM_OPTIONS,
+            "current_date": today.isoformat(),
+            "display_date": display_date,
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -189,7 +190,7 @@ async def create_followup(
     date_input: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
-    event_date: str = Form(...),
+    event_date: str = Form(default=""),
     location: str = Form(default=""),
     phone_number: str = Form(...),
     client_budget: float = Form(...),
@@ -202,15 +203,23 @@ async def create_followup(
 ):
     """Create new client follow-up."""
     try:
-        event_date_str = normalize_event_date_string(event_date)
-        if not event_date_str:
-            event_date_str = str(datetime.utcnow().day)
+        # Process event_date as full ISO dates; store the first selected date as a Date object
+        if event_date:
+            # event_date contains comma‑separated ISO dates from the hidden input
+            first_date_str = event_date.split(',')[0].strip()
+            try:
+                event_date_obj = datetime.strptime(first_date_str, "%Y-%m-%d").date()
+            except Exception:
+                # Fallback to today if parsing fails
+                event_date_obj = date.today()
+        else:
+            event_date_obj = date.today()
 
         followup = ThreeMonthsClientFollowup(
-            date=datetime.strptime(date_input, "%Y-%m-%d").date(),
+            date = datetime.strptime(date_input, "%Y-%m-%d").date(),
             client_name=client_name,
             event_type=event_type,
-            event_date=event_date_str,
+            event_date=event_date,  # Store comma-separated day numbers
             location=location,
             phone_number=phone_number,
             client_budget=client_budget,
@@ -262,7 +271,7 @@ async def edit_followup(
     date_input: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
-    event_date: str = Form(...),
+    event_date: str = Form(default=""),
     location: str = Form(default=""),
     phone_number: str = Form(...),
     client_budget: float = Form(...),
@@ -282,7 +291,10 @@ async def edit_followup(
         followup.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         followup.client_name = client_name
         followup.event_type = event_type
-        followup.event_date = normalize_event_date_string(event_date) or followup.event_date
+        if event_date:
+            followup.event_date = event_date  # Store comma-separated day numbers
+
+        # else keep existing
         followup.location = location
         followup.phone_number = phone_number
         followup.client_budget = client_budget
