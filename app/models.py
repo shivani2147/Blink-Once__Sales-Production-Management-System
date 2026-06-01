@@ -4,7 +4,7 @@ Defines database tables for Pre-Production, On-Production, Post-Production, and 
 """
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float, Date, NVARCHAR
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float, Date, NVARCHAR, Numeric
 from app.database import Base
 
 
@@ -331,7 +331,7 @@ class CameraRent(Base):
     days = Column(Integer, nullable=False, default=1)
     phone_number = Column(String(20), nullable=False)
     aadhar_card_no = Column(String(20), nullable=True)
-    total_amount = Column(Float, nullable=False, default=0.0)
+    total_amount = Column(Numeric(12, 2), nullable=False, default=0.0)
     
     # Status tracking
     payment_status = Column(String(50), nullable=False)  # Online, Cash
@@ -357,8 +357,8 @@ class UpcomingClientsShoot(Base):
     total_amount = Column(Float, nullable=False, default=0.0)
     
     # Lead tracking
-    negotiation = Column(Boolean, default=False)
-    confirmation = Column(Boolean, default=False)
+    negotiation = Column(Float, nullable=False, default=0.0)
+    confirmation = Column(String(255), nullable=True)
     
     # Status tracking
     status = Column(String(50), nullable=False)  # Pending, Done, Rejected

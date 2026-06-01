@@ -77,7 +77,7 @@ async def list_upcoming_shoots(
         rejected_count = sum(1 for s in upcoming_shoots if s.status == "Rejected")
         
         # Confirmation status
-        confirmed_shoots = sum(1 for s in upcoming_shoots if s.confirmation)
+        confirmed_shoots = sum(1 for s in upcoming_shoots if s.confirmation and str(s.confirmation).strip())
         
         # This week's shoots
         week_end = today + timedelta(days=7)
@@ -136,8 +136,8 @@ async def create_shoot(
     event_date: str = Form(...),
     phone_number: str = Form(...),
     total_amount: float = Form(...),
-    negotiation: bool = Form(default=False),
-    confirmation: bool = Form(default=False),
+    negotiation: float = Form(default=0.0),
+    confirmation: str = Form(default=""),
     status: str = Form(...),
     notes: str = Form(default=""),
 ):
@@ -219,8 +219,8 @@ async def edit_shoot(
     event_date: str = Form(...),
     phone_number: str = Form(...),
     total_amount: float = Form(...),
-    negotiation: bool = Form(default=False),
-    confirmation: bool = Form(default=False),
+    negotiation: float = Form(default=0.0),
+    confirmation: str = Form(default=""),
     status: str = Form(...),
     notes: str = Form(default=""),
 ):

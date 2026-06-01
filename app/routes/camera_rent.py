@@ -11,7 +11,8 @@ from app.models import CameraRent
 from datetime import datetime, date
 import os
 from sqlalchemy import func, extract
-from .monthly_financial import number_to_words
+from decimal import Decimal
+from app.utils.number_to_words import number_to_words
 
 router = APIRouter(prefix="/financial/camera-rent", tags=["Camera Rent"])
 
@@ -48,10 +49,10 @@ async def list_camera_rent(
         rentals = query.all()
         
         # Calculate totals for filtered results
-        total_rental_income = sum(r.total_amount for r in rentals) if rentals else 0.0
+        total_rental_income = sum(r.total_amount or 0 for r in rentals) if rentals else Decimal('0.0')
         total_days_rented = sum(r.days for r in rentals) if rentals else 0
         paid_count = sum(1 for r in rentals if r.payment_status in ("Online", "Cash"))
-        pending_payments = sum(r.total_amount for r in rentals if r.payment_status != "Done")
+        pending_payments = sum(r.total_amount or 0 for r in rentals if r.work_status != "Done")
         
         total_rental_income_words = number_to_words(total_rental_income)
         pending_payments_words = number_to_words(pending_payments)
@@ -103,15 +104,17 @@ async def create_rental(
     days: int = Form(...),
     phone_number: str = Form(...),
     aadhar_card_no: str = Form(default=""),
-    total_amount: float = Form(...),
+    total_amount: Decimal = Form(...),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
 ):
     """Create new camera rent."""
     try:
+        # Validate date format
+        parsed_date = datetime.strptime(date_input, "%Y-%m-%d").date()
         rental = CameraRent(
-            date=datetime.strptime(date_input, "%Y-%m-%d").date(),
+            date=parsed_date,
             client_name=client_name,
             description_of_goods=description_of_goods,
             days=days,
@@ -162,7 +165,7 @@ async def edit_rental(
     days: int = Form(...),
     phone_number: str = Form(...),
     aadhar_card_no: str = Form(default=""),
-    total_amount: float = Form(...),
+    total_amount: Decimal = Form(...),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
@@ -173,7 +176,9 @@ async def edit_rental(
         if not rental:
             raise HTTPException(status_code=404, detail="Rental not found")
         
-        rental.date = datetime.strptime(date_input, "%Y-%m-%d").date()
+        # Validate date format
+        parsed_date = datetime.strptime(date_input, "%Y-%m-%d").date()
+        rental.date = parsed_date
         rental.client_name = client_name
         rental.description_of_goods = description_of_goods
         rental.days = days

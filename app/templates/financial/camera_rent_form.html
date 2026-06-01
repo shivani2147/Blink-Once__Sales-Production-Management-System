@@ -13,38 +13,38 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="date_input">Date</label>
-                    <input type="date" id="date_input" name="date_input" required 
-                           value="{% if rental %}{{ rental.date.strftime('%Y-%m-%d') }}{% endif %}">
+                    <input type="date" id="date_input" name="date_input" required
+                        value="{% if rental %}{{ rental.date.strftime('%Y-%m-%d') }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="client_name">Client Name</label>
-                    <input type="text" id="client_name" name="client_name" required 
-                           value="{% if rental %}{{ rental.client_name }}{% endif %}">
+                    <input type="text" id="client_name" name="client_name" required
+                        value="{% if rental %}{{ rental.client_name }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="description_of_goods">Equipment Description</label>
-                    <input type="text" id="description_of_goods" name="description_of_goods" required 
-                           value="{% if rental %}{{ rental.description_of_goods }}{% endif %}">
+                    <input type="text" id="description_of_goods" name="description_of_goods" required
+                        value="{% if rental %}{{ rental.description_of_goods }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="days">Number of Days</label>
-                    <input type="number" id="days" name="days" min="1" required 
-                           value="{% if rental %}{{ rental.days }}{% endif %}">
+                    <input type="number" id="days" name="days" min="1" required
+                        value="{% if rental %}{{ rental.days }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="phone_number">Phone Number</label>
-                    <input type="tel" id="phone_number" name="phone_number" required 
-                           value="{% if rental %}{{ rental.phone_number }}{% endif %}">
+                    <input type="tel" id="phone_number" name="phone_number" required
+                        value="{% if rental %}{{ rental.phone_number }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="aadhar_card_no">Aadhar Card No.</label>
-                    <input type="text" id="aadhar_card_no" name="aadhar_card_no" 
-                           value="{% if rental %}{{ rental.aadhar_card_no }}{% endif %}">
+                    <input type="text" id="aadhar_card_no" name="aadhar_card_no"
+                        value="{% if rental %}{{ rental.aadhar_card_no }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="total_amount">Amount (₹)</label>
-                    <input type="number" id="total_amount" name="total_amount" step="0.01" required 
-                           value="{% if rental %}{{ rental.total_amount }}{% endif %}">
+                    <input type="number" id="total_amount" name="total_amount" step="0.01" required
+                        value="{% if rental %}{{ rental.total_amount }}{% endif %}">
                 </div>
             </div>
         </div>
@@ -53,19 +53,23 @@
             <h3>Status Information</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="payment_status">Payment Status</label>
+                    <label for="payment_status">Payment Mode</label>
                     <select id="payment_status" name="payment_status" required>
                         <option value="">Select Payment Status</option>
-                        <option value="Online" {% if rental and rental.payment_status == 'Online' %}selected{% endif %}>Online</option>
-                        <option value="Cash" {% if rental and rental.payment_status == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="Online" {% if rental and rental.payment_status=='Online' %}selected{% endif %}>
+                            Online</option>
+                        <option value="Cash" {% if rental and rental.payment_status=='Cash' %}selected{% endif %}>Cash
+                        </option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="work_status">Work Status</label>
+                    <label for="work_status">Payment Status</label>
                     <select id="work_status" name="work_status" required>
                         <option value="">Select Work Status</option>
-                        <option value="Pending" {% if rental and rental.work_status == 'Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Done" {% if rental and rental.work_status == 'Done' %}selected{% endif %}>Done</option>
+                        <option value="Pending" {% if rental and rental.work_status=='Pending' %}selected{% endif %}>
+                            Pending</option>
+                        <option value="Done" {% if rental and rental.work_status=='Done' %}selected{% endif %}>Done
+                        </option>
                     </select>
                 </div>
             </div>
@@ -75,13 +79,15 @@
             <h3>Additional Information</h3>
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4">{% if rental %}{{ rental.description }}{% endif %}</textarea>
+                <textarea id="description" name="description"
+                    rows="4">{% if rental %}{{ rental.description }}{% endif %}</textarea>
             </div>
         </div>
 
         <div class="form-actions">
             <a href="/financial/camera-rent/" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Rental{% else %}Create Rental{% endif %}</button>
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Rental{% else %}Create Rental{% endif
+                %}</button>
         </div>
     </form>
 </div>

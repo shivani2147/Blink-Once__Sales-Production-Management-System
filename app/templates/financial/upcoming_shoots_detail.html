@@ -43,11 +43,11 @@
             <div class="detail-grid">
                 <div class="detail-item">
                     <span class="label">Negotiation:</span>
-                    <span class="badge {% if shoot.negotiation %}badge-success{% else %}badge-secondary{% endif %}">{% if shoot.negotiation %}Done{% else %}Pending{% endif %}</span>
+                    <span class="value">₹{{ "%.2f"|format(shoot.negotiation) }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Confirmation:</span>
-                    <span class="badge {% if shoot.confirmation %}badge-success{% else %}badge-secondary{% endif %}">{% if shoot.confirmation %}Confirmed{% else %}Pending{% endif %}</span>
+                    <span class="value">{{ shoot.confirmation if shoot.confirmation else 'Pending' }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">Status:</span>

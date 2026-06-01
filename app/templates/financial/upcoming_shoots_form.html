@@ -55,17 +55,15 @@
         <div class="form-section">
             <h3>Status & Tracking</h3>
             <div class="form-grid">
-                <div class="form-group checkbox-group">
-                    <label>
-                        <input type="checkbox" name="negotiation" value="1" {% if shoot and shoot.negotiation %}checked{% endif %}>
-                        <span>Negotiation Done</span>
-                    </label>
+                <div class="form-group">
+                    <label for="negotiation">Negotiation Done (Amount)</label>
+                    <input type="number" id="negotiation" name="negotiation" step="0.01" 
+                           value="{% if shoot and shoot.negotiation %}{{ shoot.negotiation }}{% endif %}" placeholder="Enter amount">
                 </div>
-                <div class="form-group checkbox-group">
-                    <label>
-                        <input type="checkbox" name="confirmation" value="1" {% if shoot and shoot.confirmation %}checked{% endif %}>
-                        <span>Confirmation Received</span>
-                    </label>
+                <div class="form-group">
+                    <label for="confirmation">Confirmation Received (Details)</label>
+                    <input type="text" id="confirmation" name="confirmation" 
+                           value="{% if shoot and shoot.confirmation %}{{ shoot.confirmation }}{% endif %}" placeholder="Enter details">
                 </div>
                 <div class="form-group">
                     <label for="status">Shoot Status</label>
