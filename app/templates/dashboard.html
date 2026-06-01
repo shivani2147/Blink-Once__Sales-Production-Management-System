@@ -1,139 +1,941 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       Professional Executive Analytics Dashboard - Custom Premium Styling
+       ========================================================================== */
+    
+    :root {
+        --theme-primary: #5856d6;
+        --theme-primary-light: rgba(88, 86, 214, 0.1);
+        --theme-secondary: #af52de;
+        --theme-success: #34c759;
+        --theme-success-light: rgba(52, 199, 89, 0.1);
+        --theme-warning: #ff9500;
+        --theme-warning-light: rgba(255, 149, 0, 0.1);
+        --theme-danger: #ff3b30;
+        --theme-danger-light: rgba(255, 59, 48, 0.1);
+        --theme-info: #007aff;
+        --theme-info-light: rgba(0, 122, 255, 0.1);
+        --card-border: 1px solid rgba(0, 0, 0, 0.06);
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+        --text-muted: #8e8e93;
+        --text-dark: #1c1c1e;
+        --border-radius-sm: 8px;
+        --border-radius-md: 14px;
+        --border-radius-lg: 20px;
+    }
+
+    .dashboard-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 1600px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Subheader & Date display */
+    .dashboard-intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .dashboard-intro h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .dashboard-date-badge {
+        padding: 6px 14px;
+        background: white;
+        border-radius: var(--border-radius-sm);
+        border: var(--card-border);
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* KPI Cards Layout */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .premium-kpi-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        border: var(--card-border);
+        box-shadow: var(--card-shadow);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .premium-kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: rgba(88, 86, 214, 0.2);
+    }
+
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .kpi-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-badge-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .kpi-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kpi-main-val {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1.2;
+    }
+
+    .kpi-subtext {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Gradients/Colors for Icons */
+    .icon-clients { background: linear-gradient(135deg, #ff5e62, #ff9966); color: white; }
+    .icon-projects { background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; }
+    .icon-revenue { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
+    .icon-leads { background: linear-gradient(135deg, #7f00ff, #e100ff); color: white; }
+    .icon-expenses { background: linear-gradient(135deg, #f857a6, #ff5858); color: white; }
+    .icon-profit { background: linear-gradient(135deg, #56ab2f, #a8e063); color: white; }
+    .icon-camera { background: linear-gradient(135deg, #3a7bd5, #3a6073); color: white; }
+    .icon-editing { background: linear-gradient(135deg, #f39c12, #f1c40f); color: white; }
+
+    /* Visual Analytics Layout */
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 1100px) {
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .charts-main-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .premium-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        border: var(--card-border);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .premium-card-header {
+        padding: 18px 24px;
+        border-bottom: var(--card-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(250, 250, 250, 0.5);
+    }
+
+    .premium-card-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .premium-card-body {
+        padding: 24px;
+        flex: 1;
+    }
+
+    /* Charts Row */
+    .charts-flex-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+    
+    @media (max-width: 768px) {
+        .charts-flex-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    /* Progress tracker styling */
+    .progress-tracker-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 10px;
+    }
+
+    .progress-bar-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .progress-bar-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .progress-bar-track {
+        height: 10px;
+        background: #f1f1f6;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.8s ease-out;
+    }
+
+    /* Sidebar Event Calendar Styling */
+    .calendar-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .event-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-height: 520px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .event-card {
+        display: flex;
+        gap: 14px;
+        padding: 12px;
+        border-radius: var(--border-radius-sm);
+        background: #f8f9fc;
+        border-left: 4px solid var(--theme-primary);
+        transition: background 0.2s ease;
+    }
+
+    .event-card:hover {
+        background: #f1f3fa;
+    }
+
+    .event-date-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e1e8ed;
+        border-radius: var(--border-radius-sm);
+        padding: 6px;
+        min-width: 52px;
+        height: 52px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .event-date-day {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1;
+    }
+
+    .event-date-month {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+
+    .event-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+    }
+
+    .event-client {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .event-type {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .event-status-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 4px;
+        align-self: flex-start;
+        font-weight: 600;
+    }
+
+    /* Modules Summaries Grid Layout */
+    .summaries-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 24px;
+        margin-top: 8px;
+    }
+
+    @media (max-width: 480px) {
+        .summaries-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .summary-table-mini {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .summary-table-mini th {
+        text-align: left;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 8px 12px;
+        border-bottom: var(--card-border);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    .summary-table-mini td {
+        padding: 10px 12px;
+        border-bottom: var(--card-border);
+        color: var(--text-dark);
+        vertical-align: middle;
+    }
+
+    .summary-table-mini tr:last-child td {
+        border-bottom: none;
+    }
+
+    .summary-table-mini tr:hover td {
+        background: #fcfcfd;
+    }
+
+    .progress-bar-small {
+        height: 6px;
+        background: #f1f1f6;
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+        width: 60px;
+    }
+
+    .progress-bar-small-fill {
+        height: 100%;
+        background: var(--theme-success);
+        border-radius: 3px;
+    }
+
+    .empty-state-mini {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="dashboard-container">
-    <!-- KPI Cards -->
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-icon">📋</div>
-            <div class="kpi-content">
-                <h3>Pre-Production</h3>
-                <p class="kpi-number">{{ pre_prod_total }}</p>
-                <small>Total Records</small>
-            </div>
+<div class="dashboard-wrapper">
+    <!-- Header -->
+    <div class="dashboard-intro">
+        <div>
+            <h2>Executive Command Center</h2>
+            <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem;">Real-time business intelligence across sales pipelines & production flows.</p>
         </div>
-        
-        <div class="kpi-card">
-            <div class="kpi-icon">🎬</div>
-            <div class="kpi-content">
-                <h3>On-Production</h3>
-                <p class="kpi-number">{{ on_prod_total }}</p>
-                <small>Total Records</small>
-            </div>
-        </div>
-        
-        <div class="kpi-card">
-            <div class="kpi-icon">✂️</div>
-            <div class="kpi-content">
-                <h3>Post-Production</h3>
-                <p class="kpi-number">{{ post_prod_total }}</p>
-                <small>Total Records</small>
-            </div>
-        </div>
-        
-        <div class="kpi-card">
-            <div class="kpi-icon">✓</div>
-            <div class="kpi-content">
-                <h3>Checklists</h3>
-                <p class="kpi-number">{{ checklist_total }}</p>
-                <small>Total Records</small>
-            </div>
+        <div class="dashboard-date-badge">
+            📅 <span id="current-date-str"></span>
         </div>
     </div>
-    
-    <!-- Alerts Section -->
+
+    <!-- Alert Banner System -->
+    {% if overdue_tasks > 0 or pending_tasks > 0 %}
     <div class="alerts-section">
-        <div class="alert alert-warning">
-            <strong>⏰ Pending Tasks</strong>
-            <p>{{ pending_pre_prod }} pre-production tasks and {{ pending_post_prod }} post-production tasks awaiting completion</p>
-        </div>
-        
-        {% if overdue_tasks > 0 %}
-        <div class="alert alert-danger">
-            <strong>🔴 Overdue Tasks</strong>
-            <p>{{ overdue_tasks }} post-production deliverables are past deadline</p>
-        </div>
-        {% endif %}
-        
-        {% if upcoming_events > 0 %}
-        <div class="alert alert-info">
-            <strong>📅 Upcoming Events</strong>
-            <p>{{ upcoming_events }} events scheduled in the next 7 days</p>
+        {% if overdue_post_prod %}
+        <div class="alert alert-danger" style="margin: 0; padding: 12px 18px; border-radius: 10px;">
+            <strong>🚨 Deliverables Overdue Alert</strong>
+            <p style="margin: 4px 0 0 0; font-size: 0.8rem;">There are {{ overdue_post_prod|length }} active post-production contracts currently past deadline. Immediate resolution is recommended.</p>
         </div>
         {% endif %}
     </div>
-    
-    <!-- Summary Tables -->
-    <div class="summary-grid">
-        <!-- Recent Pre-Production Records -->
-        <div class="summary-card">
-            <div class="card-header">
-                <h3>Recent Pre-Production Records</h3>
-                <a href="/pre-production" class="btn-link">View All →</a>
+    {% endif %}
+
+    <!-- Core KPI Widget Matrix (Row 1) -->
+    <div class="kpi-row">
+        <!-- KPI Card 1: Total Revenue -->
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Total Revenue</span>
+                <div class="kpi-badge-icon icon-revenue">₹</div>
             </div>
-            <div class="table-responsive">
-                <table class="summary-table">
+            <div class="kpi-body">
+                <span class="kpi-main-val">₹{{ "{:,.2f}".format(total_revenue) }}</span>
+                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_revenue_words }}</small>
+                <span class="kpi-subtext" style="color: var(--theme-success); margin-top: 8px;">
+                    📈 Monthly, Editing & Rentals Combined
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI Card 2: Total Expenses -->
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Total Expenses</span>
+                <div class="kpi-badge-icon icon-expenses">💸</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">₹{{ "{:,.2f}".format(total_expenses) }}</span>
+                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_expenses_words }}</small>
+                <span class="kpi-subtext" style="color: var(--theme-danger); margin-top: 8px;">
+                    📉 Investments & Freelancer Costs
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI Card 3: Total Net Profit -->
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Net Profit</span>
+                <div class="kpi-badge-icon icon-profit">📈</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val" style="color: {% if total_profit >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
+                    ₹{{ "{:,.2f}".format(total_profit) }}
+                </span>
+                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_profit_words }}</small>
+                <span class="kpi-subtext" style="margin-top: 8px;">
+                    ⚖️ Margins & Direct Yields
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI Card 4: Lead Conversion Rate -->
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Lead Conversion</span>
+                <div class="kpi-badge-icon icon-leads">🎯</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">{{ lead_conversion_rate }}%</span>
+                <span class="kpi-subtext" style="margin-top: 8px;">
+                    🤝 {{ confirmed_clients }} of {{ total_leads }} Leads Converted
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary KPI Widget Matrix (Row 2) -->
+    <div class="kpi-row">
+        <!-- KPI: Total Clients & Projects -->
+        <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
+            <div class="kpi-header" style="margin-bottom: 2px;">
+                <span class="kpi-title" style="font-size: 0.75rem;">Clients & Pipeline</span>
+                <span style="font-size: 1.1rem;">👥</span>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">{{ total_clients }} Clients</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                    📂 {{ total_projects }} Projects • {{ ongoing_projects }} Ongoing • {{ completed_projects }} Completed
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI: Payments & Recoveries -->
+        <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
+            <div class="kpi-header" style="margin-bottom: 2px;">
+                <span class="kpi-title" style="font-size: 0.75rem;">Receivables & Collections</span>
+                <span style="font-size: 1.1rem;">⏳</span>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--theme-warning);">₹{{ "{:,.2f}".format(pending_payments) }}</div>
+                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ pending_payments_words }}</small>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                    🛡️ {{ payment_recovery_pending }} Pending Recovery • {{ payment_recovery_done }} Resolved
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI: Business Investments & Freelancer -->
+        <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
+            <div class="kpi-header" style="margin-bottom: 2px;">
+                <span class="kpi-title" style="font-size: 0.75rem;">Outflows Summary</span>
+                <span style="font-size: 1.1rem;">🔧</span>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{ "{:,.2f}".format(total_investment) }}</div>
+                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ total_investment_words }}</small>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                    📈 Investments • Freelancer Cost: ₹{{ "{:,.2f}".format(freelancer_expenses) }}
+                    <small class="kpi-words" style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ freelancer_expenses_words }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI: Camera Rent & Editing -->
+        <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
+            <div class="kpi-header" style="margin-bottom: 2px;">
+                <span class="kpi-title" style="font-size: 0.75rem;">Sub-Service Revenue</span>
+                <span style="font-size: 1.1rem;">🎥</span>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{ "{:,.2f}".format(camera_rent_income) }}</div>
+                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ camera_rent_income_words }}</small>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                    📷 Camera Rent • Editing Workload: ₹{{ "{:,.2f}".format(editing_revenue) }}
+                    <small class="kpi-words" style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ editing_revenue_words }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Analytics Charts Area -->
+    <div class="analytics-grid">
+        <!-- Main Chart Block -->
+        <div class="charts-main-column">
+            <!-- Main Revenue/Profit Line Chart -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h3>📈 Monthly Business Growth & Financial Trends</h3>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Aggregated Monthly Reports</div>
+                </div>
+                <div class="premium-card-body">
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="financialTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double Charts Row -->
+            <div class="charts-flex-row">
+                <!-- Lead Sources and Conversion -->
+                <div class="premium-card">
+                    <div class="premium-card-header">
+                        <h3>📣 Lead Generation & Conversion Rate</h3>
+                    </div>
+                    <div class="premium-card-body" style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="chart-container" style="height: 180px;">
+                            <canvas id="leadConversionChart"></canvas>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
+                            <span>🎯 Confirmed: {{ confirmed_clients }}</span>
+                            <span>⏳ Pending: {{ upcoming_followups }}</span>
+                            <span>❌ Rejected: {{ rejected_leads }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Steps Completion Tracker -->
+                <div class="premium-card">
+                    <div class="premium-card-header">
+                        <h3>🛠️ Work Completion & Service Progress</h3>
+                    </div>
+                    <div class="premium-card-body">
+                        <div class="progress-tracker-group">
+                            <div class="progress-bar-item">
+                                <div class="progress-bar-header">
+                                    <span>📋 Pre-Production completion</span>
+                                    <span>{{ pre_prod_avg }}%</span>
+                                </div>
+                                <div class="progress-bar-track">
+                                    <div class="progress-bar-fill" style="width: {{ pre_prod_avg }}%; background: var(--theme-primary);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-item">
+                                <div class="progress-bar-header">
+                                    <span>🎬 On-Production completion</span>
+                                    <span>{{ on_prod_avg }}%</span>
+                                </div>
+                                <div class="progress-bar-track">
+                                    <div class="progress-bar-fill" style="width: {{ on_prod_avg }}%; background: var(--theme-info);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-item">
+                                <div class="progress-bar-header">
+                                    <span>✂️ Post-Production completion</span>
+                                    <span>{{ post_prod_avg }}%</span>
+                                </div>
+                                <div class="progress-bar-track">
+                                    <div class="progress-bar-fill" style="width: {{ post_prod_avg }}%; background: var(--theme-success);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-item">
+                                <div class="progress-bar-header">
+                                    <span>✓ Checklist completion</span>
+                                    <span>{{ checklist_avg }}%</span>
+                                </div>
+                                <div class="progress-bar-track">
+                                    <div class="progress-bar-fill" style="width: {{ checklist_avg }}%; background: var(--theme-warning);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Events Column -->
+        <div class="calendar-sidebar">
+            <div class="premium-card" style="height: 100%;">
+                <div class="premium-card-header">
+                    <h3>📅 Upcoming Events Calendar</h3>
+                    <a href="/financial/upcoming-shoots/" class="btn-link" style="font-size: 0.75rem;">View Schedule</a>
+                </div>
+                <div class="premium-card-body">
+                    <div class="event-list">
+                        {% if upcoming_shoots_list %}
+                            {% for event in upcoming_shoots_list %}
+                            <div class="event-card" style="border-left-color: {% if event.confirmation %}var(--theme-success){% else %}var(--theme-warning){% endif %};">
+                                <div class="event-date-box">
+                                    <span class="event-date-day">{{ event.date.strftime('%d') }}</span>
+                                    <span class="event-date-month">{{ event.date.strftime('%b') }}</span>
+                                </div>
+                                <div class="event-details">
+                                    <span class="event-client">{{ event.client_name }}</span>
+                                    <span class="event-type">🎥 {{ event.event_type }} • {{ event.event_date }}</span>
+                                    <span class="event-status-badge" style="background: {% if event.confirmation %}var(--theme-success-light); color: var(--theme-success);{% else %}var(--theme-warning-light); color: var(--theme-warning);{% endif %}">
+                                        {% if event.confirmation %}Confirmed{% else %}Pending{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state-mini">
+                                <p style="margin: 0;">No upcoming shoots scheduled.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Charts Area: Leads Platform & Payment Breakdown -->
+    <div class="charts-flex-row">
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>📢 Lead Generation Channels (Platform Sources)</h3>
+            </div>
+            <div class="premium-card-body">
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="platformLeadsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>⚖️ Project Status Distribution</h3>
+            </div>
+            <div class="premium-card-body">
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="projectStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Summary Command Lists -->
+    <div class="summaries-grid">
+        <!-- Pre-Production Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>📋 Pre-Production Summary</h3>
+                <a href="/pre-production" class="btn-link">Detail List</a>
+            </div>
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
                     <thead>
                         <tr>
                             <th>Couple Name</th>
                             <th>Event Date</th>
-                            <th>Status</th>
+                            <th>Completion</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if recent_records %}
-                            {% for record in recent_records %}
+                        {% if recent_pre_prod %}
+                            {% for rec in recent_pre_prod %}
                             <tr>
-                                <td><a href="/pre-production/{{ record.id }}">{{ record.couple_name }}</a></td>
-                                <td>{{ record.event_date if record.event_date is string else record.event_date.strftime('%Y-%m-%d') }}</td>
+                                <td><strong>{{ rec.couple_name }}</strong></td>
+                                <td>{{ rec.event_date }}</td>
                                 <td>
-                                    <span class="badge" style="width: {{ record.get_completion_percentage() }}%; background: linear-gradient(90deg, #4CAF50, #45a049); color: white; padding: 2px 8px; border-radius: 12px; display: inline-block;">
-                                        {{ record.get_completion_percentage() }}%
-                                    </span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="progress-bar-small">
+                                            <div class="progress-bar-small-fill" style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-primary);"></div>
+                                        </div>
+                                        <span>{{ rec.get_completion_percentage() }}%</span>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                        <tr>
-                            <td colspan="3" class="empty-state">No records yet</td>
-                        </tr>
+                            <tr><td colspan="3" class="empty-state-mini">No pre-production records yet.</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
             </div>
         </div>
-        
-        <!-- Overdue Post-Production Tasks -->
-        <div class="summary-card">
-            <div class="card-header">
-                <h3>Overdue Post-Production</h3>
-                <a href="/post-production" class="btn-link">View All →</a>
+
+        <!-- On-Production Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>🎬 On-Production Summary</h3>
+                <a href="/on-production" class="btn-link">Detail List</a>
             </div>
-            <div class="table-responsive">
-                <table class="summary-table">
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
                     <thead>
                         <tr>
                             <th>Couple Name</th>
-                            <th>Deadline</th>
-                            <th>Days Overdue</th>
+                            <th>Event Date</th>
+                            <th>Completion</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if overdue_post_prod %}
-                            {% for record in overdue_post_prod %}
-                            <tr class="danger-row">
-                                <td><a href="/post-production/{{ record.id }}">{{ record.couple_name }}</a></td>
-                                <td>{{ record.deadline.strftime('%Y-%m-%d') }}</td>
+                        {% if recent_on_prod %}
+                            {% for rec in recent_on_prod %}
+                            <tr>
+                                <td><strong>{{ rec.couple_name }}</strong></td>
+                                <td>{{ rec.event_date }}</td>
                                 <td>
-                                    {% set days_overdue = (now().date() - record.deadline).days %}
-                                    <span class="badge badge-danger">{{ days_overdue }} days</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="progress-bar-small">
+                                            <div class="progress-bar-small-fill" style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-info);"></div>
+                                        </div>
+                                        <span>{{ rec.get_completion_percentage() }}%</span>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
+                            <tr><td colspan="3" class="empty-state-mini">No on-production records yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Post-Production Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>✂️ Post-Production Deliverables</h3>
+                <a href="/post-production" class="btn-link">Detail List</a>
+            </div>
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
+                    <thead>
                         <tr>
-                            <td colspan="3" class="empty-state">No overdue tasks</td>
+                            <th>Couple Name</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_post_prod %}
+                            {% for rec in recent_post_prod %}
+                            <tr class="{% if rec.is_overdue() and not rec.closure_date %}danger-row{% endif %}">
+                                <td><strong>{{ rec.couple_name }}</strong></td>
+                                <td>{{ rec.deadline.strftime('%d %b %Y') if rec.deadline else '-' }}</td>
+                                <td>
+                                    {% if rec.closure_date %}
+                                        <span class="badge badge-success">Closed</span>
+                                    {% else %}
+                                        {% if rec.is_overdue() %}
+                                            <span class="badge badge-danger">Overdue</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Active</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="empty-state-mini">No post-production records yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Checklist Management Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>✓ Checklist Completion</h3>
+                <a href="/checklist" class="btn-link">Detail List</a>
+            </div>
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
+                    <thead>
+                        <tr>
+                            <th>Couple Name</th>
+                            <th>Equipment Check</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_checklists %}
+                            {% for rec in recent_checklists %}
+                            <tr>
+                                <td><strong>{{ rec.couple_name }}</strong></td>
+                                <td>
+                                    {% if rec.equipments_ready %}
+                                        <span style="color: var(--theme-success); font-weight: bold;">✓ Ready</span>
+                                    {% else %}
+                                        <span style="color: var(--theme-warning);">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if rec.checklist_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">{{ rec.checklist_status|capitalize }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="empty-state-mini">No checklists created yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>💰 Recent Financial Transactions</h3>
+                <a href="/financial/monthly/" class="btn-link">Financial Book</a>
+            </div>
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Amount</th>
+                            <th>Paid Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_financials %}
+                            {% for rec in recent_financials %}
+                            <tr>
+                                <td><strong>{{ rec.client_name }}</strong></td>
+                                <td>₹{{ "{:,.2f}".format(rec.total_amount) }}</td>
+                                <td>
+                                    <span class="badge {% if rec.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ rec.payment_status }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="empty-state-mini">No financial reports submitted.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Client Follow-up Summary -->
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>📞 Client Follow-ups & Leads</h3>
+                <a href="/financial/followup/" class="btn-link">Lead Tracker</a>
+            </div>
+            <div class="premium-card-body" style="padding: 10px;">
+                <table class="summary-table-mini">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Platform</th>
+                            <th>Lead Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_followups %}
+                            {% for rec in recent_followups %}
+                            <tr>
+                                <td><strong>{{ rec.client_name }}</strong></td>
+                                <td>{{ rec.platform }}</td>
+                                <td>
+                                    <span class="badge {% if rec.status == 'Done' %}badge-success{% elif rec.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{ rec.status }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="empty-state-mini">No leads registered.</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -142,8 +944,189 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Set current date for template
-    window.now = () => new Date();
+    document.addEventListener("DOMContentLoaded", function() {
+        // Set Header Date
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById("current-date-str").textContent = today.toLocaleDateString('en-US', options);
+
+        // Chart.js global settings
+        Chart.defaults.font.family = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+        Chart.defaults.color = "#8e8e93";
+
+        // ============================================
+        // 1. FINANCIAL TREND LINE & BAR CHART
+        // ============================================
+        const trendCtx = document.getElementById('financialTrendChart').getContext('2d');
+        const trendLabels = {{ monthly_labels | tojson }};
+        const revenueData = {{ monthly_revenue_dataset | tojson }};
+        const expensesData = {{ monthly_expenses_dataset | tojson }};
+        const profitData = {{ monthly_profit_dataset | tojson }};
+
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    {
+                        label: 'Total Revenue (₹)',
+                        data: revenueData,
+                        borderColor: '#34c759',
+                        backgroundColor: 'rgba(52, 199, 89, 0.05)',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Total Expenses (₹)',
+                        data: expensesData,
+                        borderColor: '#ff3b30',
+                        backgroundColor: 'rgba(255, 59, 48, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.3,
+                        borderDash: [5, 5],
+                        fill: false
+                    },
+                    {
+                        label: 'Net Profit (₹)',
+                        data: profitData,
+                        borderColor: '#5856d6',
+                        backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        tension: 0.2,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { boxWidth: 12, usePointStyle: true }
+                    },
+                    tooltip: {
+                        padding: 12,
+                        backgroundColor: 'rgba(28, 28, 30, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
+                                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // ============================================
+        // 2. LEAD CONVERSION PIE CHART
+        // ============================================
+        const leadCtx = document.getElementById('leadConversionChart').getContext('2d');
+        const leadRaw = {{ lead_chart_data | tojson }};
+        
+        new Chart(leadCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confirmed', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: [leadRaw.Confirmed, leadRaw.Pending, leadRaw.Rejected],
+                    backgroundColor: ['#34c759', '#ff9500', '#ff3b30'],
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // ============================================
+        // 3. PLATFORM LEADS BAR CHART
+        // ============================================
+        const platformCtx = document.getElementById('platformLeadsChart').getContext('2d');
+        const platformRaw = {{ platform_lead_data | tojson }};
+
+        new Chart(platformCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(platformRaw),
+                datasets: [{
+                    label: 'Leads generated',
+                    data: Object.values(platformRaw),
+                    backgroundColor: ['#5856d6', '#007aff', '#af52de'],
+                    borderRadius: 8,
+                    barThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+        // ============================================
+        // 4. PROJECT STATUS PIE CHART
+        // ============================================
+        const projCtx = document.getElementById('projectStatusChart').getContext('2d');
+        new Chart(projCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['Pre-Production', 'On-Production', 'Post-Production'],
+                datasets: [{
+                    data: [{{ pre_prod_total }}, {{ on_prod_total }}, {{ post_prod_total }}],
+                    backgroundColor: [
+                        'rgba(88, 86, 214, 0.7)',
+                        'rgba(0, 122, 255, 0.7)',
+                        'rgba(52, 199, 89, 0.7)'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12 } }
+                },
+                scales: {
+                    r: { ticks: { display: false } }
+                }
+            }
+        });
+    });
 </script>
 {% endblock %}

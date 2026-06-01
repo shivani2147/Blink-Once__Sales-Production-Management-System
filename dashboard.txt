@@ -1,0 +1,108 @@
+================================================================================
+                    PRODUCTIONFLOW CRM - DASHBOARD GUIDE
+================================================================================
+
+This document explains what everything on your main Dashboard represents, written 
+in simple words. The dashboard is divided into four main parts: KPI Cards, Charts, 
+Calendar, and Module Summaries.
+
+--------------------------------------------------------------------------------
+1. TOP ROW KPI CARDS (Core Business Numbers)
+--------------------------------------------------------------------------------
+* Total Revenue:
+  - What it is: The total amount of money your company has earned.
+  - How it is calculated: It adds up the total money from three sources:
+    1) Monthly Financial Reports
+    2) Clients Editing Work
+    3) Camera Rentals
+
+* Total Expenses:
+  - What it is: The total amount of money your company spent.
+  - How it is calculated: It adds up:
+    1) Regular company expenses
+    2) Freelancer fees paid
+    3) Investments made to grow the company
+
+* Net Profit:
+  - What it is: The actual money you made after paying all expenses.
+  - How it is calculated: Total Revenue minus Total Expenses.
+  - Color Indicator: Green means you are in profit; Red means you are in loss.
+
+* Lead Conversion Rate:
+  - What it is: The percentage of leads (inquiries) that became actual clients.
+  - How it is calculated: (Confirmed Leads / Total Inquiries) x 100.
+  - Subtext: Displays the exact count of confirmed leads out of the total.
+
+--------------------------------------------------------------------------------
+2. SECOND ROW KPI CARDS (Secondary Details)
+--------------------------------------------------------------------------------
+* Clients & Pipeline:
+  - What it is: Displays total client count and the status of your projects.
+  - Details: 
+    1) Total distinct clients across all tables
+    2) Total projects registered
+    3) Ongoing projects (currently active)
+    4) Completed projects (finished work)
+
+* Receivables & Collections:
+  - What it is: The money still pending from your clients.
+  - Details: Shows the exact pending amount in numbers and words, plus 
+    the count of projects that need payment recovery.
+
+* Outflows Summary:
+  - What it is: Breakdown of your spending.
+  - Details: Shows the money spent on growing the company (investments) 
+    and the money paid to freelancers.
+
+* Sub-Service Revenue:
+  - What it is: Revenue from specific side services.
+  - Details: Shows the money earned from renting cameras and from editing projects.
+
+--------------------------------------------------------------------------------
+3. VISUAL ANALYTICS (Charts & Progress Bars)
+--------------------------------------------------------------------------------
+* Monthly Business Growth & Financial Trends:
+  - Chart type: Line chart.
+  - What it shows: Month-by-month changes in your Revenue, Expenses, and Profit. 
+    It helps you see if your business is growing over time.
+
+* Lead Generation & Conversion Rate:
+  - Chart type: Donut chart.
+  - What it shows: Ratio of Confirmed (green), Pending (orange), and Rejected (red) leads.
+
+* Work Completion & Service Progress:
+  - Bar type: Horizontal progress bars.
+  - What it shows: The average work completion percentage for all clients in:
+    1) Pre-Production
+    2) On-Production
+    3) Post-Production
+    4) Checklists
+
+* Lead Generation Channels (Platform Sources):
+  - Chart type: Bar chart.
+  - What it shows: Where your leads are coming from (JD, Meta Ads, Word of Mouth).
+
+* Project Status Distribution:
+  - Chart type: Polar area chart.
+  - What it shows: Comparison of how many projects are in Pre-Production, 
+    On-Production, and Post-Production.
+
+--------------------------------------------------------------------------------
+4. UPCOMING EVENTS CALENDAR
+--------------------------------------------------------------------------------
+* What it is: A calendar list on the side of the dashboard.
+* What it shows: Your next 10 upcoming shoots in chronological order. 
+  It shows the date, the client name, the event type, and if it is Confirmed 
+  or Pending.
+
+--------------------------------------------------------------------------------
+5. MODULE SUMMARIES (Recent Items Lists)
+--------------------------------------------------------------------------------
+At the bottom, there are 6 sections showing the 5 most recent records for:
+* Pre-Production: Client names, dates, and how much of their prep-work is completed.
+* On-Production: Client names, dates, and completion status of on-shoot tasks.
+* Post-Production: Client names, deadlines, and if the project is Overdue or Closed.
+* Checklist Completion: Client names, if equipment is ready, and checklist status.
+* Recent Financial Transactions: Clients' total bill amount and if they paid by Cash or Online.
+* Client Follow-ups & Leads: Latest inquiries, platforms, and their current lead status.
+================================================================================
