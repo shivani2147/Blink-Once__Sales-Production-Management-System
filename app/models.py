@@ -16,7 +16,7 @@ class PreProduction(Base):
     couple_name = Column(String(255), nullable=False, index=True)
     client_email = Column(String(255), nullable=False)
     event_type = Column(String(255), nullable=False)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
     # Status tracking
@@ -57,7 +57,7 @@ class OnProduction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     couple_name = Column(String(255), nullable=False, index=True)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
     # Status tracking
@@ -95,7 +95,7 @@ class PostProduction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     couple_name = Column(String(255), nullable=False, index=True)
-    event_date = Column(Date, nullable=False)
+    event_date = Column(String(255), nullable=False)
     deadline = Column(Date, nullable=False)
     event_name = Column(String(255), nullable=True)
     

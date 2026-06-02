@@ -14,15 +14,22 @@ import os
 
 router = APIRouter(prefix="/on-production", tags=["On-Production"])
 
-def parse_iso_event_date(event_date: str):
+def normalize_event_date(event_date: str):
+    """Normalize event_date to comma-separated day numbers."""
     if not event_date:
         return None
-    for part in [p.strip() for p in event_date.split(',') if p.strip()]:
-        try:
-            return datetime.strptime(part, "%Y-%m-%d").date()
-        except ValueError:
-            continue
-    return None
+    days = []
+    parts = [p.strip() for p in event_date.split(',')]
+    for p in parts:
+        if '-' in p:
+            try:
+                d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                days.append(str(d_obj.day))
+            except ValueError:
+                pass
+        elif p.isdigit():
+            days.append(str(int(p)))
+    return ", ".join(days) if days else None
 
 # Setup templates
 template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
@@ -98,7 +105,8 @@ async def create_on_production(
 ):
     """Create new on-production record."""
     try:
-        event_date_value = parse_iso_event_date(event_date)
+        # Normalize event_date to day numbers
+        event_date_value = normalize_event_date(event_date)
         if not event_date_value:
             raise ValueError("Invalid event_date format. Please select a valid date.")
 
@@ -222,7 +230,8 @@ async def update_on_production(
         if not record:
             return {"error": "Record not found"}, 404
         
-        event_date_value = parse_iso_event_date(event_date)
+        # Normalize event_date to day numbers
+        event_date_value = normalize_event_date(event_date)
         if not event_date_value:
             raise ValueError("Invalid event_date format. Please select a valid date.")
 

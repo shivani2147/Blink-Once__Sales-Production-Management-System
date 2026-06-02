@@ -59,7 +59,7 @@
                         {% for record in records %}
                         <tr>
                             <td><strong>{{ record.couple_name }}</strong></td>
-                            <td>{{ record.event_date if record.event_date is string else record.event_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ record.event_date }}</td>
                             <td>{{ record.phone_number }}</td>
                             <td>
                                 {% if record.payment_received %}

@@ -21,7 +21,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="event_date">Event Date *</label>
-                            <div class="event-date-container" data-event-date-mode="date" data-year="{% if record %}{{ record.created_at.year }}{% endif %}" data-month="{% if record %}{{ record.created_at.strftime('%m') }}{% endif %}">
+                            <div class="event-date-container" data-year="{% if record %}{{ record.created_at.year }}{% endif %}" data-month="{% if record %}{{ record.created_at.strftime('%m') }}{% endif %}">
                                 <div class="date-input-group">
                                     <input type="date" id="event_date" class="form-input event_date_input" required>
                                 </div>
@@ -29,7 +29,7 @@
                                 <input type="hidden" name="event_date" class="event_date_hidden" value="{{ record.event_date if record else '' }}">
                             </div>
                             {% if record and record.event_date %}
-                                <p class="form-note">Stored event date: {{ record.event_date }}</p>
+                                <p class="form-note">Stored event day(s): {{ record.event_date }}</p>
                             {% endif %}
                         </div>
                         

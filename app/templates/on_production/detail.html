@@ -7,7 +7,7 @@
         <div class="detail-header">
             <div>
                 <h2>{{ record.couple_name }}</h2>
-                <p class="breadcrumb">On-Production / {{ record.event_date if record.event_date is string else record.event_date.strftime('%Y-%m-%d') }}</p>
+                <p class="breadcrumb">On-Production / {{ record.event_date }}</p>
             </div>
             <div class="detail-actions">
                 <a href="/on-production/{{ record.id }}/edit" class="btn btn-primary">Edit</a>
@@ -33,7 +33,7 @@
                 <h3>Event Information</h3>
                 <div class="detail-row">
                     <span class="detail-label">Event Date:</span>
-                    <span class="detail-value">{{ record.event_date if record.event_date is string else record.event_date.strftime('%d %B %Y') }}</span>
+                    <span class="detail-value">{{ record.event_date }}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Phone:</span>

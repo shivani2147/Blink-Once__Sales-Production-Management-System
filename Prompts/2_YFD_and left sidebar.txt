@@ -80,11 +80,8 @@ because the datatype of amount is nvarchar
 
 in the dashboard page : 
 
-in "Receivables & Collections" summary card --> it should be the adding of (Monthly Financial Reports
- -- Pending Payments
-) + (Clients Editing
- -- Pending Amount
-) 
+in "Receivables & Collections" summary card --> it should be the adding of (Monthly Financial Reports -- Pending Payments
+) + (Clients Editing -- Pending Amount) 
 
 ========================================================================
 
