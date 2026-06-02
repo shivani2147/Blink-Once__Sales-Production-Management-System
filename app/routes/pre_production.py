@@ -14,6 +14,16 @@ import os
 
 router = APIRouter(prefix="/pre-production", tags=["Pre-Production"])
 
+def parse_iso_event_date(event_date: str):
+    if not event_date:
+        return None
+    for part in [p.strip() for p in event_date.split(',') if p.strip()]:
+        try:
+            return datetime.strptime(part, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+    return None
+
 # Setup templates
 template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
 templates = Jinja2Templates(directory=template_dir)
@@ -94,26 +104,15 @@ async def create_pre_production(
 ):
     """Create new pre-production record."""
     try:
-        # Normalize event_date to day numbers
-        days = []
-        if event_date:
-            parts = [p.strip() for p in event_date.split(',')]
-            for p in parts:
-                if '-' in p:
-                    try:
-                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                    except ValueError:
-                        pass
-                elif p.isdigit():
-                    days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_value = parse_iso_event_date(event_date)
+        if not event_date_value:
+            raise ValueError("Invalid event_date format. Please select a valid date.")
 
         record = PreProduction(
             couple_name=couple_name,
             client_email=client_email,
             event_type=event_type,
-            event_date=event_date_str,
+            event_date=event_date_value,
             phone_number=phone_number,
             referral_program=referral_program,
             advance_retainer_received=advance_retainer_received,
@@ -242,25 +241,14 @@ async def update_pre_production(
         if not record:
             return {"error": "Record not found"}, 404
         
-        # Normalize event_date to day numbers
-        days = []
-        if event_date:
-            parts = [p.strip() for p in event_date.split(',')]
-            for p in parts:
-                if '-' in p:
-                    try:
-                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                    except ValueError:
-                        pass
-                elif p.isdigit():
-                    days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_value = parse_iso_event_date(event_date)
+        if not event_date_value:
+            raise ValueError("Invalid event_date format. Please select a valid date.")
 
         record.couple_name = couple_name
         record.client_email = client_email
         record.event_type = event_type
-        record.event_date = event_date_str
+        record.event_date = event_date_value
         record.phone_number = phone_number
         record.referral_program = referral_program
         record.advance_retainer_received = advance_retainer_received

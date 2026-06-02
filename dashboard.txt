@@ -46,13 +46,11 @@ Calendar, and Module Summaries.
 
 * Receivables & Collections:
   - What it is: The money still pending from your clients.
-  - Details: Shows the exact pending amount in numbers and words, plus 
-    the count of projects that need payment recovery.
+  - Details: Shows the exact pending amount in numbers and words, plus the count of projects that need payment recovery.
 
 * Outflows Summary:
   - What it is: Breakdown of your spending.
-  - Details: Shows the money spent on growing the company (investments) 
-    and the money paid to freelancers.
+  - Details: Shows the money spent on growing the company (investments) and the money paid to freelancers.
 
 * Sub-Service Revenue:
   - What it is: Revenue from specific side services.

@@ -29,8 +29,9 @@
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">⏳</div>
         <div class="card-content">
-            <div class="card-label">Pending</div>
-            <div class="card-value">{{ pending_count }}</div>
+            <div class="card-label">Pending Amount</div>
+            <div class="card-value">₹{{ "%.2f"|format(pending_amount) }}</div>
+            <div class="card-subtext">{{ pending_amount_words }}</div>
         </div>
     </div>
     <div class="summary-card">
@@ -80,8 +81,8 @@
                 <th>Client Name</th>
                 <th>Editing Type</th>
                 <th>Amount (₹)</th>
-                <th>Payment</th>
-                <th>Status</th>
+                <th>Payment Mode</th>
+                <th>Payment Status</th>
                 <th>Actions</th>
             </tr>
         </thead>

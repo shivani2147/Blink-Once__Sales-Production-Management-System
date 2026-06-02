@@ -49,7 +49,8 @@ async def list_camera_rent(
         rentals = query.all()
         
         # Calculate totals for filtered results
-        total_rental_income = sum(r.total_amount or 0 for r in rentals) if rentals else Decimal('0.0')
+        # Total Rental Income should include only rentals where work_status == 'Done'
+        total_rental_income = sum(r.total_amount or 0 for r in rentals if r.work_status == "Done") if rentals else Decimal('0.0')
         total_days_rented = sum(r.days for r in rentals) if rentals else 0
         paid_count = sum(1 for r in rentals if r.payment_status in ("Online", "Cash"))
         pending_payments = sum(r.total_amount or 0 for r in rentals if r.work_status != "Done")

@@ -79,17 +79,25 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         # 2. FINANCIAL DATA STATISTICS
         # ============================================
         rev_monthly = db.query(func.sum(MonthlyFinancialReport.total_amount)).scalar() or 0.0
-        rev_editing = db.query(func.sum(ClientsEditing.total_amount)).scalar() or 0.0
-        rev_camera = db.query(func.sum(CameraRent.total_amount)).scalar() or 0.0
-        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera)
-
+        # Only include confirmed/received amounts (work_status == 'Done') for sub-service revenue
+        rev_editing = db.query(func.sum(ClientsEditing.total_amount)).filter(ClientsEditing.work_status == "Done").scalar() or 0.0
+        rev_camera = db.query(func.sum(CameraRent.total_amount)).filter(CameraRent.work_status == "Done").scalar() or 0.0
+        rev_followup = db.query(func.sum(ThreeMonthsClientFollowup.total_amount)).scalar() or 0.0
+        rev_shoots = db.query(func.sum(UpcomingClientsShoot.total_amount)).scalar() or 0.0
+        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera) + float(rev_followup) + float(rev_shoots)
         exp_monthly = db.query(func.sum(MonthlyFinancialReport.expenses)).scalar() or 0.0
         freelancer_expenses = db.query(func.sum(MonthlyFinancialReport.freelancer_amount)).scalar() or 0.0
         total_investment = db.query(func.sum(InvestmentToGrowCompany.amount)).scalar() or 0.0
         total_expenses = float(exp_monthly) + float(freelancer_expenses) + float(total_investment)
 
         total_profit = total_revenue - total_expenses
-        pending_payments = db.query(func.sum(MonthlyFinancialReport.pending_amount)).scalar() or 0.0
+        outflow_total = float(freelancer_expenses) + float(total_investment)
+        
+        # Calculate receivables/collections: Monthly Financial + Clients Editing + Camera Rent
+        monthly_pending = db.query(func.sum(MonthlyFinancialReport.pending_amount)).scalar() or 0.0
+        editing_pending = db.query(func.sum(ClientsEditing.total_amount)).filter(ClientsEditing.work_status == "Pending").scalar() or 0.0
+        camera_pending = db.query(func.sum(CameraRent.total_amount)).filter(CameraRent.work_status == "Pending").scalar() or 0.0
+        pending_payments = float(monthly_pending) + float(editing_pending) + float(camera_pending)
         
         # Payment Recovery count from Post-Production where payment_recovery is False
         payment_recovery_pending = db.query(PostProduction).filter(PostProduction.payment_recovery == False).count()
@@ -97,6 +105,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
 
         camera_rent_income = float(rev_camera)
         editing_revenue = float(rev_editing)
+        sub_service_revenue = camera_rent_income + editing_revenue
 
         # ============================================
         # 3. LEADS & CONVERSION STATS
@@ -197,10 +206,16 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         # Overdue post production tasks
         overdue_post_prod = [task for task in db.query(PostProduction).filter(PostProduction.closure_date == None).all() if task.is_overdue()]
 
-        # Upcoming events (Next 30 days) from UpcomingClientsShoot and PreProduction
+        # Upcoming events (Next 30 days) from UpcomingClientsShoot
         upcoming_shoots_list = db.query(UpcomingClientsShoot).filter(
             UpcomingClientsShoot.date >= today
         ).order_by(UpcomingClientsShoot.date.asc()).limit(10).all()
+
+        # Upcoming deadlines from PostProduction
+        upcoming_deadlines_list = db.query(PostProduction).filter(
+            PostProduction.deadline != None,
+            PostProduction.deadline >= today
+        ).order_by(PostProduction.deadline.asc()).limit(10).all()
 
         context = {
             "request": request,
@@ -222,6 +237,8 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "total_investment_words": number_to_words(total_investment),
             "freelancer_expenses": freelancer_expenses,
             "freelancer_expenses_words": number_to_words(freelancer_expenses),
+            "outflow_total": outflow_total,
+            "outflow_total_words": number_to_words(outflow_total),
             "pending_payments": pending_payments,
             "pending_payments_words": number_to_words(pending_payments),
             "payment_recovery_pending": payment_recovery_pending,
@@ -230,6 +247,8 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "camera_rent_income_words": number_to_words(camera_rent_income),
             "editing_revenue": editing_revenue,
             "editing_revenue_words": number_to_words(editing_revenue),
+            "sub_service_revenue": sub_service_revenue,
+            "sub_service_revenue_words": number_to_words(sub_service_revenue),
             "lead_conversion_rate": round(lead_conversion_rate, 2),
             "total_leads": total_leads,
             "confirmed_clients": confirmed_clients,
@@ -257,6 +276,8 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "overdue_post_prod": overdue_post_prod[:5],
             "overdue_tasks": len(overdue_post_prod),
             "upcoming_shoots_list": upcoming_shoots_list,
+            "upcoming_deadlines_list": upcoming_deadlines_list,
+            "today": today,
 
             # Chart datasets (JSON ready lists)
             "monthly_labels": monthly_labels,

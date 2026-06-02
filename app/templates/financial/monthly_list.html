@@ -91,7 +91,7 @@
                 <th>Expenses</th>
                 <th>Profit</th>
                 <th>Status</th>
-                <th>Work Status</th>
+                <th>Payment</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -117,7 +117,12 @@
                         {{ report.work_status }}
                     </span>
                 </td>
-                <td>{{ report.work_status }}</td>
+                <td>
+                    <span
+                        class="badge {% if report.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">
+                        {{ report.payment_status }}
+                    </span>
+                </td>
                 <td class="action-buttons">
                     
                     <a href="/financial/monthly/{{ report.id }}/edit" class="btn-icon" title="Edit">✏️</a>

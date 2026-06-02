@@ -168,11 +168,13 @@
                 const hidden = container.querySelector('.event_date_hidden') || container.querySelector('[name="event_date"]') || document.getElementById('event_date');
                 if (!hidden) return;
                 const values = getDateValues(container);
-                const days = getDayNumbers(values);
-                if (days.length) {
-                    hidden.value = days.join(', ');
+                const dateMode = container.dataset.eventDateMode === 'date';
+
+                if (dateMode) {
+                    hidden.value = values.length ? values[0] : '';
                 } else {
-                    hidden.value = '';
+                    const days = getDayNumbers(values);
+                    hidden.value = days.length ? days.join(', ') : '';
                 }
             }
 
@@ -186,7 +188,7 @@
                 });
             }
 
-            function createDateInputRow(container, year, month, day = '01') {
+            function createDateInputRow(container, year, month, day = '01', fullDate = null) {
                 const group = document.createElement('div');
                 group.className = 'date-input-group';
                 group.innerHTML = `
@@ -201,7 +203,7 @@
                     updateRemoveButtons(container);
                 });
                 const input = group.querySelector('.event_date_input');
-                input.value = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                input.value = fullDate ? fullDate : `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 input.addEventListener('change', function() {
                     updateHiddenValue(container);
                 });
@@ -253,39 +255,58 @@
                     month = String(today.getMonth() + 1).padStart(2, '0');
                 }
 
-                // Populate existing days
+                // Populate existing days or date values
                 const hiddenString = hiddenField.value ? hiddenField.value.trim() : '';
-                if (hiddenString && /^[\d,\s]+$/.test(hiddenString)) {
-                    const days = hiddenString.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31);
-                    if (days.length > 0) {
-                        // Clear any default empty inputs in the container
-                        const existingGroups = container.querySelectorAll('.date-input-group');
-                        existingGroups.forEach(g => g.remove());
+                const isDateMode = container.dataset.eventDateMode === 'date';
 
-                        // Re-create input row for each day
-                        days.forEach((day) => {
-                            const row = createDateInputRow(container, year, month, day);
-                            if (button.parentNode === container) {
-                                container.insertBefore(row, button);
-                            } else {
-                                const listContainer = container.querySelector('#event_dates_container') || container;
-                                listContainer.appendChild(row);
-                            }
-                        });
-                    }
-                } else {
-                    // Populate initial default date input if empty
-                    const existingInputs = container.querySelectorAll('.event_date_input');
-                    if (existingInputs.length === 0) {
-                        const today = new Date();
-                        const defaultDay = today.getDate();
-                        const row = createDateInputRow(container, year, month, defaultDay);
-                        if (button.parentNode === container) {
-                            container.insertBefore(row, button);
-                        } else {
-                            const listContainer = container.querySelector('#event_dates_container') || container;
-                            listContainer.appendChild(row);
+                if (hiddenString) {
+                    if (isDateMode) {
+                        const dates = hiddenString.split(/[\s,]+/).map(d => d.trim()).filter(Boolean);
+                        if (dates.length > 0 && dates.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d))) {
+                            const existingGroups = container.querySelectorAll('.date-input-group');
+                            existingGroups.forEach(g => g.remove());
+
+                            dates.forEach((dateValue) => {
+                                const row = createDateInputRow(container, year, month, null, dateValue);
+                                if (button.parentNode === container) {
+                                    container.insertBefore(row, button);
+                                } else {
+                                    const listContainer = container.querySelector('#event_dates_container') || container;
+                                    listContainer.appendChild(row);
+                                }
+                            });
                         }
+                    } else if (/^[\d,\s]+$/.test(hiddenString)) {
+                        const days = hiddenString.split(/[\s,]+/).map(d => parseInt(d, 10)).filter(n => n >= 1 && n <= 31);
+                        if (days.length > 0) {
+                            // Clear any default empty inputs in the container
+                            const existingGroups = container.querySelectorAll('.date-input-group');
+                            existingGroups.forEach(g => g.remove());
+
+                            // Re-create input row for each day
+                            days.forEach((day) => {
+                                const row = createDateInputRow(container, year, month, day);
+                                if (button.parentNode === container) {
+                                    container.insertBefore(row, button);
+                                } else {
+                                    const listContainer = container.querySelector('#event_dates_container') || container;
+                                    listContainer.appendChild(row);
+                                }
+                            });
+                        }
+                    }
+                }
+
+                const existingInputs = container.querySelectorAll('.event_date_input');
+                if (existingInputs.length === 0) {
+                    const today = new Date();
+                    const defaultDay = today.getDate();
+                    const row = createDateInputRow(container, year, month, defaultDay);
+                    if (button.parentNode === container) {
+                        container.insertBefore(row, button);
+                    } else {
+                        const listContainer = container.querySelector('#event_dates_container') || container;
+                        listContainer.appendChild(row);
                     }
                 }
 

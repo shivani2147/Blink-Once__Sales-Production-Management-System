@@ -60,6 +60,8 @@ do the same for other files--> Summary Cards (card-subtext)
 
 modify the code
 
+# add summary card sub-text --> amount in words
+
 ========================================================================
 
 # Multiple amounts in Amount field 
@@ -74,3 +76,22 @@ because the datatype of amount is nvarchar
 
 ========================================================================
 
+# Combination
+
+in the dashboard page : 
+
+in "Receivables & Collections" summary card --> it should be the adding of (Monthly Financial Reports
+ -- Pending Payments
+) + (Clients Editing
+ -- Pending Amount
+) 
+
+========================================================================
+
+# Change the names
+
+in the "Create Monthly Financial Report" page ; 
+
+change the names : 
+Payment Status --> Payment Mode
+Work Status  --> Payment Status

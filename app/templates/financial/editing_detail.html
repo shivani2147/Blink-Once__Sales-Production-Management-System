@@ -34,11 +34,11 @@
             <h3>Status</h3>
             <div class="detail-grid">
                 <div class="detail-item">
-                    <span class="label">Payment:</span>
+                    <span class="label">Payment Mode:</span>
                     <span class="badge badge-info">{{ project.payment_status }}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="label">Work Status:</span>
+                    <span class="label">Payment Status:</span>
                     <span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span>
                 </div>
             </div>

@@ -83,10 +83,11 @@ async def list_monthly_reports(
         reports = query.all()
         
         # Calculate totals for filtered results
-        total_revenue = sum(r.total_amount for r in reports) if reports else 0.0
+        # Total Revenue should include only reports where work_status == 'Done'
+        total_revenue = sum(r.total_amount for r in reports if r.work_status == "Done") if reports else 0.0
         total_paid = sum(r.paid_amount for r in reports) if reports else 0.0
         total_pending = sum(r.pending_amount for r in reports) if reports else 0.0
-        total_expenses = sum(r.expenses for r in reports) if reports else 0.0
+        total_expenses = sum(r.expenses + r.freelancer_amount for r in reports) if reports else 0.0
         total_profit = sum(r.profit for r in reports) if reports else 0.0
         
         return templates.TemplateResponse("financial/monthly_list.html", {

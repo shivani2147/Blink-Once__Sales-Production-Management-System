@@ -14,6 +14,16 @@ import os
 
 router = APIRouter(prefix="/post-production", tags=["Post-Production"])
 
+def parse_iso_event_date(event_date: str):
+    if not event_date:
+        return None
+    for part in [p.strip() for p in event_date.split(',') if p.strip()]:
+        try:
+            return datetime.strptime(part, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+    return None
+
 # Setup templates
 template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
 templates = Jinja2Templates(directory=template_dir)
@@ -100,24 +110,13 @@ async def create_post_production(
 ):
     """Create new post-production record."""
     try:
-        # Normalize event_date to day numbers
-        days = []
-        if event_date:
-            parts = [p.strip() for p in event_date.split(',')]
-            for p in parts:
-                if '-' in p:
-                    try:
-                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                    except ValueError:
-                        pass
-                elif p.isdigit():
-                    days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_value = parse_iso_event_date(event_date)
+        if not event_date_value:
+            raise ValueError("Invalid event_date format. Please select a valid date.")
 
         record = PostProduction(
             couple_name=couple_name,
-            event_date=event_date_str,
+            event_date=event_date_value,
             deadline=datetime.strptime(deadline, "%Y-%m-%d").date(),
             event_name=event_name,
             data_copy=data_copy,
@@ -260,23 +259,12 @@ async def update_post_production(
         if not record:
             return {"error": "Record not found"}, 404
         
-        # Normalize event_date to day numbers
-        days = []
-        if event_date:
-            parts = [p.strip() for p in event_date.split(',')]
-            for p in parts:
-                if '-' in p:
-                    try:
-                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                    except ValueError:
-                        pass
-                elif p.isdigit():
-                    days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_value = parse_iso_event_date(event_date)
+        if not event_date_value:
+            raise ValueError("Invalid event_date format. Please select a valid date.")
 
         record.couple_name = couple_name
-        record.event_date = event_date_str
+        record.event_date = event_date_value
         record.deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
         record.closure_date = datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None
         record.event_name = event_name

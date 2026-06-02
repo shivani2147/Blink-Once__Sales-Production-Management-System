@@ -50,9 +50,12 @@ async def list_editing(
         editing_projects = query.all()
         
         # Calculate totals for filtered results
-        total_revenue = sum(p.total_amount for p in editing_projects) if editing_projects else 0.0
+        # Total Revenue should only include projects where payment/work status is 'Done'
+        total_revenue = sum(p.total_amount for p in editing_projects if p.work_status == "Done") if editing_projects else 0.0
         total_revenue_words = number_to_words(total_revenue)
         pending_count = sum(1 for p in editing_projects if p.work_status == "Pending")
+        pending_amount = sum(p.total_amount for p in editing_projects if p.work_status == "Pending") if editing_projects else 0.0
+        pending_amount_words = number_to_words(pending_amount)
         done_count = sum(1 for p in editing_projects if p.work_status == "Done")
         completion_rate = (done_count / len(editing_projects) * 100) if len(editing_projects) > 0 else 0
         
@@ -67,6 +70,8 @@ async def list_editing(
             "total_revenue": total_revenue,
             "total_revenue_words": total_revenue_words,
             "pending_count": pending_count,
+            "pending_amount": pending_amount,
+            "pending_amount_words": pending_amount_words,
             "done_count": done_count,
             "completion_rate": round(completion_rate, 2),
             "online_payment": online_payment,

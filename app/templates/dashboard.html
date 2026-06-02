@@ -5,7 +5,7 @@
     /* ==========================================================================
        Professional Executive Analytics Dashboard - Custom Premium Styling
        ========================================================================== */
-    
+
     :root {
         --theme-primary: #5856d6;
         --theme-primary-light: rgba(88, 86, 214, 0.1);
@@ -38,8 +38,15 @@
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Subheader & Date display */
@@ -49,7 +56,7 @@
         align-items: center;
         margin-bottom: 8px;
     }
-    
+
     .dashboard-intro h2 {
         font-size: 1.5rem;
         font-weight: 700;
@@ -141,14 +148,45 @@
     }
 
     /* Gradients/Colors for Icons */
-    .icon-clients { background: linear-gradient(135deg, #ff5e62, #ff9966); color: white; }
-    .icon-projects { background: linear-gradient(135deg, #00c6ff, #0072ff); color: white; }
-    .icon-revenue { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
-    .icon-leads { background: linear-gradient(135deg, #7f00ff, #e100ff); color: white; }
-    .icon-expenses { background: linear-gradient(135deg, #f857a6, #ff5858); color: white; }
-    .icon-profit { background: linear-gradient(135deg, #56ab2f, #a8e063); color: white; }
-    .icon-camera { background: linear-gradient(135deg, #3a7bd5, #3a6073); color: white; }
-    .icon-editing { background: linear-gradient(135deg, #f39c12, #f1c40f); color: white; }
+    .icon-clients {
+        background: linear-gradient(135deg, #ff5e62, #ff9966);
+        color: white;
+    }
+
+    .icon-projects {
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        color: white;
+    }
+
+    .icon-revenue {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: white;
+    }
+
+    .icon-leads {
+        background: linear-gradient(135deg, #7f00ff, #e100ff);
+        color: white;
+    }
+
+    .icon-expenses {
+        background: linear-gradient(135deg, #f857a6, #ff5858);
+        color: white;
+    }
+
+    .icon-profit {
+        background: linear-gradient(135deg, #56ab2f, #a8e063);
+        color: white;
+    }
+
+    .icon-camera {
+        background: linear-gradient(135deg, #3a7bd5, #3a6073);
+        color: white;
+    }
+
+    .icon-editing {
+        background: linear-gradient(135deg, #f39c12, #f1c40f);
+        color: white;
+    }
 
     /* Visual Analytics Layout */
     .analytics-grid {
@@ -177,6 +215,7 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        min-height: 0;
     }
 
     .premium-card-header {
@@ -200,7 +239,10 @@
 
     .premium-card-body {
         padding: 24px;
-        flex: 1;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     /* Charts Row */
@@ -209,7 +251,7 @@
         grid-template-columns: 1fr 1fr;
         gap: 24px;
     }
-    
+
     @media (max-width: 768px) {
         .charts-flex-row {
             grid-template-columns: 1fr;
@@ -262,6 +304,7 @@
         display: flex;
         flex-direction: column;
         gap: 24px;
+        min-height: 0;
     }
 
     .event-list {
@@ -269,7 +312,9 @@
         flex-direction: column;
         gap: 14px;
         max-height: 520px;
+        min-height: 0;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-right: 4px;
     }
 
@@ -298,7 +343,7 @@
         padding: 6px;
         min-width: 52px;
         height: 52px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .event-date-day {
@@ -419,7 +464,8 @@
     <div class="dashboard-intro">
         <div>
             <h2>Executive Command Center</h2>
-            <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem;">Real-time business intelligence across sales pipelines & production flows.</p>
+            <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem;">Real-time business intelligence
+                across sales pipelines & production flows.</p>
         </div>
         <div class="dashboard-date-badge">
             📅 <span id="current-date-str"></span>
@@ -432,7 +478,8 @@
         {% if overdue_post_prod %}
         <div class="alert alert-danger" style="margin: 0; padding: 12px 18px; border-radius: 10px;">
             <strong>🚨 Deliverables Overdue Alert</strong>
-            <p style="margin: 4px 0 0 0; font-size: 0.8rem;">There are {{ overdue_post_prod|length }} active post-production contracts currently past deadline. Immediate resolution is recommended.</p>
+            <p style="margin: 4px 0 0 0; font-size: 0.8rem;">There are {{ overdue_post_prod|length }} active
+                post-production contracts currently past deadline. Immediate resolution is recommended.</p>
         </div>
         {% endif %}
     </div>
@@ -448,7 +495,9 @@
             </div>
             <div class="kpi-body">
                 <span class="kpi-main-val">₹{{ "{:,.2f}".format(total_revenue) }}</span>
-                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_revenue_words }}</small>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
+                    total_revenue_words }}</small>
                 <span class="kpi-subtext" style="color: var(--theme-success); margin-top: 8px;">
                     📈 Monthly, Editing & Rentals Combined
                 </span>
@@ -463,7 +512,9 @@
             </div>
             <div class="kpi-body">
                 <span class="kpi-main-val">₹{{ "{:,.2f}".format(total_expenses) }}</span>
-                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_expenses_words }}</small>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
+                    total_expenses_words }}</small>
                 <span class="kpi-subtext" style="color: var(--theme-danger); margin-top: 8px;">
                     📉 Investments & Freelancer Costs
                 </span>
@@ -477,10 +528,13 @@
                 <div class="kpi-badge-icon icon-profit">📈</div>
             </div>
             <div class="kpi-body">
-                <span class="kpi-main-val" style="color: {% if total_profit >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
+                <span class="kpi-main-val"
+                    style="color: {% if total_profit >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
                     ₹{{ "{:,.2f}".format(total_profit) }}
                 </span>
-                <small class="kpi-words" style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ total_profit_words }}</small>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
+                    total_profit_words }}</small>
                 <span class="kpi-subtext" style="margin-top: 8px;">
                     ⚖️ Margins & Direct Yields
                 </span>
@@ -511,9 +565,11 @@
                 <span style="font-size: 1.1rem;">👥</span>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">{{ total_clients }} Clients</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">{{ total_clients }} Clients
+                </div>
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
-                    📂 {{ total_projects }} Projects • {{ ongoing_projects }} Ongoing • {{ completed_projects }} Completed
+                    📂 {{ total_projects }} Projects • {{ ongoing_projects }} Ongoing • {{ completed_projects }}
+                    Completed
                 </div>
             </div>
         </div>
@@ -525,26 +581,35 @@
                 <span style="font-size: 1.1rem;">⏳</span>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--theme-warning);">₹{{ "{:,.2f}".format(pending_payments) }}</div>
-                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ pending_payments_words }}</small>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--theme-warning);">₹{{
+                    "{:,.2f}".format(pending_payments) }}</div>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{
+                    pending_payments_words }}</small>
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
                     🛡️ {{ payment_recovery_pending }} Pending Recovery • {{ payment_recovery_done }} Resolved
                 </div>
             </div>
         </div>
 
-        <!-- KPI: Business Investments & Freelancer -->
+        <!-- KPI: Outflows Summary -->
         <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
             <div class="kpi-header" style="margin-bottom: 2px;">
                 <span class="kpi-title" style="font-size: 0.75rem;">Outflows Summary</span>
                 <span style="font-size: 1.1rem;">🔧</span>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{ "{:,.2f}".format(total_investment) }}</div>
-                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ total_investment_words }}</small>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{
+                    "{:,.2f}".format(outflow_total) }}</div>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{
+                    outflow_total_words }}</small>
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
-                    📈 Investments • Freelancer Cost: ₹{{ "{:,.2f}".format(freelancer_expenses) }}
-                    <small class="kpi-words" style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ freelancer_expenses_words }}</small>
+                    🔧 Investments: ₹{{ "{:,.2f}".format(total_investment) }} • Freelancers: ₹{{
+                    "{:,.2f}".format(freelancer_expenses) }}
+                    <small class="kpi-words"
+                        style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
+                        freelancer_expenses_words }}</small>
                 </div>
             </div>
         </div>
@@ -556,11 +621,15 @@
                 <span style="font-size: 1.1rem;">🎥</span>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{ "{:,.2f}".format(camera_rent_income) }}</div>
-                <small class="kpi-words" style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{ camera_rent_income_words }}</small>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{
+                    "{:,.2f}".format(sub_service_revenue) }}</div>
+                <small class="kpi-words"
+                    style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{
+                    sub_service_revenue_words }}</small>
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
-                    📷 Camera Rent • Editing Workload: ₹{{ "{:,.2f}".format(editing_revenue) }}
-                    <small class="kpi-words" style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{ editing_revenue_words }}</small>
+                    📷 Camera Rent + ✂️ Editing Workload
+                    <small class="kpi-words"
+                        style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">₹{{ "{:,.2f}".format(camera_rent_income) }} + ₹{{ "{:,.2f}".format(editing_revenue) }}</small>
                 </div>
             </div>
         </div>
@@ -594,7 +663,8 @@
                         <div class="chart-container" style="height: 180px;">
                             <canvas id="leadConversionChart"></canvas>
                         </div>
-                        <div style="display: flex; justify-content: space-around; font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
+                        <div
+                            style="display: flex; justify-content: space-around; font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
                             <span>🎯 Confirmed: {{ confirmed_clients }}</span>
                             <span>⏳ Pending: {{ upcoming_followups }}</span>
                             <span>❌ Rejected: {{ rejected_leads }}</span>
@@ -615,7 +685,8 @@
                                     <span>{{ pre_prod_avg }}%</span>
                                 </div>
                                 <div class="progress-bar-track">
-                                    <div class="progress-bar-fill" style="width: {{ pre_prod_avg }}%; background: var(--theme-primary);"></div>
+                                    <div class="progress-bar-fill"
+                                        style="width: {{ pre_prod_avg }}%; background: var(--theme-primary);"></div>
                                 </div>
                             </div>
                             <div class="progress-bar-item">
@@ -624,7 +695,8 @@
                                     <span>{{ on_prod_avg }}%</span>
                                 </div>
                                 <div class="progress-bar-track">
-                                    <div class="progress-bar-fill" style="width: {{ on_prod_avg }}%; background: var(--theme-info);"></div>
+                                    <div class="progress-bar-fill"
+                                        style="width: {{ on_prod_avg }}%; background: var(--theme-info);"></div>
                                 </div>
                             </div>
                             <div class="progress-bar-item">
@@ -633,7 +705,8 @@
                                     <span>{{ post_prod_avg }}%</span>
                                 </div>
                                 <div class="progress-bar-track">
-                                    <div class="progress-bar-fill" style="width: {{ post_prod_avg }}%; background: var(--theme-success);"></div>
+                                    <div class="progress-bar-fill"
+                                        style="width: {{ post_prod_avg }}%; background: var(--theme-success);"></div>
                                 </div>
                             </div>
                             <div class="progress-bar-item">
@@ -642,7 +715,8 @@
                                     <span>{{ checklist_avg }}%</span>
                                 </div>
                                 <div class="progress-bar-track">
-                                    <div class="progress-bar-fill" style="width: {{ checklist_avg }}%; background: var(--theme-warning);"></div>
+                                    <div class="progress-bar-fill"
+                                        style="width: {{ checklist_avg }}%; background: var(--theme-warning);"></div>
                                 </div>
                             </div>
                         </div>
@@ -661,25 +735,60 @@
                 <div class="premium-card-body">
                     <div class="event-list">
                         {% if upcoming_shoots_list %}
-                            {% for event in upcoming_shoots_list %}
-                            <div class="event-card" style="border-left-color: {% if event.confirmation %}var(--theme-success){% else %}var(--theme-warning){% endif %};">
-                                <div class="event-date-box">
-                                    <span class="event-date-day">{{ event.date.strftime('%d') }}</span>
-                                    <span class="event-date-month">{{ event.date.strftime('%b') }}</span>
-                                </div>
-                                <div class="event-details">
-                                    <span class="event-client">{{ event.client_name }}</span>
-                                    <span class="event-type">🎥 {{ event.event_type }} • {{ event.event_date }}</span>
-                                    <span class="event-status-badge" style="background: {% if event.confirmation %}var(--theme-success-light); color: var(--theme-success);{% else %}var(--theme-warning-light); color: var(--theme-warning);{% endif %}">
-                                        {% if event.confirmation %}Confirmed{% else %}Pending{% endif %}
-                                    </span>
-                                </div>
+                        {% for event in upcoming_shoots_list %}
+                        <div class="event-card"
+                            style="border-left-color: {% if event.confirmation %}var(--theme-success){% else %}var(--theme-warning){% endif %};">
+                            <div class="event-date-box">
+                                <span class="event-date-day">{{ event.date.strftime('%d') }}</span>
+                                <span class="event-date-month">{{ event.date.strftime('%b') }}</span>
                             </div>
-                            {% endfor %}
+                            <div class="event-details">
+                                <span class="event-client">{{ event.client_name }}</span>
+                                <span class="event-type">🎥 {{ event.event_type }} • {{ event.event_date }}</span>
+                                <span class="event-status-badge"
+                                    style="background: {% if event.confirmation %}var(--theme-success-light); color: var(--theme-success);{% else %}var(--theme-warning-light); color: var(--theme-warning);{% endif %}">
+                                    {% if event.confirmation %}Confirmed{% else %}Pending{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
                         {% else %}
-                            <div class="empty-state-mini">
-                                <p style="margin: 0;">No upcoming shoots scheduled.</p>
+                        <div class="empty-state-mini">
+                            <p style="margin: 0;">No upcoming shoots scheduled.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-card" style="height: 100%; margin-top: 20px;">
+                <div class="premium-card-header">
+                    <h3>⏳ Upcoming Deadlines</h3>
+                    <a href="/post-production" class="btn-link" style="font-size: 0.75rem;">View All</a>
+                </div>
+                <div class="premium-card-body">
+                    <div class="event-list">
+                        {% if upcoming_deadlines_list %}
+                        {% for item in upcoming_deadlines_list %}
+                        <div class="event-card" style="border-left-color: var(--theme-info);">
+                            <div class="event-date-box">
+                                <span class="event-date-day">{{ item.deadline.strftime('%d') }}</span>
+                                <span class="event-date-month">{{ item.deadline.strftime('%b') }}</span>
                             </div>
+                            <div class="event-details">
+                                <span class="event-client">{{ item.couple_name }}</span>
+                                <span class="event-type">Deadline • {{ item.event_date }}</span>
+                                <span class="event-status-badge"
+                                    style="background: var(--theme-info-light); color: var(--theme-info);">
+                                    Due {{ (item.deadline - today).days if item.deadline else '?' }} days
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="empty-state-mini">
+                            <p style="margin: 0;">No upcoming deadlines.</p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -725,28 +834,34 @@
                     <thead>
                         <tr>
                             <th>Couple Name</th>
+                            <th>Event Type</th>
                             <th>Event Date</th>
                             <th>Completion</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if recent_pre_prod %}
-                            {% for rec in recent_pre_prod %}
-                            <tr>
-                                <td><strong>{{ rec.couple_name }}</strong></td>
-                                <td>{{ rec.event_date }}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div class="progress-bar-small">
-                                            <div class="progress-bar-small-fill" style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-primary);"></div>
+                        {% for rec in recent_pre_prod %}
+                        <tr>
+                            <td><strong>{{ rec.couple_name }}</strong></td>
+                            <td>{{ rec.event_type }}</td>
+                            <td>{{ rec.event_date }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar-small">
+                                        <div class="progress-bar-small-fill"
+                                            style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-primary);">
                                         </div>
-                                        <span>{{ rec.get_completion_percentage() }}%</span>
                                     </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                    <span>{{ rec.get_completion_percentage() }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No pre-production records yet.</td></tr>
+                        <tr>
+                            <td colspan="4" class="empty-state-mini">No pre-production records yet.</td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -765,27 +880,39 @@
                         <tr>
                             <th>Couple Name</th>
                             <th>Event Date</th>
+                            <th>Payment</th>
                             <th>Completion</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if recent_on_prod %}
-                            {% for rec in recent_on_prod %}
-                            <tr>
-                                <td><strong>{{ rec.couple_name }}</strong></td>
-                                <td>{{ rec.event_date }}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div class="progress-bar-small">
-                                            <div class="progress-bar-small-fill" style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-info);"></div>
+                        {% for rec in recent_on_prod %}
+                        <tr>
+                            <td><strong>{{ rec.couple_name }}</strong></td>
+                            <td>{{ rec.event_date }}</td>
+                            <td>
+                                {% if rec.payment_received %}
+                                <span class="badge badge-success">Received</span>
+                                {% else %}
+                                <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar-small">
+                                        <div class="progress-bar-small-fill"
+                                            style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-info);">
                                         </div>
-                                        <span>{{ rec.get_completion_percentage() }}%</span>
                                     </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                    <span>{{ rec.get_completion_percentage() }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No on-production records yet.</td></tr>
+                        <tr>
+                            <td colspan="4" class="empty-state-mini">No on-production records yet.</td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -803,71 +930,46 @@
                     <thead>
                         <tr>
                             <th>Couple Name</th>
+                            <th>Event Date</th>
                             <th>Deadline</th>
+                            <th>Completion</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if recent_post_prod %}
-                            {% for rec in recent_post_prod %}
-                            <tr class="{% if rec.is_overdue() and not rec.closure_date %}danger-row{% endif %}">
-                                <td><strong>{{ rec.couple_name }}</strong></td>
-                                <td>{{ rec.deadline.strftime('%d %b %Y') if rec.deadline else '-' }}</td>
-                                <td>
-                                    {% if rec.closure_date %}
-                                        <span class="badge badge-success">Closed</span>
-                                    {% else %}
-                                        {% if rec.is_overdue() %}
-                                            <span class="badge badge-danger">Overdue</span>
-                                        {% else %}
-                                            <span class="badge badge-warning">Active</span>
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No post-production records yet.</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Checklist Management Summary -->
-        <div class="premium-card">
-            <div class="premium-card-header">
-                <h3>✓ Checklist Completion</h3>
-                <a href="/checklist" class="btn-link">Detail List</a>
-            </div>
-            <div class="premium-card-body" style="padding: 10px;">
-                <table class="summary-table-mini">
-                    <thead>
-                        <tr>
-                            <th>Couple Name</th>
-                            <th>Equipment Check</th>
-                            <th>Status</th>
+                        {% for rec in recent_post_prod %}
+                        <tr class="{% if rec.is_overdue() and not rec.closure_date %}danger-row{% endif %}">
+                            <td><strong>{{ rec.couple_name }}</strong></td>
+                            <td>{{ rec.event_date }}</td>
+                            <td>{{ rec.deadline.strftime('%d %b %Y') if rec.deadline else '-' }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-bar-small">
+                                        <div class="progress-bar-small-fill"
+                                            style="width: {{ rec.get_completion_percentage() }}%; background: var(--theme-primary);">
+                                        </div>
+                                    </div>
+                                    <span>{{ rec.get_completion_percentage() }}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if rec.closure_date %}
+                                <span class="badge badge-success">Closed</span>
+                                {% else %}
+                                {% if rec.is_overdue() %}
+                                <span class="badge badge-danger">Overdue</span>
+                                {% else %}
+                                <span class="badge badge-warning">Active</span>
+                                {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% if recent_checklists %}
-                            {% for rec in recent_checklists %}
-                            <tr>
-                                <td><strong>{{ rec.couple_name }}</strong></td>
-                                <td>
-                                    {% if rec.equipments_ready %}
-                                        <span style="color: var(--theme-success); font-weight: bold;">✓ Ready</span>
-                                    {% else %}
-                                        <span style="color: var(--theme-warning);">Pending</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge {% if rec.checklist_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">{{ rec.checklist_status|capitalize }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                        {% endfor %}
                         {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No checklists created yet.</td></tr>
+                        <tr>
+                            <td colspan="5" class="empty-state-mini">No post-production records yet.</td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -891,17 +993,21 @@
                     </thead>
                     <tbody>
                         {% if recent_financials %}
-                            {% for rec in recent_financials %}
-                            <tr>
-                                <td><strong>{{ rec.client_name }}</strong></td>
-                                <td>₹{{ "{:,.2f}".format(rec.total_amount) }}</td>
-                                <td>
-                                    <span class="badge {% if rec.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ rec.payment_status }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                        {% for rec in recent_financials %}
+                        <tr>
+                            <td><strong>{{ rec.client_name }}</strong></td>
+                            <td>₹{{ "{:,.2f}".format(rec.total_amount) }}</td>
+                            <td>
+                                <span
+                                    class="badge {% if rec.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{
+                                    rec.payment_status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No financial reports submitted.</td></tr>
+                        <tr>
+                            <td colspan="3" class="empty-state-mini">No financial reports submitted.</td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -920,22 +1026,28 @@
                         <tr>
                             <th>Client Name</th>
                             <th>Platform</th>
+                            <th>Confirmation Amount</th>
                             <th>Lead Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if recent_followups %}
-                            {% for rec in recent_followups %}
-                            <tr>
-                                <td><strong>{{ rec.client_name }}</strong></td>
-                                <td>{{ rec.platform }}</td>
-                                <td>
-                                    <span class="badge {% if rec.status == 'Done' %}badge-success{% elif rec.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{ rec.status }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                        {% for rec in recent_followups %}
+                        <tr>
+                            <td><strong>{{ rec.client_name }}</strong></td>
+                            <td>{{ rec.platform }}</td>
+                            <td>₹{{ "{:,.2f}".format(rec.confirmation or 0.0) }}</td>
+                            <td>
+                                <span
+                                    class="badge {% if rec.status == 'Done' %}badge-success{% elif rec.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{
+                                    rec.status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% else %}
-                            <tr><td colspan="3" class="empty-state-mini">No leads registered.</td></tr>
+                        <tr>
+                            <td colspan="4" class="empty-state-mini">No leads registered.</td>
+                        </tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -946,7 +1058,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         // Set Header Date
         const today = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -960,172 +1072,173 @@
         // 1. FINANCIAL TREND LINE & BAR CHART
         // ============================================
         const trendCtx = document.getElementById('financialTrendChart').getContext('2d');
-        const trendLabels = {{ monthly_labels | tojson }};
-        const revenueData = {{ monthly_revenue_dataset | tojson }};
-        const expensesData = {{ monthly_expenses_dataset | tojson }};
-        const profitData = {{ monthly_profit_dataset | tojson }};
+        const trendLabels = {{ monthly_labels | tojson
+    }};
+    const revenueData = {{ monthly_revenue_dataset | tojson }};
+    const expensesData = {{ monthly_expenses_dataset | tojson }};
+    const profitData = {{ monthly_profit_dataset | tojson }};
 
-        new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: trendLabels,
-                datasets: [
-                    {
-                        label: 'Total Revenue (₹)',
-                        data: revenueData,
-                        borderColor: '#34c759',
-                        backgroundColor: 'rgba(52, 199, 89, 0.05)',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Total Expenses (₹)',
-                        data: expensesData,
-                        borderColor: '#ff3b30',
-                        backgroundColor: 'rgba(255, 59, 48, 0.05)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        tension: 0.3,
-                        borderDash: [5, 5],
-                        fill: false
-                    },
-                    {
-                        label: 'Net Profit (₹)',
-                        data: profitData,
-                        borderColor: '#5856d6',
-                        backgroundColor: 'rgba(88, 86, 214, 0.1)',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        tension: 0.2,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: { boxWidth: 12, usePointStyle: true }
-                    },
-                    tooltip: {
-                        padding: 12,
-                        backgroundColor: 'rgba(28, 28, 30, 0.95)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: 'rgba(255,255,255,0.1)',
-                        borderWidth: 1
-                    }
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [
+                {
+                    label: 'Total Revenue (₹)',
+                    data: revenueData,
+                    borderColor: '#34c759',
+                    backgroundColor: 'rgba(52, 199, 89, 0.05)',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    tension: 0.3,
+                    fill: true
                 },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                        ticks: {
-                            callback: function(value) {
-                                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
-                                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
-                                return '₹' + value;
-                            }
+                {
+                    label: 'Total Expenses (₹)',
+                    data: expensesData,
+                    borderColor: '#ff3b30',
+                    backgroundColor: 'rgba(255, 59, 48, 0.05)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3,
+                    borderDash: [5, 5],
+                    fill: false
+                },
+                {
+                    label: 'Net Profit (₹)',
+                    data: profitData,
+                    borderColor: '#5856d6',
+                    backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    tension: 0.2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { boxWidth: 12, usePointStyle: true }
+                },
+                tooltip: {
+                    padding: 12,
+                    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                    ticks: {
+                        callback: function (value) {
+                            if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
+                            if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
+                            return '₹' + value;
                         }
                     }
                 }
             }
-        });
+        }
+    });
 
-        // ============================================
-        // 2. LEAD CONVERSION PIE CHART
-        // ============================================
-        const leadCtx = document.getElementById('leadConversionChart').getContext('2d');
-        const leadRaw = {{ lead_chart_data | tojson }};
-        
-        new Chart(leadCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Confirmed', 'Pending', 'Rejected'],
-                datasets: [{
-                    data: [leadRaw.Confirmed, leadRaw.Pending, leadRaw.Rejected],
-                    backgroundColor: ['#34c759', '#ff9500', '#ff3b30'],
-                    borderWidth: 2,
-                    hoverOffset: 6
-                }]
+    // ============================================
+    // 2. LEAD CONVERSION PIE CHART
+    // ============================================
+    const leadCtx = document.getElementById('leadConversionChart').getContext('2d');
+    const leadRaw = {{ lead_chart_data | tojson }};
+
+    new Chart(leadCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Confirmed', 'Pending', 'Rejected'],
+            datasets: [{
+                data: [leadRaw.Confirmed, leadRaw.Pending, leadRaw.Rejected],
+                backgroundColor: ['#34c759', '#ff9500', '#ff3b30'],
+                borderWidth: 2,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // ============================================
+    // 3. PLATFORM LEADS BAR CHART
+    // ============================================
+    const platformCtx = document.getElementById('platformLeadsChart').getContext('2d');
+    const platformRaw = {{ platform_lead_data | tojson }};
+
+    new Chart(platformCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(platformRaw),
+            datasets: [{
+                label: 'Leads generated',
+                data: Object.values(platformRaw),
+                backgroundColor: ['#5856d6', '#007aff', '#af52de'],
+                borderRadius: 8,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '68%',
-                plugins: {
-                    legend: { display: false }
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                    ticks: { stepSize: 1 }
                 }
             }
-        });
+        }
+    });
 
-        // ============================================
-        // 3. PLATFORM LEADS BAR CHART
-        // ============================================
-        const platformCtx = document.getElementById('platformLeadsChart').getContext('2d');
-        const platformRaw = {{ platform_lead_data | tojson }};
-
-        new Chart(platformCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(platformRaw),
-                datasets: [{
-                    label: 'Leads generated',
-                    data: Object.values(platformRaw),
-                    backgroundColor: ['#5856d6', '#007aff', '#af52de'],
-                    borderRadius: 8,
-                    barThickness: 30
+    // ============================================
+    // 4. PROJECT STATUS PIE CHART
+    // ============================================
+    const projCtx = document.getElementById('projectStatusChart').getContext('2d');
+    new Chart(projCtx, {
+        type: 'polarArea',
+        data: {
+            labels: ['Pre-Production', 'On-Production', 'Post-Production'],
+            datasets: [{
+                data: [{{ pre_prod_total }}, {{ on_prod_total }}, {{ post_prod_total }}],
+        backgroundColor: [
+        'rgba(88, 86, 214, 0.7)',
+        'rgba(0, 122, 255, 0.7)',
+        'rgba(52, 199, 89, 0.7)'
+    ],
+        borderColor: '#fff',
+        borderWidth: 2
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                        ticks: { stepSize: 1 }
-                    }
-                }
-            }
-        });
-
-        // ============================================
-        // 4. PROJECT STATUS PIE CHART
-        // ============================================
-        const projCtx = document.getElementById('projectStatusChart').getContext('2d');
-        new Chart(projCtx, {
-            type: 'polarArea',
-            data: {
-                labels: ['Pre-Production', 'On-Production', 'Post-Production'],
-                datasets: [{
-                    data: [{{ pre_prod_total }}, {{ on_prod_total }}, {{ post_prod_total }}],
-                    backgroundColor: [
-                        'rgba(88, 86, 214, 0.7)',
-                        'rgba(0, 122, 255, 0.7)',
-                        'rgba(52, 199, 89, 0.7)'
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 12 } }
-                },
-                scales: {
-                    r: { ticks: { display: false } }
-                }
-            }
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12 } }
+        },
+        scales: {
+            r: { ticks: { display: false } }
+        }
+    }
         });
     });
 </script>
