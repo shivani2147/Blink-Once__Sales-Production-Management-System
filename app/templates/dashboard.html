@@ -467,8 +467,43 @@
             <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem;">Real-time business intelligence
                 across sales pipelines & production flows.</p>
         </div>
-        <div class="dashboard-date-badge">
-            📅 <span id="current-date-str"></span>
+        <div class="dashboard-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- Global Filters -->
+            <div class="dashboard-filters" style="display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: var(--border-radius-sm); border: var(--card-border); box-shadow: var(--card-shadow);">
+                <!-- Year filter removed -->
+                <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Year:</span>
+                    <select id="filter-year" onchange="applyFilters()" style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                        <option value="all">All</option>
+                        {% for yr in years_list %}
+                            <option value="{{ yr }}" {% if selected_year == yr|string %}selected{% endif %}>{{ yr }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
+                
+                <!-- Month Filter -->
+                <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Month:</span>
+                    <select id="filter-month" onchange="applyFilters()" style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                        <option value="all">All</option>
+                        {% for m_num, m_name in months_list %}
+                            <option value="{{ m_num }}" {% if selected_month == m_num|string %}selected{% endif %}>{{ m_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
+                
+                <!-- Week filter removed -->
+
+            </div>
+
+            <!-- Date Badge -->
+            <div class="dashboard-date-badge" style="box-shadow: var(--card-shadow); height: 38px; display: flex; align-items: center; justify-content: center;">
+                📅 <span id="current-date-str"></span>
+            </div>
         </div>
     </div>
 
@@ -1058,6 +1093,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    window.applyFilters = function() {
+        const year = document.getElementById('filter-year').value;
+        const month = document.getElementById('filter-month').value;
+        window.location.href = `/dashboard/?year=${year}&month=${month}`;
+    };
+
+
     document.addEventListener("DOMContentLoaded", function () {
         // Set Header Date
         const today = new Date();

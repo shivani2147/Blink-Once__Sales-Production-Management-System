@@ -36,7 +36,6 @@ SQL Query (run for each table containing event_date):
 ALTER TABLE table_name
 ALTER COLUMN event_date VARCHAR(255);
 
-
 =================================================================================
 
 # Search Option

@@ -22,7 +22,6 @@ from app.routes import (
     pre_production, 
     on_production, 
     post_production, 
-    checklist,
     monthly_financial,
     client_followup,
     investment,
@@ -50,7 +49,7 @@ app.include_router(dashboard.router)
 app.include_router(pre_production.router)
 app.include_router(on_production.router)
 app.include_router(post_production.router)
-app.include_router(checklist.router)
+# app.include_router(checklist.router)  # Checklist management removed
 
 # Include financial data routers
 app.include_router(monthly_financial.router)
@@ -112,7 +111,7 @@ if __name__ == "__main__":
     
     # Run the application
     uvicorn.run(
-        app,
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=RELOAD,

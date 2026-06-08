@@ -6,15 +6,16 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, extract
 from app.database import get_db
 from app.models import (
-    PreProduction, OnProduction, PostProduction, Checklist,
+    PreProduction, OnProduction, PostProduction, Checklist, 
     MonthlyFinancialReport, ThreeMonthsClientFollowup, UpcomingClientsShoot,
     ClientsEditing, CameraRent, InvestmentToGrowCompany
 )
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 import os
+import calendar
 from .monthly_financial import number_to_words
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -25,7 +26,12 @@ templates = Jinja2Templates(directory=template_dir)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request, db: Session = Depends(get_db)):
+async def dashboard(
+    request: Request,
+    db: Session = Depends(get_db),
+    year: str = None,
+    month: str = None
+):
     """
     Display main dashboard with comprehensive statistics.
     """
@@ -33,75 +39,183 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         today = date.today()
 
         # ============================================
+        # 0. DYNAMIC FILTERS DATA POPULATION
+        # ============================================
+        # Retrieve unique years present in the database to build filter options dynamically
+        years_set = set()
+        for y in db.query(MonthlyFinancialReport.year).distinct().all():
+            if y[0]:
+                years_set.add(int(y[0]))
+        for d in db.query(extract('year', ThreeMonthsClientFollowup.date)).distinct().all():
+            if d[0]:
+                years_set.add(int(d[0]))
+        for d in db.query(extract('year', PreProduction.created_at)).distinct().all():
+            if d[0]:
+                years_set.add(int(d[0]))
+
+        # Include current year and previous year as default fallbacks
+        current_year = today.year
+        years_set.add(current_year)
+        years_set.add(current_year - 1)
+        years_list = sorted(list(years_set), reverse=True)
+
+        # Standard months mapping list
+        months_list = [(i, calendar.month_name[i]) for i in range(1, 13)]
+
+        # Get values or set defaults
+        selected_year = year if year else "all"
+        selected_month = month if month else "all"
+
+        y_filter_val = None
+        if selected_year != "all":
+            try:
+                y_filter_val = int(selected_year)
+            except ValueError:
+                pass
+
+        m_filter_val = None
+        if selected_month != "all":
+            try:
+                m_filter_val = int(selected_month)
+            except ValueError:
+                pass
+
+        weeks_list = []
+
+        start_date = None
+        end_date = None
+        if y_filter_val:
+            if m_filter_val:
+                start_date = date(y_filter_val, m_filter_val, 1)
+                last_day = calendar.monthrange(y_filter_val, m_filter_val)[1]
+                end_date = date(y_filter_val, m_filter_val, last_day)
+            else:
+                start_date = date(y_filter_val, 1, 1)
+                end_date = date(y_filter_val, 12, 31)
+
+        # Helper function to apply year/month/week filter on any Date/DateTime column
+        def filter_q(query, col, is_datetime=False):
+            if start_date and end_date:
+                if is_datetime:
+                    s_dt = datetime.combine(start_date, time.min)
+                    e_dt = datetime.combine(end_date, time.max)
+                    return query.filter(col >= s_dt, col <= e_dt)
+                else:
+                    return query.filter(col >= start_date, col <= end_date)
+
+            # Fallback for individual filters (e.g. month selected without year, or others)
+            if y_filter_val:
+                query = query.filter(extract('year', col) == y_filter_val)
+            if m_filter_val:
+                query = query.filter(extract('month', col) == m_filter_val)
+            return query
+
+        # ============================================
         # 1. CLIENT & PROJECT STATS
         # ============================================
-        clients_pre = {c[0] for c in db.query(PreProduction.couple_name).distinct().all() if c[0]}
-        clients_on = {c[0] for c in db.query(OnProduction.couple_name).distinct().all() if c[0]}
-        clients_post = {c[0] for c in db.query(PostProduction.couple_name).distinct().all() if c[0]}
-        clients_monthly = {c[0] for c in db.query(MonthlyFinancialReport.client_name).distinct().all() if c[0]}
-        clients_followup = {c[0] for c in db.query(ThreeMonthsClientFollowup.client_name).distinct().all() if c[0]}
-        clients_shoot = {c[0] for c in db.query(UpcomingClientsShoot.client_name).distinct().all() if c[0]}
-        clients_editing = {c[0] for c in db.query(ClientsEditing.client_name).distinct().all() if c[0]}
-        clients_rent = {c[0] for c in db.query(CameraRent.client_name).distinct().all() if c[0]}
+        clients_pre = {c[0] for c in filter_q(db.query(PreProduction.couple_name), PreProduction.created_at, is_datetime=True).distinct().all() if c[0]}
+        clients_on = {c[0] for c in filter_q(db.query(OnProduction.couple_name), OnProduction.created_at, is_datetime=True).distinct().all() if c[0]}
+        clients_post = {c[0] for c in filter_q(db.query(PostProduction.couple_name), PostProduction.created_at, is_datetime=True).distinct().all() if c[0]}
+        
+        # MonthlyFinancialReport is month-year based and doesn't use standard filter_q directly
+        m_query = db.query(MonthlyFinancialReport)
+        if y_filter_val:
+            m_query = m_query.filter(MonthlyFinancialReport.year == y_filter_val)
+        if m_filter_val:
+            m_query = m_query.filter(MonthlyFinancialReport.month == calendar.month_name[m_filter_val])
+        monthly_reports = m_query.all()
+
+        # Week filter removed
+
+
+        clients_monthly = {r.client_name for r in monthly_reports if r.client_name}
+        
+        clients_followup = {c[0] for c in filter_q(db.query(ThreeMonthsClientFollowup.client_name), ThreeMonthsClientFollowup.date).distinct().all() if c[0]}
+        clients_shoot = {c[0] for c in filter_q(db.query(UpcomingClientsShoot.client_name), UpcomingClientsShoot.date).distinct().all() if c[0]}
+        clients_editing = {c[0] for c in filter_q(db.query(ClientsEditing.client_name), ClientsEditing.date).distinct().all() if c[0]}
+        clients_rent = {c[0] for c in filter_q(db.query(CameraRent.client_name), CameraRent.date).distinct().all() if c[0]}
         
         total_clients = len(clients_pre | clients_on | clients_post | clients_monthly | clients_followup | clients_shoot | clients_editing | clients_rent)
         
-        pre_prod_total = db.query(PreProduction).count()
-        on_prod_total = db.query(OnProduction).count()
-        post_prod_total = db.query(PostProduction).count()
-        checklist_total = db.query(Checklist).count()
+        pre_prod_total = filter_q(db.query(PreProduction), PreProduction.created_at, is_datetime=True).count()
+        on_prod_total = filter_q(db.query(OnProduction), OnProduction.created_at, is_datetime=True).count()
+        post_prod_total = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).count()
+        checklist_total = filter_q(db.query(Checklist), Checklist.created_at, is_datetime=True).count()
 
         total_projects = pre_prod_total
 
         # Ongoing Projects: On-Production + Post-Production (Pending Closure)
-        pending_post_prod_count = db.query(PostProduction).filter(PostProduction.closure_date == None).count()
+        pending_post_prod_count = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).filter(PostProduction.closure_date == None).count()
         ongoing_projects = on_prod_total + pending_post_prod_count
 
         # Completed Projects: Post-Production with closure date
-        completed_projects = db.query(PostProduction).filter(PostProduction.closure_date != None).count()
+        completed_projects = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).filter(PostProduction.closure_date != None).count()
 
-        # Dynamic Incomplete Tasks calculation
+        # Dynamic Incomplete Tasks calculation (on filtered records)
         pending_tasks = 0
-        for p in db.query(PreProduction).all():
+        pre_prod_records = filter_q(db.query(PreProduction), PreProduction.created_at, is_datetime=True).all()
+        for p in pre_prod_records:
             fields = [p.advance_retainer_received, p.welcome_call, p.team_booking, p.story_designing_call, p.heartfelt_email_cra, p.terms_confirmation_cra, p.invoicing_cra, p.sending_jd_to_team, p.music_choice_link_cra, p.invitation_video, p.whatsapp_group]
             pending_tasks += sum(1 for f in fields if not f)
-        for o in db.query(OnProduction).all():
+
+        on_prod_records = filter_q(db.query(OnProduction), OnProduction.created_at, is_datetime=True).all()
+        for o in on_prod_records:
             fields = [o.client_review, o.payment_received, o.bts_shoot, o.hospitality_gesture, o.story_designing_sheet_refer, o.checklist_shared_with_team]
             pending_tasks += sum(1 for f in fields if not f)
-        for p in db.query(PostProduction).all():
+
+        post_prod_records = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).all()
+        for p in post_prod_records:
             fields = [p.data_copy, p.best_couple_edits_3_days, p.all_raw_images, p.save_the_date, p.invite, p.countdown, p.celebrity_ai_reel, p.one_teaser, p.one_film, p.one_reel, p.full_length_film, p.edited_images_selection, p.edited_images_delivered, p.poster, p.albums_picture_selection, p.photobook_delivered, p.digital_portfolio_album, p.payment_recovery]
             pending_tasks += sum(1 for f in fields if not f)
-        for c in db.query(Checklist).all():
+
+        checklist_records = filter_q(db.query(Checklist), Checklist.created_at, is_datetime=True).all()
+        for c in checklist_records:
             fields = [c.equipments_ready, c.traditional_videographer, c.traditional_photographer, c.candid_photographer, c.cinematographer, c.drone_shooter, c.pre_wedding_shoot]
             pending_tasks += sum(1 for f in fields if not f)
 
         # ============================================
         # 2. FINANCIAL DATA STATISTICS
         # ============================================
-        rev_monthly = db.query(func.sum(MonthlyFinancialReport.total_amount)).scalar() or 0.0
+        rev_monthly = sum(r.total_amount for r in monthly_reports)
+        
         # Only include confirmed/received amounts (work_status == 'Done') for sub-service revenue
-        rev_editing = db.query(func.sum(ClientsEditing.total_amount)).filter(ClientsEditing.work_status == "Done").scalar() or 0.0
-        rev_camera = db.query(func.sum(CameraRent.total_amount)).filter(CameraRent.work_status == "Done").scalar() or 0.0
-        rev_followup = db.query(func.sum(ThreeMonthsClientFollowup.total_amount)).scalar() or 0.0
-        rev_shoots = db.query(func.sum(UpcomingClientsShoot.total_amount)).scalar() or 0.0
-        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera) + float(rev_followup) + float(rev_shoots)
-        exp_monthly = db.query(func.sum(MonthlyFinancialReport.expenses)).scalar() or 0.0
-        freelancer_expenses = db.query(func.sum(MonthlyFinancialReport.freelancer_amount)).scalar() or 0.0
-        total_investment = db.query(func.sum(InvestmentToGrowCompany.amount)).scalar() or 0.0
-        total_expenses = float(exp_monthly) + float(freelancer_expenses) + float(total_investment)
+        editing_records_done = filter_q(db.query(ClientsEditing), ClientsEditing.date).filter(ClientsEditing.work_status == "Done").all()
+        rev_editing = sum(r.total_amount for r in editing_records_done)
 
+        camera_records_done = filter_q(db.query(CameraRent), CameraRent.date).filter(CameraRent.work_status == "Done").all()
+        rev_camera = sum(r.total_amount for r in camera_records_done)
+
+        followup_records = filter_q(db.query(ThreeMonthsClientFollowup), ThreeMonthsClientFollowup.date).all()
+        rev_followup = sum(r.total_amount for r in followup_records)
+
+        shoot_records = filter_q(db.query(UpcomingClientsShoot), UpcomingClientsShoot.date).all()
+        rev_shoots = sum(r.total_amount for r in shoot_records)
+
+        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera) + float(rev_followup) + float(rev_shoots)
+        exp_monthly = sum(r.expenses for r in monthly_reports)
+        freelancer_expenses = sum(r.freelancer_amount for r in monthly_reports)
+
+        investment_records = filter_q(db.query(InvestmentToGrowCompany), InvestmentToGrowCompany.date).all()
+        total_investment = sum(r.amount for r in investment_records)
+        
+        total_expenses = float(exp_monthly) + float(freelancer_expenses) + float(total_investment)
         total_profit = total_revenue - total_expenses
         outflow_total = float(freelancer_expenses) + float(total_investment)
         
         # Calculate receivables/collections: Monthly Financial + Clients Editing + Camera Rent
-        monthly_pending = db.query(func.sum(MonthlyFinancialReport.pending_amount)).scalar() or 0.0
-        editing_pending = db.query(func.sum(ClientsEditing.total_amount)).filter(ClientsEditing.work_status == "Pending").scalar() or 0.0
-        camera_pending = db.query(func.sum(CameraRent.total_amount)).filter(CameraRent.work_status == "Pending").scalar() or 0.0
+        monthly_pending = sum(r.pending_amount for r in monthly_reports)
+
+        editing_pending_records = filter_q(db.query(ClientsEditing), ClientsEditing.date).filter(ClientsEditing.work_status == "Pending").all()
+        editing_pending = sum(r.total_amount for r in editing_pending_records)
+
+        camera_pending_records = filter_q(db.query(CameraRent), CameraRent.date).filter(CameraRent.work_status == "Pending").all()
+        camera_pending = sum(r.total_amount for r in camera_pending_records)
+        
         pending_payments = float(monthly_pending) + float(editing_pending) + float(camera_pending)
         
         # Payment Recovery count from Post-Production where payment_recovery is False
-        payment_recovery_pending = db.query(PostProduction).filter(PostProduction.payment_recovery == False).count()
-        payment_recovery_done = db.query(PostProduction).filter(PostProduction.payment_recovery == True).count()
+        payment_recovery_pending = sum(1 for p in post_prod_records if p.payment_recovery == False)
+        payment_recovery_done = sum(1 for p in post_prod_records if p.payment_recovery == True)
 
         camera_rent_income = float(rev_camera)
         editing_revenue = float(rev_editing)
@@ -110,116 +224,102 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         # ============================================
         # 3. LEADS & CONVERSION STATS
         # ============================================
-        total_leads = db.query(ThreeMonthsClientFollowup).count()
-        confirmed_clients = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.status == "Done").count()
-        rejected_leads = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.status == "Rejected").count()
-        quotations_sent = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.status.ilike("%quotation sent%")).count()
-        upcoming_followups = db.query(ThreeMonthsClientFollowup).filter(
-            ~ThreeMonthsClientFollowup.status.in_(["Done", "Rejected"])
-        ).count()
+        total_leads = len(followup_records)
+        confirmed_clients = sum(1 for f in followup_records if f.status == "Done")
+        rejected_leads = sum(1 for f in followup_records if f.status == "Rejected")
+        quotations_sent = sum(1 for f in followup_records if f.status and "quotation sent" in f.status.lower())
+        upcoming_followups = sum(1 for f in followup_records if f.status not in ["Done", "Rejected"])
         
         lead_conversion_rate = (confirmed_clients / total_leads * 100) if total_leads > 0 else 0.0
 
         # Upcoming Shoots
-        upcoming_shoots_count = db.query(UpcomingClientsShoot).filter(UpcomingClientsShoot.date >= today).count()
+        upcoming_shoots_count = sum(1 for s in shoot_records if s.date >= today)
 
         # ============================================
         # 4. SERVICE STEPS COMPLETION TRACKER (AVERAGES)
         # ============================================
-        pre_prod_records = db.query(PreProduction).all()
         pre_prod_avg = sum(p.get_completion_percentage() for p in pre_prod_records) / len(pre_prod_records) if pre_prod_records else 0.0
-
-        on_prod_records = db.query(OnProduction).all()
         on_prod_avg = sum(o.get_completion_percentage() for o in on_prod_records) / len(on_prod_records) if on_prod_records else 0.0
-
-        post_prod_records = db.query(PostProduction).all()
         post_prod_avg = sum(p.get_completion_percentage() for p in post_prod_records) / len(post_prod_records) if post_prod_records else 0.0
-
-        checklist_records = db.query(Checklist).all()
         checklist_avg = sum(c.get_completion_percentage() for c in checklist_records) / len(checklist_records) if checklist_records else 0.0
 
         # ============================================
         # 5. CHARTS & TREND DATA
         # ============================================
-        # Monthly Revenue Trend, Profit vs Expense, Business Growth (Profit)
-        monthly_financial_data = db.query(
-            MonthlyFinancialReport.year,
-            MonthlyFinancialReport.month,
-            func.sum(MonthlyFinancialReport.total_amount).label('revenue'),
-            func.sum(MonthlyFinancialReport.expenses + MonthlyFinancialReport.freelancer_amount).label('expenses'),
-            func.sum(MonthlyFinancialReport.profit).label('profit')
-        ).group_by(MonthlyFinancialReport.year, MonthlyFinancialReport.month).all()
-
+        # Group monthly_reports in Python to keep synchronization between chart & list
         month_order = {
             "January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
             "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12
         }
-        
-        sorted_monthly = sorted(
-            monthly_financial_data,
+
+        grouped_financials = {}
+        for r in monthly_reports:
+            key = (r.year, r.month)
+            if key not in grouped_financials:
+                grouped_financials[key] = {'revenue': 0.0, 'expenses': 0.0, 'profit': 0.0}
+            grouped_financials[key]['revenue'] += float(r.total_amount or 0.0)
+            grouped_financials[key]['expenses'] += float((r.expenses or 0.0) + (r.freelancer_amount or 0.0))
+            grouped_financials[key]['profit'] += float(r.profit or 0.0)
+
+        sorted_keys = sorted(
+            grouped_financials.keys(),
             key=lambda x: (x[0] or 0, month_order.get(x[1], 0))
         )
 
-        monthly_labels = [f"{x[1]} {x[0]}" for x in sorted_monthly]
-        monthly_revenue_dataset = [float(x[2] or 0.0) for x in sorted_monthly]
-        monthly_expenses_dataset = [float(x[3] or 0.0) for x in sorted_monthly]
-        monthly_profit_dataset = [float(x[4] or 0.0) for x in sorted_monthly]
+        monthly_labels = [f"{x[1]} {x[0]}" for x in sorted_keys]
+        monthly_revenue_dataset = [float(grouped_financials[x]['revenue']) for x in sorted_keys]
+        monthly_expenses_dataset = [float(grouped_financials[x]['expenses']) for x in sorted_keys]
+        monthly_profit_dataset = [float(grouped_financials[x]['profit']) for x in sorted_keys]
 
         # Lead Status Chart
-        lead_status_counts = db.query(
-            ThreeMonthsClientFollowup.status,
-            func.count(ThreeMonthsClientFollowup.id)
-        ).group_by(ThreeMonthsClientFollowup.status).all()
-        
         lead_chart_data = {"Confirmed": 0, "Rejected": 0, "Pending": 0}
-        for status, count in lead_status_counts:
-            if status == "Done":
-                lead_chart_data["Confirmed"] += count
-            elif status == "Rejected":
-                lead_chart_data["Rejected"] += count
+        for f in followup_records:
+            if f.status == "Done":
+                lead_chart_data["Confirmed"] += 1
+            elif f.status == "Rejected":
+                lead_chart_data["Rejected"] += 1
             else:
-                lead_chart_data["Pending"] += count
+                lead_chart_data["Pending"] += 1
 
         # Platform Lead Sources Chart
-        platform_counts = db.query(
-            ThreeMonthsClientFollowup.platform,
-            func.count(ThreeMonthsClientFollowup.id)
-        ).group_by(ThreeMonthsClientFollowup.platform).all()
-        
         platform_lead_data = {"JD": 0, "Meta Ads": 0, "Word of Mouth": 0}
-        for plat, count in platform_counts:
+        for f in followup_records:
+            plat = f.platform
             if plat in platform_lead_data:
-                platform_lead_data[plat] = count
+                platform_lead_data[plat] += 1
             else:
-                platform_lead_data[plat] = platform_lead_data.get(plat, 0) + count
+                platform_lead_data[plat] = platform_lead_data.get(plat, 0) + 1
 
         # ============================================
         # 6. RECENT MODULE SUMMARIES & EVENT CALENDAR
         # ============================================
-        recent_pre_prod = db.query(PreProduction).order_by(PreProduction.created_at.desc()).limit(5).all()
-        recent_on_prod = db.query(OnProduction).order_by(OnProduction.created_at.desc()).limit(5).all()
-        recent_post_prod = db.query(PostProduction).order_by(PostProduction.created_at.desc()).limit(5).all()
-        recent_checklists = db.query(Checklist).order_by(Checklist.created_at.desc()).limit(5).all()
-        recent_financials = db.query(MonthlyFinancialReport).order_by(MonthlyFinancialReport.year.desc(), MonthlyFinancialReport.month.desc()).limit(5).all()
-        recent_followups = db.query(ThreeMonthsClientFollowup).order_by(ThreeMonthsClientFollowup.date.desc()).limit(5).all()
+        recent_pre_prod = sorted(pre_prod_records, key=lambda x: x.created_at or datetime.min, reverse=True)[:5]
+        recent_on_prod = sorted(on_prod_records, key=lambda x: x.created_at or datetime.min, reverse=True)[:5]
+        recent_post_prod = sorted(post_prod_records, key=lambda x: x.created_at or datetime.min, reverse=True)[:5]
+        recent_checklists = sorted(checklist_records, key=lambda x: x.created_at or datetime.min, reverse=True)[:5]
+        recent_financials = sorted(monthly_reports, key=lambda x: (x.year or 0, month_order.get(x.month, 0)), reverse=True)[:5]
+        recent_followups = sorted(followup_records, key=lambda x: x.date or date.min, reverse=True)[:5]
 
         # Overdue post production tasks
-        overdue_post_prod = [task for task in db.query(PostProduction).filter(PostProduction.closure_date == None).all() if task.is_overdue()]
+        overdue_post_prod = [task for task in post_prod_records if task.closure_date == None and task.is_overdue()]
 
         # Upcoming events (Next 30 days) from UpcomingClientsShoot
-        upcoming_shoots_list = db.query(UpcomingClientsShoot).filter(
-            UpcomingClientsShoot.date >= today
-        ).order_by(UpcomingClientsShoot.date.asc()).limit(10).all()
+        upcoming_shoots_list = sorted([s for s in shoot_records if s.date >= today], key=lambda x: x.date)[:10]
 
         # Upcoming deadlines from PostProduction
-        upcoming_deadlines_list = db.query(PostProduction).filter(
-            PostProduction.deadline != None,
-            PostProduction.deadline >= today
-        ).order_by(PostProduction.deadline.asc()).limit(10).all()
+        upcoming_deadlines_list = sorted([p for p in post_prod_records if p.deadline and p.deadline >= today], key=lambda x: x.deadline)[:10]
 
         context = {
             "request": request,
             "page_title": "Dashboard",
+            # Filters dropdown parameters
+            "years_list": years_list,
+            "months_list": months_list,
+            "years_list": years_list,
+            "months_list": months_list,
+            "selected_year": selected_year,
+            "selected_month": selected_month,
+
             # KPI Widgets
             "total_clients": total_clients,
             "total_projects": total_projects,
