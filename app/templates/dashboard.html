@@ -469,39 +469,46 @@
         </div>
         <div class="dashboard-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <!-- Global Filters -->
-            <div class="dashboard-filters" style="display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: var(--border-radius-sm); border: var(--card-border); box-shadow: var(--card-shadow);">
+            <div class="dashboard-filters"
+                style="display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: var(--border-radius-sm); border: var(--card-border); box-shadow: var(--card-shadow);">
                 <!-- Year filter removed -->
                 <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Year:</span>
-                    <select id="filter-year" onchange="applyFilters()" style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Year:</span>
+                    <select id="filter-year" onchange="applyFilters()"
+                        style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
                         <option value="all">All</option>
                         {% for yr in years_list %}
-                            <option value="{{ yr }}" {% if selected_year == yr|string %}selected{% endif %}>{{ yr }}</option>
+                        <option value="{{ yr }}" {% if selected_year==yr|string %}selected{% endif %}>{{ yr }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
-                
+
                 <!-- Month Filter -->
                 <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Month:</span>
-                    <select id="filter-month" onchange="applyFilters()" style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Month:</span>
+                    <select id="filter-month" onchange="applyFilters()"
+                        style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
                         <option value="all">All</option>
                         {% for m_num, m_name in months_list %}
-                            <option value="{{ m_num }}" {% if selected_month == m_num|string %}selected{% endif %}>{{ m_name }}</option>
+                        <option value="{{ m_num }}" {% if selected_month==m_num|string %}selected{% endif %}>{{ m_name
+                            }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
-                
+
                 <!-- Week filter removed -->
 
             </div>
 
             <!-- Date Badge -->
-            <div class="dashboard-date-badge" style="box-shadow: var(--card-shadow); height: 38px; display: flex; align-items: center; justify-content: center;">
+            <div class="dashboard-date-badge"
+                style="box-shadow: var(--card-shadow); height: 38px; display: flex; align-items: center; justify-content: center;">
                 📅 <span id="current-date-str"></span>
             </div>
         </div>
@@ -533,9 +540,9 @@
                 <small class="kpi-words"
                     style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
                     total_revenue_words }}</small>
-                <span class="kpi-subtext" style="color: var(--theme-success); margin-top: 8px;">
+                <!-- <span class="kpi-subtext" style="color: var(--theme-success); margin-top: 8px;">
                     📈 Monthly, Editing & Rentals Combined
-                </span>
+                </span> -->
             </div>
         </div>
 
@@ -550,9 +557,9 @@
                 <small class="kpi-words"
                     style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
                     total_expenses_words }}</small>
-                <span class="kpi-subtext" style="color: var(--theme-danger); margin-top: 8px;">
+                <!-- <span class="kpi-subtext" style="color: var(--theme-danger); margin-top: 8px;">
                     📉 Investments & Freelancer Costs
-                </span>
+                </span> -->
             </div>
         </div>
 
@@ -570,9 +577,9 @@
                 <small class="kpi-words"
                     style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
                     total_profit_words }}</small>
-                <span class="kpi-subtext" style="margin-top: 8px;">
+                <!-- <span class="kpi-subtext" style="margin-top: 8px;">
                     ⚖️ Margins & Direct Yields
-                </span>
+                </span> -->
             </div>
         </div>
 
@@ -580,7 +587,10 @@
         <div class="premium-kpi-card">
             <div class="kpi-header">
                 <span class="kpi-title">Lead Conversion</span>
-                <div class="kpi-badge-icon icon-leads">🎯</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="/financial/followup/" class="btn-link" style="font-size: 0.72rem;">View</a>
+                    <div class="kpi-badge-icon icon-leads">🎯</div>
+                </div>
             </div>
             <div class="kpi-body">
                 <span class="kpi-main-val">{{ lead_conversion_rate }}%</span>
@@ -597,7 +607,10 @@
         <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
             <div class="kpi-header" style="margin-bottom: 2px;">
                 <span class="kpi-title" style="font-size: 0.75rem;">Clients & Pipeline</span>
-                <span style="font-size: 1.1rem;">👥</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="#" class="btn-link" style="font-size: 0.72rem;" onclick="document.getElementById('clientNamesModal').style.display='flex'; return false;">View</a>
+                    <span style="font-size: 1.1rem;">👥</span>
+                </div>
             </div>
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">{{ total_clients }} Clients
@@ -608,6 +621,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Client Names Modal -->
+        <div id="clientNamesModal" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none';">
+            <div style="background:var(--card-bg, #fff); border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,0.25); width:min(420px,90vw); max-height:75vh; display:flex; flex-direction:column; overflow:hidden; animation:modalFadeIn .2s ease;">
+                <!-- Modal Header -->
+                <div style="padding:18px 20px 14px; border-bottom:1px solid rgba(0,0,0,0.07); display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-size:1rem; font-weight:700; color:var(--text-dark);">👥 All Clients</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">{{ all_client_names|length }} distinct client{{ 's' if all_client_names|length != 1 else '' }}</div>
+                    </div>
+                    <button onclick="document.getElementById('clientNamesModal').style.display='none';" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); line-height:1; padding:4px 8px; border-radius:8px;" title="Close">✕</button>
+                </div>
+                <!-- Modal Body -->
+                <div style="padding:14px 20px; overflow-y:auto; flex:1;">
+                    {% if all_client_names %}
+                    <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px;">
+                        {% for name in all_client_names %}
+                        <li style="font-size:0.875rem; color:var(--text-dark); padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); line-height:1.4;">{{ name }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% else %}
+                    <div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:24px 0;">No clients found for the selected period.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes modalFadeIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+        </style>
 
         <!-- KPI: Payments & Recoveries -->
         <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
@@ -635,17 +677,10 @@
             </div>
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{
-                    "{:,.2f}".format(outflow_total) }}</div>
+                    "{:,.2f}".format(freelancer_expenses) }}</div>
                 <small class="kpi-words"
                     style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{
-                    outflow_total_words }}</small>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
-                    🔧 Investments: ₹{{ "{:,.2f}".format(total_investment) }} • Freelancers: ₹{{
-                    "{:,.2f}".format(freelancer_expenses) }}
-                    <small class="kpi-words"
-                        style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">{{
-                        freelancer_expenses_words }}</small>
-                </div>
+                    freelancer_expenses_words }}</small>
             </div>
         </div>
 
@@ -657,15 +692,15 @@
             </div>
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-dark);">₹{{
-                    "{:,.2f}".format(sub_service_revenue) }}</div>
+                    "{:,.2f}".format(camera_rent_income) }}</div>
                 <small class="kpi-words"
                     style="display: block; font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize; margin: 2px 0 4px 0; line-height: 1.2;">{{
-                    sub_service_revenue_words }}</small>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
-                    📷 Camera Rent + ✂️ Editing Workload
-                    <small class="kpi-words"
-                        style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">₹{{ "{:,.2f}".format(camera_rent_income) }} + ₹{{ "{:,.2f}".format(editing_revenue) }}</small>
-                </div>
+                    camera_rent_income_words }}</small>
+                <!-- <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">
+                    📷 Camera Rent
+                    <small class="kpi-words" style="display: block; font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize; margin-top: 2px; line-height: 1.2;">₹{{
+                        "{:,.2f}".format(camera_rent_income) }}</small>
+                </div> -->
             </div>
         </div>
     </div>
@@ -677,8 +712,17 @@
             <!-- Main Revenue/Profit Line Chart -->
             <div class="premium-card">
                 <div class="premium-card-header">
-                    <h3>📈 Monthly Business Growth & Financial Trends</h3>
-                    <div style="font-size: 0.8rem; color: var(--text-muted);">Aggregated Monthly Reports</div>
+                    <h3>📈 {% if selected_year == 'all' %}Yearly{% elif selected_month == 'all' %}Monthly{% else
+                        %}Daily{% endif %} Business Growth & Financial Trends</h3>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        {% if selected_year == 'all' %}
+                        Aggregated Yearly Reports
+                        {% elif selected_month == 'all' %}
+                        Aggregated Monthly Reports
+                        {% else %}
+                        Daily Financial Trends
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="premium-card-body">
                     <div class="chart-container" style="height: 280px;">
@@ -1054,46 +1098,45 @@
             <div class="premium-card-header">
                 <h3>📞 Client Follow-ups & Leads</h3>
                 <a href="/financial/followup/" class="btn-link">Lead Tracker</a>
-            </div>
-            <div class="premium-card-body" style="padding: 10px;">
-                <table class="summary-table-mini">
-                    <thead>
-                        <tr>
-                            <th>Client Name</th>
-                            <th>Platform</th>
-                            <th>Confirmation Amount</th>
-                            <th>Lead Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if recent_followups %}
-                        {% for rec in recent_followups %}
-                        <tr>
-                            <td><strong>{{ rec.client_name }}</strong></td>
-                            <td>{{ rec.platform }}</td>
-                            <td>₹{{ "{:,.2f}".format(rec.confirmation or 0.0) }}</td>
-                            <td>
-                                <span
-                                    class="badge {% if rec.status == 'Done' %}badge-success{% elif rec.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{
-                                    rec.status }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="empty-state-mini">No leads registered.</td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+            </div <div class="premium-card-body" style="padding: 10px;">
+            <table class="summary-table-mini">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Platform</th>
+                        <th>Confirmation Amount</th>
+                        <th>Lead Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_followups %}
+                    {% for rec in recent_followups %}
+                    <tr>
+                        <td><strong>{{ rec.client_name }}</strong></td>
+                        <td>{{ rec.platform }}</td>
+                        <td>₹{{ "{:,.2f}".format(rec.confirmation or 0.0) }}</td>
+                        <td>
+                            <span
+                                class="badge {% if rec.status == 'Done' %}badge-success{% elif rec.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">{{
+                                rec.status }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="empty-state-mini">No leads registered.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    window.applyFilters = function() {
+    window.applyFilters = function () {
         const year = document.getElementById('filter-year').value;
         const month = document.getElementById('filter-month').value;
         window.location.href = `/dashboard/?year=${year}&month=${month}`;
@@ -1256,32 +1299,63 @@
     // 4. PROJECT STATUS PIE CHART
     // ============================================
     const projCtx = document.getElementById('projectStatusChart').getContext('2d');
+    const preProdVal = {{ pre_prod_total }};
+    const onProdVal = {{ on_prod_total }};
+    const postProdVal = {{ post_prod_total }};
+    const totalProj = preProdVal + onProdVal + postProdVal;
+    
+    const getProjPercentage = (val) => {
+        if (totalProj === 0) return '0%';
+        return ((val / totalProj) * 100).toFixed(1) + '%';
+    };
+
     new Chart(projCtx, {
         type: 'polarArea',
         data: {
-            labels: ['Pre-Production', 'On-Production', 'Post-Production'],
+            labels: [
+                `Pre-Production (${getProjPercentage(preProdVal)})`,
+                `On-Production (${getProjPercentage(onProdVal)})`,
+                `Post-Production (${getProjPercentage(postProdVal)})`
+            ],
             datasets: [{
-                data: [{{ pre_prod_total }}, {{ on_prod_total }}, {{ post_prod_total }}],
-        backgroundColor: [
-        'rgba(88, 86, 214, 0.7)',
-        'rgba(0, 122, 255, 0.7)',
-        'rgba(52, 199, 89, 0.7)'
-    ],
-        borderColor: '#fff',
-        borderWidth: 2
-                }]
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'right', labels: { boxWidth: 12 } }
+                data: [preProdVal, onProdVal, postProdVal],
+                backgroundColor: [
+                    'rgba(88, 86, 214, 0.7)',
+                    'rgba(0, 122, 255, 0.7)',
+                    'rgba(52, 199, 89, 0.7)'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
         },
-        scales: {
-            r: { ticks: { display: false } }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12 } },
+                tooltip: {
+                    padding: 12,
+                    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const pct = totalProj > 0 ? ((value / totalProj) * 100).toFixed(1) + '%' : '0%';
+                            const baseLabel = label.split(' (')[0];
+                            return `${baseLabel}: ${value} (${pct})`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                r: { ticks: { display: false } }
+            }
         }
-    }
-        });
+    });
     });
 </script>
 {% endblock %}

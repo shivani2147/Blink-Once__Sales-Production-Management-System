@@ -135,7 +135,29 @@ async def dashboard(
         clients_editing = {c[0] for c in filter_q(db.query(ClientsEditing.client_name), ClientsEditing.date).distinct().all() if c[0]}
         clients_rent = {c[0] for c in filter_q(db.query(CameraRent.client_name), CameraRent.date).distinct().all() if c[0]}
         
-        total_clients = len(clients_pre | clients_on | clients_post | clients_monthly | clients_followup | clients_shoot | clients_editing | clients_rent)
+        all_client_names_set = clients_pre | clients_on | clients_post | clients_monthly | clients_followup | clients_shoot | clients_editing | clients_rent
+        total_clients = len(all_client_names_set)
+        all_client_names = sorted(all_client_names_set)
+
+        # Unfiltered: fetch ALL distinct client names across every module for the modal popup
+        _all_names: set = set()
+        for c in db.query(PreProduction.couple_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(OnProduction.couple_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(PostProduction.couple_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(MonthlyFinancialReport.client_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(ThreeMonthsClientFollowup.client_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(UpcomingClientsShoot.client_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(ClientsEditing.client_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        for c in db.query(CameraRent.client_name).distinct().all():
+            if c[0]: _all_names.add(c[0])
+        all_client_names_modal = sorted(_all_names)
         
         pre_prod_total = filter_q(db.query(PreProduction), PreProduction.created_at, is_datetime=True).count()
         on_prod_total = filter_q(db.query(OnProduction), OnProduction.created_at, is_datetime=True).count()
@@ -252,24 +274,185 @@ async def dashboard(
             "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12
         }
 
-        grouped_financials = {}
-        for r in monthly_reports:
-            key = (r.year, r.month)
-            if key not in grouped_financials:
-                grouped_financials[key] = {'revenue': 0.0, 'expenses': 0.0, 'profit': 0.0}
-            grouped_financials[key]['revenue'] += float(r.total_amount or 0.0)
-            grouped_financials[key]['expenses'] += float((r.expenses or 0.0) + (r.freelancer_amount or 0.0))
-            grouped_financials[key]['profit'] += float(r.profit or 0.0)
+        if selected_year != "all" and selected_month != "all":
+            # Day-wise trends for that month (Revenue, Expenses, Profit)
+            y_val = int(selected_year)
+            m_val = int(selected_month)
+            last_day = calendar.monthrange(y_val, m_val)[1]
+            
+            monthly_labels = [f"{d}" for d in range(1, last_day + 1)]
+            monthly_revenue_dataset = [0.0] * last_day
+            monthly_expenses_dataset = [0.0] * last_day
+            
+            def parse_days(event_date_str, max_day):
+                if not event_date_str:
+                    return [1]
+                parts = [p.strip() for p in event_date_str.split(',')]
+                days = []
+                for p in parts:
+                    if p.isdigit():
+                        val = int(p)
+                        if 1 <= val <= max_day:
+                            days.append(val)
+                    elif '-' in p:
+                        try:
+                            val = datetime.strptime(p, "%Y-%m-%d").day
+                            if 1 <= val <= max_day:
+                                days.append(val)
+                        except ValueError:
+                            pass
+                return days if days else [1]
 
-        sorted_keys = sorted(
-            grouped_financials.keys(),
-            key=lambda x: (x[0] or 0, month_order.get(x[1], 0))
-        )
+            # 1. Monthly Financial Reports
+            for r in monthly_reports:
+                days = parse_days(r.event_date, last_day)
+                num_days_listed = len(days)
+                rev_share = float(r.total_amount or 0.0) / num_days_listed
+                exp_share = float((r.expenses or 0.0) + (r.freelancer_amount or 0.0)) / num_days_listed
+                for day in days:
+                    monthly_revenue_dataset[day - 1] += rev_share
+                    monthly_expenses_dataset[day - 1] += exp_share
 
-        monthly_labels = [f"{x[1]} {x[0]}" for x in sorted_keys]
-        monthly_revenue_dataset = [float(grouped_financials[x]['revenue']) for x in sorted_keys]
-        monthly_expenses_dataset = [float(grouped_financials[x]['expenses']) for x in sorted_keys]
-        monthly_profit_dataset = [float(grouped_financials[x]['profit']) for x in sorted_keys]
+            # 2. Clients Editing
+            for r in editing_records_done:
+                if r.date:
+                    day = r.date.day
+                    if 1 <= day <= last_day:
+                        monthly_revenue_dataset[day - 1] += float(r.total_amount or 0.0)
+
+            # 3. Camera Rent
+            for r in camera_records_done:
+                if r.date:
+                    day = r.date.day
+                    if 1 <= day <= last_day:
+                        monthly_revenue_dataset[day - 1] += float(r.total_amount or 0.0)
+
+            # 4. Three Months Client Followup
+            for r in followup_records:
+                if r.date:
+                    day = r.date.day
+                    if 1 <= day <= last_day:
+                        monthly_revenue_dataset[day - 1] += float(r.total_amount or 0.0)
+
+            # 5. Upcoming Clients Shoot
+            for r in shoot_records:
+                if r.date:
+                    day = r.date.day
+                    if 1 <= day <= last_day:
+                        monthly_revenue_dataset[day - 1] += float(r.total_amount or 0.0)
+
+            # 6. Investment to Grow Company
+            for r in investment_records:
+                if r.date:
+                    day = r.date.day
+                    if 1 <= day <= last_day:
+                        monthly_expenses_dataset[day - 1] += float(r.amount or 0.0)
+
+            monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(last_day)]
+
+        elif selected_year != "all" and selected_month == "all":
+            # Month-wise trends for the selected Year
+            monthly_labels = [calendar.month_name[m] for m in range(1, 13)]
+            monthly_revenue_dataset = [0.0] * 12
+            monthly_expenses_dataset = [0.0] * 12
+            
+            # 1. Monthly Financial Reports
+            for r in monthly_reports:
+                m_idx = month_order.get(r.month, 1) - 1
+                monthly_revenue_dataset[m_idx] += float(r.total_amount or 0.0)
+                monthly_expenses_dataset[m_idx] += float((r.expenses or 0.0) + (r.freelancer_amount or 0.0))
+
+            # 2. Clients Editing
+            for r in editing_records_done:
+                if r.date:
+                    m_idx = r.date.month - 1
+                    monthly_revenue_dataset[m_idx] += float(r.total_amount or 0.0)
+
+            # 3. Camera Rent
+            for r in camera_records_done:
+                if r.date:
+                    m_idx = r.date.month - 1
+                    monthly_revenue_dataset[m_idx] += float(r.total_amount or 0.0)
+
+            # 4. Three Months Client Followup
+            for r in followup_records:
+                if r.date:
+                    m_idx = r.date.month - 1
+                    monthly_revenue_dataset[m_idx] += float(r.total_amount or 0.0)
+
+            # 5. Upcoming Clients Shoot
+            for r in shoot_records:
+                if r.date:
+                    m_idx = r.date.month - 1
+                    monthly_revenue_dataset[m_idx] += float(r.total_amount or 0.0)
+
+            # 6. Investment to Grow Company
+            for r in investment_records:
+                if r.date:
+                    m_idx = r.date.month - 1
+                    monthly_expenses_dataset[m_idx] += float(r.amount or 0.0)
+
+            monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(12)]
+
+        else:
+            # Year-wise trends across all available years
+            sorted_years = sorted(list(years_list))
+            year_to_idx = {yr: idx for idx, yr in enumerate(sorted_years)}
+            num_years = len(sorted_years)
+            
+            monthly_labels = [str(yr) for yr in sorted_years]
+            monthly_revenue_dataset = [0.0] * num_years
+            monthly_expenses_dataset = [0.0] * num_years
+            
+            # 1. Monthly Financial Reports
+            for r in monthly_reports:
+                yr = r.year
+                if yr in year_to_idx:
+                    idx = year_to_idx[yr]
+                    monthly_revenue_dataset[idx] += float(r.total_amount or 0.0)
+                    monthly_expenses_dataset[idx] += float((r.expenses or 0.0) + (r.freelancer_amount or 0.0))
+
+            # 2. Clients Editing
+            for r in editing_records_done:
+                if r.date:
+                    yr = r.date.year
+                    if yr in year_to_idx:
+                        idx = year_to_idx[yr]
+                        monthly_revenue_dataset[idx] += float(r.total_amount or 0.0)
+
+            # 3. Camera Rent
+            for r in camera_records_done:
+                if r.date:
+                    yr = r.date.year
+                    if yr in year_to_idx:
+                        idx = year_to_idx[yr]
+                        monthly_revenue_dataset[idx] += float(r.total_amount or 0.0)
+
+            # 4. Three Months Client Followup
+            for r in followup_records:
+                if r.date:
+                    yr = r.date.year
+                    if yr in year_to_idx:
+                        idx = year_to_idx[yr]
+                        monthly_revenue_dataset[idx] += float(r.total_amount or 0.0)
+
+            # 5. Upcoming Clients Shoot
+            for r in shoot_records:
+                if r.date:
+                    yr = r.date.year
+                    if yr in year_to_idx:
+                        idx = year_to_idx[yr]
+                        monthly_revenue_dataset[idx] += float(r.total_amount or 0.0)
+
+            # 6. Investment to Grow Company
+            for r in investment_records:
+                if r.date:
+                    yr = r.date.year
+                    if yr in year_to_idx:
+                        idx = year_to_idx[yr]
+                        monthly_expenses_dataset[idx] += float(r.amount or 0.0)
+
+            monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(num_years)]
 
         # Lead Status Chart
         lead_chart_data = {"Confirmed": 0, "Rejected": 0, "Pending": 0}
@@ -322,6 +505,8 @@ async def dashboard(
 
             # KPI Widgets
             "total_clients": total_clients,
+            "all_client_names": all_client_names,
+            "all_client_names_modal": all_client_names_modal,
             "total_projects": total_projects,
             "upcoming_shoots_count": upcoming_shoots_count,
             "ongoing_projects": ongoing_projects,
