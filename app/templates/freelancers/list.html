@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<!-- Loading Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-title">
+        <h1>Freelancers Hub</h1>
+        <p>Manage freelancer database, assignments, payments, and view business analytics</p>
+    </div>
+    <a href="/freelancers/add" class="btn btn-primary">+ Add Freelancer</a>
+</div>
+
+<!-- Core Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥</div>
+        <div class="card-content">
+            <div class="card-label">Total Freelancers</div>
+            <div class="card-value">{{ total_freelancers }}</div>
+            <div class="card-subtext">{{ active_freelancers }} Active • {{ inactive_freelancers }} Inactive</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">💰</div>
+        <div class="card-content">
+            <div class="card-label">Total Payments Made</div>
+            <div class="card-value">₹{{ "%.2f"|format(total_payments_made) }}</div>
+            <div class="card-subtext">{{ total_payments_made_words }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⏳</div>
+        <div class="card-content">
+            <div class="card-label">Pending Payments</div>
+            <div class="card-value">₹{{ "%.2f"|format(pending_payments) }}</div>
+            <div class="card-subtext">{{ pending_payments_words }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tabs-container" style="background: none; box-shadow: none; overflow: visible;">
+    <div class="tabs-headers" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <button class="tab-header-btn active" id="btn-directory" onclick="switchTab('tab-directory')">📁 Freelancer Directory</button>
+        <button class="tab-header-btn" id="btn-analytics" onclick="switchTab('tab-analytics')">📊 Analytics Dashboard</button>
+    </div>
+
+    <div class="tabs-body" style="padding: 1.5rem 0 0 0;">
+        <!-- Tab 1: Freelancer Directory -->
+        <div id="tab-directory" class="tab-content active">
+            <!-- Search & Filters Panel -->
+            <form method="get" class="filters-section">
+                <input type="text" name="search" placeholder="🔍 Search by name, ID, phone, email..." 
+                       value="{{ search_query or '' }}" class="search-input">
+                
+                <select name="role" class="filter-select">
+                    <option value="" {% if not selected_role %}selected{% endif %}>All Roles</option>
+                    {% for r in all_roles %}
+                    <option value="{{ r }}" {% if selected_role == r %}selected{% endif %}>{{ r }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="status" class="filter-select">
+                    <option value="" {% if not selected_status %}selected{% endif %}>All Statuses</option>
+                    <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if selected_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+
+                <button type="submit" class="btn btn-secondary">Apply Filters</button>
+                {% if search_query or selected_role or selected_status %}
+                    <a href="/freelancers/" class="btn btn-secondary" style="background: #e0e0e0; display: inline-flex; align-items: center; justify-content: center;">Reset</a>
+                {% endif %}
+            </form>
+
+            <!-- Freelancer Records Table -->
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Freelancer ID</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Standard Charges</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if freelancers %}
+                            {% for fl in freelancers %}
+                            <tr>
+                                <td><strong>{{ fl.freelancer_id }}</strong></td>
+                                <td><strong><a href="/freelancers/{{ fl.id }}">{{ fl.name }}</a></strong></td>
+                                <td><span class="badge badge-info">{{ fl.role }}</span></td>
+                                <td>{{ fl.phone_number }}</td>
+                                <td>{{ fl.email }}</td>
+                                <td>
+                                    <span style="font-size: 0.8rem; color: #666; display: block;">Day: ₹{{ "%.2f"|format(fl.per_day_charge or 0) }}</span>
+                                    <span style="font-size: 0.8rem; color: #666; display: block;">Project: ₹{{ "%.2f"|format(fl.per_project_charge or 0) }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if fl.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                                        {{ fl.status }}
+                                    </span>
+                                </td>
+                                <td class="action-buttons">
+                                    <a href="/freelancers/{{ fl.id }}" class="btn-icon" title="View Profile">👁️</a>
+                                    <a href="/freelancers/{{ fl.id }}/edit" class="btn-icon" title="Edit Profile">✏️</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted" style="padding: 40px 0;">
+                                    No freelancers found matching the search criteria. Start by registering one!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: Analytics Dashboard -->
+        <div id="tab-analytics" class="tab-content">
+            <!-- Year & Month Filters -->
+            <div class="analytics-filters-container" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; gap: 15px;">
+                <div class="dashboard-filters"
+                    style="display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.06); box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    
+                    <!-- Year Filter -->
+                    <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.8rem; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Year:</span>
+                        <select id="filter-year" onchange="applyAnalyticsFilters()"
+                            style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: #1c1c1e; cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                            <option value="all">All</option>
+                            {% for yr in years_list %}
+                            <option value="{{ yr }}" {% if selected_year == yr|string %}selected{% endif %}>{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
+
+                    <!-- Month Filter -->
+                    <div class="filter-item" style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.8rem; color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Month:</span>
+                        <select id="filter-month" onchange="applyAnalyticsFilters()"
+                            style="border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: #1c1c1e; cursor: pointer; outline: none; padding: 2px 4px; font-family: inherit;">
+                            <option value="all">All</option>
+                            {% for m_num, m_name in months_list %}
+                            <option value="{{ m_num }}" {% if selected_month == m_num|string %}selected{% endif %}>{{ m_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <!-- Monthly Payment Trends -->
+                <div class="analytics-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333; font-weight: 700; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">
+                        📈 {% if selected_year == 'all' %}MONTHLY PAYMENTS TREND{% elif selected_month == 'all' %}MONTHLY PAYMENTS TREND ({{ selected_year }}){% else %}DAILY PAYMENTS TREND ({{ selected_month_name }} {{ selected_year }}){% endif %}
+                    </h3>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="monthlyPaymentTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Role Distribution -->
+                <div class="analytics-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333; font-weight: 700; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">🎯 ROLE-WISE DISTRIBUTION</h3>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="roleDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Freelancer-wise Earnings -->
+            <div class="analytics-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333; font-weight: 700; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">👑 TOP EARNING FREELANCERS (PAID)</h3>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="freelancerEarningsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .header-title h1 {
+        margin: 0;
+        color: #333;
+    }
+
+    .header-title p {
+        margin: 0.25rem 0 0 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .card-content {
+        flex: 1;
+    }
+
+    .card-label {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .card-value {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .card-subtext {
+        margin-top: 0.35rem;
+        font-size: 0.82rem;
+        color: #637381;
+        line-height: 1.3;
+    }
+
+    .filters-section {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+
+    .filter-select {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .table-responsive {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        overflow-x: auto;
+    }
+
+    .tabs-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tabs-headers {
+        display: flex;
+        background: white;
+        border-bottom: 2px solid #eee;
+    }
+
+    .tab-header-btn {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        background: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .tab-header-btn:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.03);
+    }
+
+    .tab-header-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background: white;
+    }
+
+    .tabs-body {
+        padding: 1.5rem 0;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f0f2f5;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+        background: #e4e6e9;
+    }
+
+    @media (max-width: 768px) {
+        .analytics-row {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all tab contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(c => c.classList.remove('active'));
+
+        // Deactivate all headers
+        const headers = document.querySelectorAll('.tab-header-btn');
+        headers.forEach(h => h.classList.remove('active'));
+
+        // Show active content
+        document.getElementById(tabId).classList.add('active');
+
+        // Activate corresponding button
+        const tabName = tabId === 'tab-directory' ? 'directory' : 'analytics';
+        if (tabId === 'tab-directory') {
+            document.getElementById('btn-directory').classList.add('active');
+        } else if (tabId === 'tab-analytics') {
+            document.getElementById('btn-analytics').classList.add('active');
+            // Trigger charts redraw inside analytics tab on display
+            initCharts();
+        }
+
+        // Update URL query parameter 'tab' without reloading page
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('tab', tabName);
+        const newUrl = window.location.pathname + '?' + urlParams.toString();
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+
+    window.applyAnalyticsFilters = function () {
+        const year = document.getElementById('filter-year').value;
+        const month = document.getElementById('filter-month').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('year', year);
+        urlParams.set('month', month);
+        urlParams.set('tab', 'analytics');
+        window.location.href = window.location.pathname + '?' + urlParams.toString();
+    };
+
+    // Keep tabs persistent on filter form submit or page reload
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab === 'analytics') {
+            switchTab('tab-analytics');
+        } else if (tab === 'directory') {
+            switchTab('tab-directory');
+        } else if (urlParams.has('search') || urlParams.has('role') || urlParams.has('status')) {
+            switchTab('tab-directory');
+        }
+    });
+
+    let trendChartInstance = null;
+    let distChartInstance = null;
+    let earningsChartInstance = null;
+
+    function initCharts() {
+        // Destroy existing chart instances to avoid overlap issues
+        if (trendChartInstance) trendChartInstance.destroy();
+        if (distChartInstance) distChartInstance.destroy();
+        if (earningsChartInstance) earningsChartInstance.destroy();
+
+        // 1. Monthly Trends Chart
+        const trendCtx = document.getElementById('monthlyPaymentTrendChart').getContext('2d');
+        const trendLabels = {{ monthly_labels | tojson }};
+        const trendValues = {{ monthly_values | tojson }};
+        
+        trendChartInstance = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Payments Disbursed (₹)',
+                    data: trendValues,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
+                                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Role Distribution Chart
+        const distCtx = document.getElementById('roleDistributionChart').getContext('2d');
+        const distLabels = {{ role_labels | tojson }};
+        const distValues = {{ role_values | tojson }};
+        
+        distChartInstance = new Chart(distCtx, {
+            type: 'doughnut',
+            data: {
+                labels: distLabels,
+                datasets: [{
+                    data: distValues,
+                    backgroundColor: ['#5856d6', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#007aff', '#ffcc00'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+
+        // 3. Freelancer Earnings Chart (Top Earners)
+        const earningsCtx = document.getElementById('freelancerEarningsChart').getContext('2d');
+        const earningsLabels = {{ earning_labels | tojson }};
+        const earningsValues = {{ earning_values | tojson }};
+        
+        earningsChartInstance = new Chart(earningsCtx, {
+            type: 'bar',
+            data: {
+                labels: earningsLabels,
+                datasets: [{
+                    data: earningsValues,
+                    backgroundColor: 'rgba(52, 199, 89, 0.85)',
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barThickness: 35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + 'L';
+                                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + 'K';
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

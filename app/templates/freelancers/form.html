@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if is_edit %}Edit{% else %}Add New{% endif %} Freelancer</h1>
+        <p>{% if is_edit %}Update details for {{ freelancer.name }}{% else %}Register a new freelancer in the system{% endif %}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="data-form">
+        <!-- Section 1: Basic Details -->
+        <div class="form-section">
+            <h3>Basic Details</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="name">Freelancer Name <span class="text-danger">*</span></label>
+                    <input type="text" id="name" name="name" required 
+                           value="{% if is_edit %}{{ freelancer.name }}{% endif %}" placeholder="Enter full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Primary Role <span class="text-danger">*</span></label>
+                    <select id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        {% for r in roles %}
+                        <option value="{{ r }}" {% if is_edit and freelancer.role == r %}selected{% endif %}>{{ r }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Phone Number <span class="text-danger">*</span></label>
+                    <input type="tel" id="phone_number" name="phone_number" required 
+                           value="{% if is_edit %}{{ freelancer.phone_number }}{% endif %}" placeholder="Enter phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="text-danger">*</span></label>
+                    <input type="email" id="email" name="email" required 
+                           value="{% if is_edit %}{{ freelancer.email }}{% endif %}" placeholder="Enter email address">
+                </div>
+
+                <div class="form-group">
+                    <label for="per_day_charge">Per Day Charge (₹)</label>
+                    <input type="number" id="per_day_charge" name="per_day_charge" step="0.01"
+                           value="{% if is_edit %}{{ freelancer.per_day_charge }}{% else %}0.00{% endif %}" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="per_project_charge">Per Project Charge (₹)</label>
+                    <input type="number" id="per_project_charge" name="per_project_charge" step="0.01"
+                           value="{% if is_edit %}{{ freelancer.per_project_charge }}{% else %}0.00{% endif %}" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status <span class="text-danger">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="Active" {% if is_edit and freelancer.status == 'Active' %}selected{% elif not is_edit %}selected{% endif %}>Active</option>
+                        <option value="Inactive" {% if is_edit and freelancer.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="address">Full Address</label>
+                <textarea id="address" name="address" rows="3" placeholder="Enter physical address">{% if is_edit and freelancer.address %}{{ freelancer.address }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <!-- Section 2: Financial & Identity Details -->
+        <div class="form-section">
+            <h3>Financial & Identity Details</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="pan_number">PAN Card Number</label>
+                    <input type="text" id="pan_number" name="pan_number" style="text-transform: uppercase;"
+                           value="{% if is_edit and freelancer.pan_number %}{{ freelancer.pan_number }}{% endif %}" placeholder="e.g. ABCDE1234F">
+                </div>
+
+                <div class="form-group">
+                    <label for="aadhar_number">Aadhar Card Number</label>
+                    <input type="text" id="aadhar_number" name="aadhar_number"
+                           value="{% if is_edit and freelancer.aadhar_number %}{{ freelancer.aadhar_number }}{% endif %}" placeholder="e.g. 1234 5678 9012">
+                </div>
+
+                <div class="form-group">
+                    <label for="upi_id">UPI ID</label>
+                    <input type="text" id="upi_id" name="upi_id"
+                           value="{% if is_edit and freelancer.upi_id %}{{ freelancer.upi_id }}{% endif %}" placeholder="e.g. name@upi">
+                </div>
+
+                <div class="form-group">
+                    <label for="bank_name">Bank Name</label>
+                    <input type="text" id="bank_name" name="bank_name"
+                           value="{% if is_edit and freelancer.bank_name %}{{ freelancer.bank_name }}{% endif %}" placeholder="Enter Bank name">
+                </div>
+
+                <div class="form-group">
+                    <label for="account_number">Account Number</label>
+                    <input type="text" id="account_number" name="account_number"
+                           value="{% if is_edit and freelancer.account_number %}{{ freelancer.account_number }}{% endif %}" placeholder="Enter Bank Account number">
+                </div>
+
+                <div class="form-group">
+                    <label for="ifsc_code">IFSC Code</label>
+                    <input type="text" id="ifsc_code" name="ifsc_code" style="text-transform: uppercase;"
+                           value="{% if is_edit and freelancer.ifsc_code %}{{ freelancer.ifsc_code }}{% endif %}" placeholder="e.g. SBIN0001234">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Document Uploads -->
+        <div class="form-section">
+            <h3>Document Uploads</h3>
+            <p class="form-info-text" style="font-size: 0.82rem; color: #666; margin-bottom: 1.5rem;">
+                Accepted formats: PDF, JPG, JPEG, PNG, DOC, DOCX. Max file size: 10MB.
+            </p>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="aadhar_card">Aadhar Card Copy</label>
+                    <input type="file" id="aadhar_card" name="aadhar_card" class="form-input-file">
+                    {% if is_edit and freelancer.aadhar_card_path %}
+                        <div class="file-badge" style="margin-top: 8px; font-size: 0.8rem;">
+                            📄 Existing: <a href="/freelancers/{{ freelancer.id }}/download/aadhar" target="_blank">View Aadhar</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="resume">Resume / CV</label>
+                    <input type="file" id="resume" name="resume" class="form-input-file">
+                    {% if is_edit and freelancer.resume_path %}
+                        <div class="file-badge" style="margin-top: 8px; font-size: 0.8rem;">
+                            📄 Existing: <a href="/freelancers/{{ freelancer.id }}/download/resume" target="_blank">View Resume</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Remarks -->
+        <div class="form-section">
+            <h3>Remarks & Notes</h3>
+            <div class="form-group">
+                <label for="remarks">Remarks</label>
+                <textarea id="remarks" name="remarks" rows="3" placeholder="Add any background details or comments...">{% if is_edit and freelancer.remarks %}{{ freelancer.remarks }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            {% if is_edit %}
+            <a href="/freelancers/{% if is_edit %}{{ freelancer.id }}{% endif %}" class="btn btn-secondary">Cancel</a>
+            {% else %}
+            <a href="/freelancers/" class="btn btn-secondary">Cancel</a>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Save Changes{% else %}Add Freelancer{% endif %}</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .form-header h1 {
+        margin: 0 0 0.5rem 0;
+        color: #333;
+    }
+
+    .form-header p {
+        margin: 0;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .data-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-section {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        background: #fafafa;
+    }
+
+    .form-section h3 {
+        margin: 0 0 1.5rem 0;
+        color: #333;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+    }
+
+    .form-input-file {
+        border: 1px dashed #bbb;
+        padding: 10px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .text-danger {
+        color: #f44336;
+    }
+
+    .file-badge a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .file-badge a:hover {
+        text-decoration: underline;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+</style>
+{% endblock %}

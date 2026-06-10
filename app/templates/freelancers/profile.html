@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Top Bar / Header -->
+    <div class="profile-header-card">
+        <div class="profile-meta">
+            <div class="profile-avatar">👤</div>
+            <div class="profile-title">
+                <h1>{{ freelancer.name }}</h1>
+                <p class="profile-subtitle">
+                    <span class="badge badge-info">{{ freelancer.role }}</span>
+                    <span class="badge {% if freelancer.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                        {{ freelancer.status }}
+                    </span>
+                    <span class="fl-id">ID: <strong>{{ freelancer.freelancer_id }}</strong></span>
+                </p>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <a href="/freelancers/" class="btn btn-secondary">← Back</a>
+            <a href="/freelancers/{{ freelancer.id }}/work/add" class="btn btn-primary">+ Assign Project / Add Work</a>
+            <a href="/freelancers/{{ freelancer.id }}/edit" class="btn btn-secondary">✏️ Edit Profile</a>
+            <form action="/freelancers/{{ freelancer.id }}/delete" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this freelancer profile and all associated logs? This cannot be undone.')">
+                <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <!-- Left Sidebar: Details & Bank Info -->
+        <div class="profile-sidebar-panel">
+            <!-- Basic Details Card -->
+            <div class="sidebar-card">
+                <h3>Contact & Info</h3>
+                <ul class="detail-list">
+                    <li>
+                        <span class="label">📞 Phone</span>
+                        <span class="value">{{ freelancer.phone_number }}</span>
+                    </li>
+                    <li>
+                        <span class="label">✉️ Email</span>
+                        <span class="value"><a href="mailto:{{ freelancer.email }}">{{ freelancer.email }}</a></span>
+                    </li>
+                    <li>
+                        <span class="label">📍 Address</span>
+                        <span class="value">{% if freelancer.address %}{{ freelancer.address }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">🕒 Reg. Date</span>
+                        <span class="value">{{ freelancer.created_at.strftime('%Y-%m-%d') if freelancer.created_at else '-' }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Rates Card -->
+            <div class="sidebar-card">
+                <h3>Standard Charges</h3>
+                <div class="rates-flex">
+                    <div class="rate-item">
+                        <div class="rate-label">Per Day</div>
+                        <div class="rate-val">₹{{ "%.2f"|format(freelancer.per_day_charge or 0) }}</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="rate-label">Per Project</div>
+                        <div class="rate-val">₹{{ "%.2f"|format(freelancer.per_project_charge or 0) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Card -->
+            <div class="sidebar-card">
+                <h3>Uploaded Documents</h3>
+                <div class="docs-flex">
+                    {% if freelancer.aadhar_card_path %}
+                        <a href="/freelancers/{{ freelancer.id }}/download/aadhar" class="doc-btn" target="_blank">
+                            <span class="doc-icon">📄</span> Download Aadhar
+                        </a>
+                    {% else %}
+                        <div class="doc-placeholder text-muted">No Aadhar Card Uploaded</div>
+                    {% endif %}
+
+                    {% if freelancer.resume_path %}
+                        <a href="/freelancers/{{ freelancer.id }}/download/resume" class="doc-btn" target="_blank">
+                            <span class="doc-icon">📄</span> Download Resume
+                        </a>
+                    {% else %}
+                        <div class="doc-placeholder text-muted">No Resume Uploaded</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bank Details Card -->
+            <div class="sidebar-card">
+                <h3>Payment & Banking</h3>
+                <ul class="detail-list">
+                    <li>
+                        <span class="label">🏦 Bank Name</span>
+                        <span class="value">{% if freelancer.bank_name %}{{ freelancer.bank_name }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">🔢 Account No.</span>
+                        <span class="value">{% if freelancer.account_number %}{{ freelancer.account_number }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">🔑 IFSC Code</span>
+                        <span class="value" style="text-transform: uppercase;">{% if freelancer.ifsc_code %}{{ freelancer.ifsc_code }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">📱 UPI ID</span>
+                        <span class="value">{% if freelancer.upi_id %}{{ freelancer.upi_id }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">💳 PAN Number</span>
+                        <span class="value" style="text-transform: uppercase;">{% if freelancer.pan_number %}{{ freelancer.pan_number }}{% else %}-{% endif %}</span>
+                    </li>
+                    <li>
+                        <span class="label">🆔 Aadhar No.</span>
+                        <span class="value">{% if freelancer.aadhar_number %}{{ freelancer.aadhar_number }}{% else %}-{% endif %}</span>
+                    </li>
+                </ul>
+            </div>
+            
+            {% if freelancer.remarks %}
+            <div class="sidebar-card">
+                <h3>Remarks</h3>
+                <p style="font-size: 0.85rem; color: #555; line-height: 1.4; white-space: pre-line;">{{ freelancer.remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Tabs for Work Assignments & Payment History -->
+        <div class="profile-main-panel">
+            <!-- mini summary indicators -->
+            <div class="profile-summary-bar">
+                <div class="mini-card text-success">
+                    <span class="label">Total Earned</span>
+                    <span class="val">₹{{ "%.2f"|format(total_earned) }}</span>
+                    <span class="sub">{{ total_earned_words }}</span>
+                </div>
+                <div class="mini-card text-warning">
+                    <span class="label">Pending Payments</span>
+                    <span class="val">₹{{ "%.2f"|format(total_pending) }}</span>
+                    <span class="sub">{{ total_pending_words }}</span>
+                </div>
+                <div class="mini-card">
+                    <span class="label">Total Projects</span>
+                    <span class="val">{{ total_assignments }}</span>
+                    <span class="sub">Completed & Current</span>
+                </div>
+            </div>
+
+            <!-- Ledger tabs -->
+            <div class="tabs-container">
+                <div class="tabs-headers">
+                </div>
+
+                <div class="tabs-body">
+                    <!-- Tab 1: Work Assignments -->
+                    <div id="tab-work" class="tab-content active">
+                        <div class="table-responsive" style="box-shadow: none; padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Project Name</th>
+                                        <th>Role Played</th>
+                                        <th>Amount</th>
+                                        <th>Payment Status</th>
+                                        <th>Payment Date</th>
+                                        <th>Mode</th>
+                                        <th>Remarks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if assignments %}
+                                        {% for ass in assignments %}
+                                        <tr>
+                                            <td>{{ ass.work_date.strftime('%d-%m-%Y') if ass.work_date else '-' }}</td>
+                                            <td><strong>{{ ass.project_name }}</strong></td>
+                                            <td><span class="badge badge-info">{{ ass.role_assigned }}</span></td>
+                                            <td>₹{{ "%.2f"|format(ass.amount_charged) }}</td>
+                                            <td>
+                                                <span class="badge {% if ass.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %}">
+                                                    {{ ass.payment_status }}
+                                                </span>
+                                            </td>
+                                            <td>{{ ass.payment_date.strftime('%d-%m-%Y') if ass.payment_date else '-' }}</td>
+                                            <td>{{ ass.payment_mode or '-' }}</td>
+                                            <td>{{ ass.remarks or '-' }}</td>
+                                            <td class="action-buttons">
+                                                <a href="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/edit" class="btn-icon" title="Edit Log / Record Payment">✏️</a>
+                                                <form action="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/delete" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this work log?')">
+                                                    <button type="submit" class="btn-icon btn-danger" style="background:none; border:none; cursor:pointer;" title="Delete">🗑️</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted" style="padding: 40px 0;">
+                                                No work history found. Click "+ Assign Project" above to record one.
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .profile-header-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .profile-meta {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .profile-avatar {
+        font-size: 3rem;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .profile-title h1 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.8rem;
+        color: #333;
+    }
+
+    .profile-subtitle {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .profile-subtitle .fl-id {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.65rem 1.25rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f0f2f5;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+        background: #e4e6e9;
+    }
+
+    .btn-danger {
+        background: #ff3b30;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #e02d22;
+        transform: translateY(-1px);
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .profile-sidebar-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar-card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #333;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .detail-list li {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border-bottom: 1px solid #f8f9fa;
+        padding-bottom: 8px;
+    }
+
+    .detail-list li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detail-list .label {
+        font-size: 0.75rem;
+        color: #888;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-list .value {
+        font-size: 0.92rem;
+        color: #333;
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    .detail-list .value a {
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .detail-list .value a:hover {
+        text-decoration: underline;
+    }
+
+    .rates-flex {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .rate-item {
+        flex: 1;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #eee;
+    }
+
+    .rate-label {
+        font-size: 0.72rem;
+        color: #777;
+        font-weight: 600;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .rate-val {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .docs-flex {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .doc-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: #f0f4ff;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        border: 1px solid #d9e2ff;
+        transition: all 0.3s ease;
+    }
+
+    .doc-btn:hover {
+        background: #e1ebff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+    }
+
+    .doc-icon {
+        font-size: 1.1rem;
+    }
+
+    .doc-placeholder {
+        padding: 10px;
+        text-align: center;
+        font-size: 0.85rem;
+        background: #fafafa;
+        border: 1px dashed #ddd;
+        border-radius: 8px;
+    }
+
+    .profile-main-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .profile-summary-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .mini-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mini-card .label {
+        font-size: 0.8rem;
+        color: #888;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .mini-card .val {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 4px 0;
+        color: #333;
+    }
+
+    .mini-card .sub {
+        font-size: 0.72rem;
+        color: #6c757d;
+        text-transform: capitalize;
+        line-height: 1.2;
+    }
+
+    .mini-card.text-success .val {
+        color: #28a745;
+    }
+
+    .mini-card.text-warning .val {
+        color: #ffc107;
+    }
+
+    .tabs-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .tabs-headers {
+        display: flex;
+        background: #f8f9fa;
+        border-bottom: 2px solid #eee;
+    }
+
+    .tab-header-btn {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        background: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .tab-header-btn:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.03);
+    }
+
+    .tab-header-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background: white;
+    }
+
+    .tabs-body {
+        padding: 1.5rem;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .badge-secondary {
+        background: #6c757d;
+        color: white;
+    }
+</style>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all tab contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(c => c.classList.remove('active'));
+
+        // Deactivate all headers
+        const headers = document.querySelectorAll('.tab-header-btn');
+        headers.forEach(h => h.classList.remove('active'));
+
+        // Show active content
+        document.getElementById(tabId).classList.add('active');
+
+        // Find match header button and activate
+        event.currentTarget.classList.add('active');
+    }
+</script>
+{% endblock %}

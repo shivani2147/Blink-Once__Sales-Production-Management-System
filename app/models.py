@@ -4,8 +4,10 @@ Defines database tables for Pre-Production, On-Production, Post-Production, and 
 """
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float, Date, NVARCHAR, Numeric
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float, Date, NVARCHAR, Numeric, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
+
 
 
 class PreProduction(Base):
@@ -368,3 +370,55 @@ class UpcomingClientsShoot(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String(255), nullable=True)
+
+
+class Freelancer(Base):
+    """Freelancer profiles model."""
+    __tablename__ = "freelancers"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    freelancer_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(255), nullable=False, index=True)
+    phone_number = Column(String(20), nullable=False)
+    email = Column(String(255), nullable=False)
+    address = Column(Text, nullable=True)
+    role = Column(String(100), nullable=False, index=True)
+    per_day_charge = Column(Float, default=0.0)
+    per_project_charge = Column(Float, default=0.0)
+    bank_name = Column(String(255), nullable=True)
+    account_number = Column(String(100), nullable=True)
+    ifsc_code = Column(String(50), nullable=True)
+    upi_id = Column(String(255), nullable=True)
+    pan_number = Column(String(50), nullable=True)
+    aadhar_number = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, default="Active")
+    remarks = Column(Text, nullable=True)
+    aadhar_card_path = Column(String(500), nullable=True)
+    resume_path = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    payments = relationship("FreelancerWork", back_populates="freelancer", cascade="all, delete-orphan")
+
+
+class FreelancerWork(Base):
+    """Freelancer project assignments and payment tracking."""
+    __tablename__ = "freelancer_works"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    freelancer_id = Column(Integer, ForeignKey('freelancers.id', ondelete='CASCADE'), nullable=False)
+    project_name = Column(String(255), nullable=False)
+    work_date = Column(Date, nullable=False)
+    role_assigned = Column(String(100), nullable=False)
+    num_days = Column(Integer, default=1, nullable=False)
+    amount_charged = Column(Float, default=0.0)
+    total_amount = Column(Float, default=0.0)
+    payment_status = Column(String(50), default="Pending")  # Pending / Paid
+    payment_date = Column(Date, nullable=True)
+    payment_mode = Column(String(100), nullable=True)
+    remarks = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    freelancer = relationship("Freelancer", back_populates="payments")
+
