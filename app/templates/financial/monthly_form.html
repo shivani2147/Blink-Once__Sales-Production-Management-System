@@ -36,6 +36,11 @@
                         value="{% if report %}{{ report.client_name }}{% endif %}" placeholder="Enter client name">
                 </div>
                 <div class="form-group">
+                    <label for="project_name">Project Name</label>
+                    <input type="text" id="project_name" name="project_name" onchange="fetchProjectAmount(this.value)"
+                        value="{% if report and report.project_name %}{{ report.project_name }}{% endif %}" placeholder="Enter project name">
+                </div>
+                <div class="form-group">
                     <label for="event_type">Event Type</label>
                     <input type="text" id="event_type" name="event_type" required
                         value="{% if report %}{{ report.event_type }}{% endif %}"
@@ -74,7 +79,7 @@
                 </div>
                 <div class="form-group">
                     <label for="freelancer_amount">Freelancer Amount (₹)</label>
-                    <input type="number" id="freelancer_amount" name="freelancer_amount" step="0.01"
+                    <input type="number" id="freelancer_amount" name="freelancer_amount" step="0.01" readonly
                         value="{% if report %}{{ report.freelancer_amount }}{% endif %}" placeholder="0.00">
                 </div>
                 <div class="form-group">
@@ -366,10 +371,29 @@
                 }
             });
         }
+        
+        // --- Project Name and API Logic ---
+        const projectInput = document.getElementById('project_name');
+        
+        window.fetchProjectAmount = async function(projectName) {
+            try {
+                const response = await fetch(`/freelancers/api/project_amount?project_name=${encodeURIComponent(projectName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (freelancerEl) {
+                        freelancerEl.value = parseFloat(data.total_amount || 0).toFixed(2);
+                        recalc();
+                    }
+                }
+            } catch(e) {
+                console.error("Error fetching project amount:", e);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (yearEl) updateMonthValuesForYear(yearEl.value);
             updateEventDateCalendar();
+            
             recalc();
         });
 

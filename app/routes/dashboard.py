@@ -63,7 +63,7 @@ async def dashboard(
         months_list = [(i, calendar.month_name[i]) for i in range(1, 13)]
 
         # Get values or set defaults
-        selected_year = year if year else "all"
+        selected_year = year if year else str(current_year)
         selected_month = month if month else "all"
 
         y_filter_val = None
@@ -218,7 +218,7 @@ async def dashboard(
         freelancer_expenses = sum(r.freelancer_amount for r in monthly_reports)
 
         investment_records = filter_q(db.query(InvestmentToGrowCompany), InvestmentToGrowCompany.date).all()
-        total_investment = sum(r.amount for r in investment_records)
+        total_investment = sum(r.total_amount for r in investment_records)
         
         total_expenses = float(exp_monthly) + float(freelancer_expenses) + float(total_investment)
         total_profit = total_revenue - total_expenses
@@ -227,11 +227,11 @@ async def dashboard(
         # Calculate receivables/collections: Monthly Financial + Clients Editing + Camera Rent
         monthly_pending = sum(r.pending_amount for r in monthly_reports)
 
-        editing_pending_records = filter_q(db.query(ClientsEditing), ClientsEditing.date).filter(ClientsEditing.work_status == "Pending").all()
-        editing_pending = sum(r.total_amount for r in editing_pending_records)
+        editing_pending_records = filter_q(db.query(ClientsEditing), ClientsEditing.date).all()
+        editing_pending = sum(r.pending_amount for r in editing_pending_records)
 
-        camera_pending_records = filter_q(db.query(CameraRent), CameraRent.date).filter(CameraRent.work_status == "Pending").all()
-        camera_pending = sum(r.total_amount for r in camera_pending_records)
+        camera_pending_records = filter_q(db.query(CameraRent), CameraRent.date).all()
+        camera_pending = sum(r.pending_amount for r in camera_pending_records)
         
         pending_payments = float(monthly_pending) + float(editing_pending) + float(camera_pending)
         
@@ -242,6 +242,21 @@ async def dashboard(
         camera_rent_income = float(rev_camera)
         editing_revenue = float(rev_editing)
         sub_service_revenue = camera_rent_income + editing_revenue
+
+        # Calculate Cash & Online payments
+        all_editing_records = filter_q(db.query(ClientsEditing), ClientsEditing.date).all()
+        all_camera_records = filter_q(db.query(CameraRent), CameraRent.date).all()
+
+        cash_monthly = sum(float(r.paid_amount or 0.0) for r in monthly_reports if r.payment_status == "Cash")
+        cash_editing = sum(float(r.paid_amount or 0.0) for r in all_editing_records if r.payment_status == "Cash")
+        cash_camera = sum(float(r.paid_amount or 0.0) for r in all_camera_records if r.payment_status == "Cash")
+        total_cash = cash_monthly + cash_editing + cash_camera
+
+        online_monthly = sum(float(r.paid_amount or 0.0) for r in monthly_reports if r.payment_status == "Online")
+        online_editing = sum(float(r.paid_amount or 0.0) for r in all_editing_records if r.payment_status == "Online")
+        online_camera = sum(float(r.paid_amount or 0.0) for r in all_camera_records if r.payment_status == "Online")
+        total_online = online_monthly + online_editing + online_camera
+
 
         # ============================================
         # 3. LEADS & CONVERSION STATS
@@ -346,7 +361,7 @@ async def dashboard(
                 if r.date:
                     day = r.date.day
                     if 1 <= day <= last_day:
-                        monthly_expenses_dataset[day - 1] += float(r.amount or 0.0)
+                        monthly_expenses_dataset[day - 1] += float(r.total_amount or 0.0)
 
             monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(last_day)]
 
@@ -390,7 +405,7 @@ async def dashboard(
             for r in investment_records:
                 if r.date:
                     m_idx = r.date.month - 1
-                    monthly_expenses_dataset[m_idx] += float(r.amount or 0.0)
+                    monthly_expenses_dataset[m_idx] += float(r.total_amount or 0.0)
 
             monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(12)]
 
@@ -450,7 +465,7 @@ async def dashboard(
                     yr = r.date.year
                     if yr in year_to_idx:
                         idx = year_to_idx[yr]
-                        monthly_expenses_dataset[idx] += float(r.amount or 0.0)
+                        monthly_expenses_dataset[idx] += float(r.total_amount or 0.0)
 
             monthly_profit_dataset = [monthly_revenue_dataset[i] - monthly_expenses_dataset[i] for i in range(num_years)]
 
@@ -534,7 +549,12 @@ async def dashboard(
             "editing_revenue_words": number_to_words(editing_revenue),
             "sub_service_revenue": sub_service_revenue,
             "sub_service_revenue_words": number_to_words(sub_service_revenue),
+            "total_cash": total_cash,
+            "total_cash_words": number_to_words(total_cash),
+            "total_online": total_online,
+            "total_online_words": number_to_words(total_online),
             "lead_conversion_rate": round(lead_conversion_rate, 2),
+
             "total_leads": total_leads,
             "confirmed_clients": confirmed_clients,
             "rejected_leads": rejected_leads,

@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models import MonthlyFinancialReport
 from datetime import datetime, date, timedelta
 import os
+import calendar
 from sqlalchemy import func, extract
 
 router = APIRouter(prefix="/financial/monthly", tags=["Monthly Financial Reports"])
@@ -115,7 +116,7 @@ async def list_monthly_reports(
 
 
 @router.get("/create", response_class=HTMLResponse)
-async def create_form(request: Request):
+async def create_form(request: Request, db: Session = Depends(get_db)):
     """Display form to create new monthly financial report."""
     try:
         # provide current year and month names for dropdowns
@@ -125,6 +126,8 @@ async def create_form(request: Request):
         months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
         event_types = ["Wedding", "Corporate", "Pre-Wedding", "Birthday", "Other"]
 
+        
+        from app.routes.freelancers import get_all_project_names
         return templates.TemplateResponse("financial/monthly_form.html", {
             "request": request,
             "page_title": "Create Monthly Financial Report",
@@ -133,6 +136,7 @@ async def create_form(request: Request):
             "years": years,
             "event_types": event_types,
             "current_year": current_year,
+            "all_project_names": get_all_project_names(db),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -148,6 +152,7 @@ async def create_report(
     year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
+    project_name: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
     total_amount: float = Form(...),
@@ -179,6 +184,7 @@ async def create_report(
             month=month,
             year=year,
             client_name=client_name,
+            project_name=project_name,
             event_type=event_type,
             event_date=event_date_str,
             total_amount=total_amount,
@@ -218,6 +224,7 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
 
         event_types = ["Wedding", "Corporate", "Pre-Wedding", "Birthday", "Other"]
 
+        from app.routes.freelancers import get_all_project_names
         return templates.TemplateResponse("financial/monthly_form.html", {
             "request": request,
             "page_title": "Edit Monthly Financial Report",
@@ -226,6 +233,7 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
             "months": months,
             "event_types": event_types,
             "current_year": current_year,
+            "all_project_names": get_all_project_names(db),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -241,6 +249,7 @@ async def edit_report(
     year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
+    project_name: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
     total_amount: float = Form(...),
@@ -275,6 +284,7 @@ async def edit_report(
         report.year = year
         report.month = month
         report.client_name = client_name
+        report.project_name = project_name
         report.event_type = event_type
         report.event_date = event_date_str
         report.total_amount = total_amount

@@ -4,7 +4,8 @@
 <div class="form-container">
     <div class="form-header">
         <h1>{% if is_edit %}Edit{% else %}Log New{% endif %} Project Assignment</h1>
-        <p>Record project work and payment details for <strong>{{ freelancer.name }}</strong> (ID: {{ freelancer.freelancer_id }})</p>
+        <p>Record project work and payment details for <strong>{{ freelancer.name }}</strong> (ID: {{
+            freelancer.freelancer_id }})</p>
     </div>
 
     <form method="post" class="data-form">
@@ -13,9 +14,10 @@
             <h3>Assignment & Work Details</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="project_name">Project / Couple Name <span class="text-danger">*</span></label>
-                    <input type="text" id="project_name" name="project_name" required 
-                           value="{% if is_edit %}{{ work.project_name }}{% endif %}" placeholder="e.g. Amit & Pooja Wedding">
+                    <label for="project_name">Project Name <span class="text-danger">*</span></label>
+                    <input type="text" id="project_name" name="project_name" required
+                        value="{% if is_edit %}{{ work.project_name }}{% endif %}"
+                        placeholder="e.g. Amit & Pooja Wedding">
                 </div>
 
                 <div class="form-group">
@@ -23,7 +25,8 @@
                     <select id="role_assigned" name="role_assigned" required>
                         <option value="">Select Role</option>
                         {% for r in roles %}
-                        <option value="{{ r }}" {% if is_edit and work.role_assigned == r %}selected{% elif not is_edit and freelancer.role == r %}selected{% endif %}>{{ r }}</option>
+                        <option value="{{ r }}" {% if is_edit and work.role_assigned==r %}selected{% elif not is_edit
+                            and freelancer.role==r %}selected{% endif %}>{{ r }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -33,13 +36,14 @@
                     <div id="work-dates-container">
                         {% if is_edit %}
                         <div class="date-row">
-                            <input type="date" name="work_date[]" required
-                                   value="{{ work.work_date }}" class="date-input">
+                            <input type="date" name="work_date[]" required value="{{ work.work_date }}"
+                                class="date-input">
                         </div>
                         {% else %}
                         <div class="date-row">
                             <input type="date" name="work_date[]" required class="date-input">
-                            <button type="button" class="btn-remove-date" onclick="removeDateRow(this)" title="Remove">✕</button>
+                            <button type="button" class="btn-remove-date" onclick="removeDateRow(this)"
+                                title="Remove">✕</button>
                         </div>
                         {% endif %}
                     </div>
@@ -54,24 +58,26 @@
                     <!-- Auto-calculated number of days based on selected dates -->
                     <label>No. of Days <span class="text-danger">*</span></label>
                     <div id="num_days_display" class="num-days-display">1</div>
-                    <input type="hidden" id="num_days" name="num_days" value="{% if is_edit %}{{ work.num_days or 1 }}{% else %}1{% endif %}">
+                    <input type="hidden" id="num_days" name="num_days"
+                        value="{% if is_edit %}{{ work.num_days or 1 }}{% else %}1{% endif %}">
                 </div>
 
                 <div class="form-group">
                     <label for="amount_charged">Rate per Day (₹) <span class="text-danger">*</span></label>
                     <input type="number" id="amount_charged" name="amount_charged" step="0.01" required
-                           value="{% if is_edit %}{{ work.amount_charged }}{% else %}{{ freelancer.per_day_charge or freelancer.per_project_charge or 0.00 }}{% endif %}"
-                           oninput="calcTotal()" placeholder="0.00">
+                        value="{% if is_edit %}{{ work.amount_charged }}{% else %}{{ freelancer.per_day_charge or freelancer.per_project_charge or 0.00 }}{% endif %}"
+                        oninput="calcTotal()" placeholder="0.00">
                 </div>
 
                 <div class="form-group total-amount-box">
                     <label>Total Amount (₹)</label>
                     <div class="total-display" id="total_display">
-                        ₹<span id="total_value">{% if is_edit %}{{ "%.2f"|format((work.num_days or 1) * work.amount_charged) }}{% else %}0.00{% endif %}</span>
+                        ₹<span id="total_value">{% if is_edit %}{{ "%.2f"|format((work.num_days or 1) *
+                            work.amount_charged) }}{% else %}0.00{% endif %}</span>
                     </div>
                     <!-- hidden field to submit total_amount -->
                     <input type="hidden" id="total_amount" name="total_amount"
-                           value="{% if is_edit %}{{ (work.num_days or 1) * work.amount_charged }}{% else %}0{% endif %}">
+                        value="{% if is_edit %}{{ (work.num_days or 1) * work.amount_charged }}{% else %}0{% endif %}">
                 </div>
             </div>
         </div>
@@ -83,26 +89,33 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="payment_status">Payment Status <span class="text-danger">*</span></label>
-                    <select id="payment_status" name="payment_status" required onchange="togglePaymentFields(this.value)">
-                        <option value="Pending" {% if is_edit and work.payment_status == 'Pending' %}selected{% elif not is_edit %}selected{% endif %}>Pending</option>
-                        <option value="Paid" {% if is_edit and work.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
+                    <select id="payment_status" name="payment_status" required
+                        onchange="togglePaymentFields(this.value)">
+                        <option value="Pending" {% if is_edit and work.payment_status=='Pending' %}selected{% elif not
+                            is_edit %}selected{% endif %}>Pending</option>
+                        <option value="Paid" {% if is_edit and work.payment_status=='Paid' %}selected{% endif %}>Paid
+                        </option>
                     </select>
                 </div>
 
                 <div class="form-group payment-field" style="display: none;">
                     <label for="payment_date">Payment Date</label>
-                    <input type="date" id="payment_date" name="payment_date" 
-                           value="{% if is_edit and work.payment_date %}{{ work.payment_date }}{% endif %}">
+                    <input type="date" id="payment_date" name="payment_date"
+                        value="{% if is_edit and work.payment_date %}{{ work.payment_date }}{% endif %}">
                 </div>
 
                 <div class="form-group payment-field" style="display: none;">
                     <label for="payment_mode">Payment Mode</label>
                     <select id="payment_mode" name="payment_mode">
                         <option value="">Select Mode</option>
-                        <option value="UPI" {% if is_edit and work.payment_mode == 'UPI' %}selected{% endif %}>UPI</option>
-                        <option value="Bank Transfer" {% if is_edit and work.payment_mode == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
-                        <option value="Cash" {% if is_edit and work.payment_mode == 'Cash' %}selected{% endif %}>Cash</option>
-                        <option value="Online" {% if is_edit and work.payment_mode == 'Online' %}selected{% endif %}>Online</option>
+                        <option value="UPI" {% if is_edit and work.payment_mode=='UPI' %}selected{% endif %}>UPI
+                        </option>
+                        <option value="Bank Transfer" {% if is_edit and work.payment_mode=='Bank Transfer' %}selected{%
+                            endif %}>Bank Transfer</option>
+                        <option value="Cash" {% if is_edit and work.payment_mode=='Cash' %}selected{% endif %}>Cash
+                        </option>
+                        <option value="Online" {% if is_edit and work.payment_mode=='Online' %}selected{% endif %}>
+                            Online</option>
                     </select>
                 </div>
             </div>
@@ -113,13 +126,15 @@
             <h3>Remarks</h3>
             <div class="form-group">
                 <label for="remarks">Remarks</label>
-                <textarea id="remarks" name="remarks" rows="2" placeholder="Add any details, payment info, or requirements...">{% if is_edit and work.remarks %}{{ work.remarks }}{% endif %}</textarea>
+                <textarea id="remarks" name="remarks" rows="2"
+                    placeholder="Add any details, payment info, or requirements...">{% if is_edit and work.remarks %}{{ work.remarks }}{% endif %}</textarea>
             </div>
         </div>
 
         <div class="form-actions">
             <a href="/freelancers/{{ freelancer.id }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Assignment{% else %}Save Assignment{% endif %}</button>
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Assignment{% else %}Save Assignment{%
+                endif %}</button>
         </div>
     </form>
 </div>
@@ -418,11 +433,11 @@
 
     // ---- Total Amount auto-calculation ----
     function calcTotal() {
-        const days  = parseFloat(document.getElementById('num_days').value)  || 0;
-        const rate  = parseFloat(document.getElementById('amount_charged').value) || 0;
+        const days = parseFloat(document.getElementById('num_days').value) || 0;
+        const rate = parseFloat(document.getElementById('amount_charged').value) || 0;
         const total = days * rate;
-        document.getElementById('total_value').textContent  = total.toFixed(2);
-        document.getElementById('total_amount').value        = total.toFixed(2);
+        document.getElementById('total_value').textContent = total.toFixed(2);
+        document.getElementById('total_amount').value = total.toFixed(2);
     }
     // ---- End total calc ----
 
@@ -430,7 +445,7 @@
         const fields = document.querySelectorAll('.payment-field');
         const dateInput = document.getElementById('payment_date');
         const modeSelect = document.getElementById('payment_mode');
-        
+
         if (status === 'Paid') {
             fields.forEach(f => f.style.display = 'flex');
             dateInput.required = true;
@@ -446,11 +461,12 @@
             modeSelect.required = false;
         }
     }
-    
+
     // Run on startup to match the loaded database state
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const select = document.getElementById('payment_status');
         togglePaymentFields(select.value);
+
         // Initialise days count (handles edit mode with pre‑filled dates)
         updateNumDays();
     });

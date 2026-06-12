@@ -55,12 +55,12 @@ async def list_investments(
         investments = query.all()
         
         # Calculate totals for filtered results
-        total_investment = sum(i.amount for i in investments) if investments else 0.0
-        total_amount_sum = sum(i.total_amount for i in investments) if investments else 0.0
+        total_amount_sum = sum(i.total_amount for i in investments if not i.payment_status or i.payment_status == 'Done') if investments else 0.0
+        pending_amount_sum = sum(i.pending_amount for i in investments) if investments else 0.0
         investment_count = len(investments)
         
-        total_investment_words = number_to_words(total_investment)
         total_amount_sum_words = number_to_words(total_amount_sum)
+        pending_amount_sum_words = number_to_words(pending_amount_sum)
         
         # Service-wise breakdown
         service_stats = {}
@@ -68,16 +68,16 @@ async def list_investments(
             if investment.service not in service_stats:
                 service_stats[investment.service] = {"count": 0, "amount": 0.0}
             service_stats[investment.service]["count"] += 1
-            service_stats[investment.service]["amount"] += investment.amount
+            service_stats[investment.service]["amount"] += investment.total_amount
         
         return templates.TemplateResponse("financial/investment_list.html", {
             "request": request,
             "page_title": "Investment To Grow Company",
             "investments": investments,
-            "total_investment": total_investment,
-            "total_investment_words": total_investment_words,
             "total_amount_sum": total_amount_sum,
             "total_amount_sum_words": total_amount_sum_words,
+            "pending_amount_sum": pending_amount_sum,
+            "pending_amount_sum_words": pending_amount_sum_words,
             "investment_count": investment_count,
             "service_stats": service_stats,
             "search_query": search or "",
@@ -113,20 +113,23 @@ async def create_investment(
     db: Session = Depends(get_db),
     date_input: str = Form(...),
     service: str = Form(...),
-    amount: str = Form(...),
-    total_amount: float = Form(...),  # still received but ignored
+    total_amount: float = Form(...),
+    paid_amount: float = Form(default=0.0),
+    pending_amount: float = Form(default=0.0),
+    payment_mode: str = Form(default="Cash"),
+    payment_status: str = Form(default="Done"),
     description: str = Form(default=""),
 ):
     """Create new investment."""
     try:
-        # Parse comma-separated amounts and compute total
-        amount_values = [float(v.strip()) for v in amount.split(',') if v.strip()]
-        sum_amount = sum(amount_values)
         investment = InvestmentToGrowCompany(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             service=service,
-            amount=sum_amount,
-            total_amount=sum_amount,
+            total_amount=total_amount,
+            paid_amount=paid_amount,
+            pending_amount=pending_amount,
+            payment_mode=payment_mode,
+            payment_status=payment_status,
             description=description,
         )
         
@@ -167,8 +170,11 @@ async def edit_investment(
     db: Session = Depends(get_db),
     date_input: str = Form(...),
     service: str = Form(...),
-    amount: str = Form(...),  # accept comma-separated amounts
-    total_amount: float = Form(...),  # ignored, will be recomputed
+    total_amount: float = Form(...),
+    paid_amount: float = Form(default=0.0),
+    pending_amount: float = Form(default=0.0),
+    payment_mode: str = Form(default="Cash"),
+    payment_status: str = Form(default="Done"),
     description: str = Form(default=""),
 ):
     """Update investment with comma-separated amount handling."""
@@ -179,14 +185,13 @@ async def edit_investment(
         if not investment:
             raise HTTPException(status_code=404, detail="Investment not found")
 
-        # Compute sum of amounts
-        amount_values = [float(v.strip()) for v in amount.split(',') if v.strip()]
-        sum_amount = sum(amount_values)
-
         investment.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         investment.service = service
-        investment.amount = sum_amount
-        investment.total_amount = sum_amount
+        investment.total_amount = total_amount
+        investment.paid_amount = paid_amount
+        investment.pending_amount = pending_amount
+        investment.payment_mode = payment_mode
+        investment.payment_status = payment_status
         investment.description = description
 
         db.commit()

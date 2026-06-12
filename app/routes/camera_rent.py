@@ -53,7 +53,7 @@ async def list_camera_rent(
         total_rental_income = sum(r.total_amount or 0 for r in rentals if r.work_status == "Done") if rentals else Decimal('0.0')
         total_days_rented = sum(r.days for r in rentals) if rentals else 0
         paid_count = sum(1 for r in rentals if r.payment_status in ("Online", "Cash"))
-        pending_payments = sum(r.total_amount or 0 for r in rentals if r.work_status != "Done")
+        pending_payments = sum(r.pending_amount or 0 for r in rentals)
         
         total_rental_income_words = number_to_words(total_rental_income)
         pending_payments_words = number_to_words(pending_payments)
@@ -106,6 +106,8 @@ async def create_rental(
     phone_number: str = Form(...),
     aadhar_card_no: str = Form(default=""),
     total_amount: Decimal = Form(...),
+    paid_amount: Decimal = Form(default=0.0),
+    pending_amount: Decimal = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
@@ -122,6 +124,8 @@ async def create_rental(
             phone_number=phone_number,
             aadhar_card_no=aadhar_card_no,
             total_amount=total_amount,
+            paid_amount=paid_amount,
+            pending_amount=pending_amount,
             payment_status=payment_status,
             work_status=work_status,
             description=description,
@@ -167,6 +171,8 @@ async def edit_rental(
     phone_number: str = Form(...),
     aadhar_card_no: str = Form(default=""),
     total_amount: Decimal = Form(...),
+    paid_amount: Decimal = Form(default=0.0),
+    pending_amount: Decimal = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
@@ -186,6 +192,8 @@ async def edit_rental(
         rental.phone_number = phone_number
         rental.aadhar_card_no = aadhar_card_no
         rental.total_amount = total_amount
+        rental.paid_amount = paid_amount
+        rental.pending_amount = pending_amount
         rental.payment_status = payment_status
         rental.work_status = work_status
         rental.description = description

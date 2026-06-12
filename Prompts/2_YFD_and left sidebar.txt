@@ -91,3 +91,22 @@ in the "Create Monthly Financial Report" page ;
 change the names : 
 Payment Status --> Payment Mode
 Work Status  --> Payment Status
+
+========================================================================
+
+in the "Create Investment" page : 
+
+create a dropdown for "Payment Mode" with Cash & Online
+
+and it should also display in the table of "Investment To Grow Company
+" page (and also the database table)
+
+========================================================================
+
+in the "Create Camera Rent" page ; 
+
+create input "Amount" beside "Amount" and the "Pending Amount" should automatically be calculated 
+
+and it should also display in the table of "Create Camera Rent
+
+" page (and also the database table)

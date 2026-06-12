@@ -220,6 +220,7 @@ class MonthlyFinancialReport(Base):
     month = Column(String(50), nullable=False, index=True)  # Month name selected
     year = Column(Integer, nullable=False, index=True)  # Year selected
     client_name = Column(String(255), nullable=False, index=True)
+    project_name = Column(String(255), nullable=True)
     event_type = Column(String(255), nullable=False)
     event_date = Column(String(255), nullable=False)
     
@@ -291,8 +292,11 @@ class InvestmentToGrowCompany(Base):
     id = Column(Integer, primary_key=True, index=True)
     date = Column(Date, nullable=False, index=True)
     service = Column(String(255), nullable=False)  # Type of investment
-    amount = Column(Float, nullable=False, default=0.0)
     total_amount = Column(Float, nullable=False, default=0.0)
+    paid_amount = Column(Float, nullable=False, default=0.0)
+    pending_amount = Column(Float, nullable=False, default=0.0)
+    payment_mode = Column(String(50), nullable=True)  # Cash or Online
+    payment_status = Column(String(50), nullable=True, default="Done")  # Done or Pending
     
     # Additional fields
     description = Column(Text, nullable=True)
@@ -310,6 +314,8 @@ class ClientsEditing(Base):
     client_name = Column(String(255), nullable=False, index=True)
     editing_type = Column(String(255), nullable=False)
     total_amount = Column(Float, nullable=False, default=0.0)
+    paid_amount = Column(Float, nullable=False, default=0.0)
+    pending_amount = Column(Float, nullable=False, default=0.0)
     
     # Status tracking
     payment_status = Column(String(50), nullable=False)  # Online, Cash
@@ -334,6 +340,8 @@ class CameraRent(Base):
     phone_number = Column(String(20), nullable=False)
     aadhar_card_no = Column(String(20), nullable=True)
     total_amount = Column(Numeric(12, 2), nullable=False, default=0.0)
+    paid_amount = Column(Numeric(12, 2), nullable=False, default=0.0)
+    pending_amount = Column(Numeric(12, 2), nullable=False, default=0.0)
     
     # Status tracking
     payment_status = Column(String(50), nullable=False)  # Online, Cash

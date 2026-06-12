@@ -83,6 +83,8 @@
                 <th>Equipments</th>
                 <th>Days</th>
                 <th>Amount (₹)</th>
+                <th>Paid Amount (₹)</th>
+                <th>Pending Amount (₹)</th>
                 <th>Payment Status</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -97,6 +99,8 @@
                 <td>{{ rental.description_of_goods }}</td>
                 <td>{{ rental.days }}</td>
                 <td>₹{{ "%.2f"|format(rental.total_amount) }}</td>
+                <td class="text-success">₹{{ "%.2f"|format(rental.paid_amount) }}</td>
+                <td class="text-danger">₹{{ "%.2f"|format(rental.pending_amount) }}</td>
                 <td><span
                         class="badge {% if rental.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{
                         rental.payment_status }}</span></td>
@@ -112,7 +116,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="8" class="text-center text-muted">No rentals found.</td>
+                <td colspan="10" class="text-center text-muted">No rentals found.</td>
             </tr>
             {% endif %}
         </tbody>

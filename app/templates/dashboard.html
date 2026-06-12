@@ -725,7 +725,26 @@
                 </div> -->
             </div>
         </div>
+
+        <!-- KPI: Cash & Online Payments -->
+        <div class="premium-kpi-card" style="padding: 16px; justify-content: flex-start; gap: 8px;">
+            <div class="kpi-header" style="margin-bottom: 2px;">
+                <span class="kpi-title" style="font-size: 0.75rem;">Cash & Online</span>
+                <span style="font-size: 1.1rem;">💵</span>
+            </div>
+            <div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Online:</span>
+                    <span>₹{{ "{:,.2f}".format(total_online) }}</span>
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Cash:</span>
+                    <span>₹{{ "{:,.2f}".format(total_cash) }}</span>
+                </div>
+            </div>
+        </div>
     </div>
+
 
     <!-- Visual Analytics Charts Area -->
     <div class="analytics-grid">

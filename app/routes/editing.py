@@ -53,8 +53,8 @@ async def list_editing(
         # Total Revenue should only include projects where payment/work status is 'Done'
         total_revenue = sum(p.total_amount for p in editing_projects if p.work_status == "Done") if editing_projects else 0.0
         total_revenue_words = number_to_words(total_revenue)
-        pending_count = sum(1 for p in editing_projects if p.work_status == "Pending")
-        pending_amount = sum(p.total_amount for p in editing_projects if p.work_status == "Pending") if editing_projects else 0.0
+        pending_count = sum(1 for p in editing_projects if p.pending_amount > 0)
+        pending_amount = sum(p.pending_amount for p in editing_projects) if editing_projects else 0.0
         pending_amount_words = number_to_words(pending_amount)
         done_count = sum(1 for p in editing_projects if p.work_status == "Done")
         completion_rate = (done_count / len(editing_projects) * 100) if len(editing_projects) > 0 else 0
@@ -111,6 +111,8 @@ async def create_editing(
     client_name: str = Form(...),
     editing_type: str = Form(...),
     total_amount: float = Form(...),
+    paid_amount: float = Form(default=0.0),
+    pending_amount: float = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
@@ -122,6 +124,8 @@ async def create_editing(
             client_name=client_name,
             editing_type=editing_type,
             total_amount=total_amount,
+            paid_amount=paid_amount,
+            pending_amount=pending_amount,
             payment_status=payment_status,
             work_status=work_status,
             description=description,
@@ -164,6 +168,8 @@ async def edit_editing(
     client_name: str = Form(...),
     editing_type: str = Form(...),
     total_amount: float = Form(...),
+    paid_amount: float = Form(default=0.0),
+    pending_amount: float = Form(default=0.0),
     payment_status: str = Form(...),
     work_status: str = Form(...),
     description: str = Form(default=""),
@@ -178,6 +184,8 @@ async def edit_editing(
         project.client_name = client_name
         project.editing_type = editing_type
         project.total_amount = total_amount
+        project.paid_amount = paid_amount
+        project.pending_amount = pending_amount
         project.payment_status = payment_status
         project.work_status = work_status
         project.description = description

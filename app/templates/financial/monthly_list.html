@@ -82,6 +82,7 @@
             <tr>
                 <th>Month</th>
                 <th>Client Name</th>
+                <th>Project Name</th>
                 <th>Event Type</th>
                 <th>Event Dates</th>
                 <th>Total Amount</th>
@@ -101,6 +102,7 @@
             <tr>
                 <td>{{ report.month }} {{ report.year }}</td>
                 <td><strong>{{ report.client_name }}</strong></td>
+                <td>{{ report.project_name or '-' }}</td>
                 <td>{{ report.event_type }}</td>
                 <td>{% if report.event_date is string %}{{ report.event_date | replace(',', ', ') }}{% elif
                     report.event_date %}{{ report.event_date.strftime('%Y-%m-%d') }}{% else %}-{% endif %}</td>

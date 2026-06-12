@@ -11,20 +11,21 @@
 
 <!-- Summary Cards -->
 <div class="summary-cards">
-    <div class="summary-card">
-        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📈</div>
-        <div class="card-content">
-            <div class="card-label">Total Investment</div>
-            <div class="card-value">₹{{ "%.2f"|format(total_investment) }}</div>
-            <div class="card-subtext">{{ total_investment_words }}</div>
-        </div>
-    </div>
+    <!-- Removed Total Investment card -->
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📊</div>
         <div class="card-content">
             <div class="card-label">Total Amount</div>
             <div class="card-value">₹{{ "%.2f"|format(total_amount_sum) }}</div>
             <div class="card-subtext">{{ total_amount_sum_words }}</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">⏳</div>
+        <div class="card-content">
+            <div class="card-label">Pending Amount</div>
+            <div class="card-value">₹{{ "%.2f"|format(pending_amount_sum) }}</div>
+            <div class="card-subtext">{{ pending_amount_sum_words }}</div>
         </div>
     </div>
     <div class="summary-card">
@@ -72,8 +73,11 @@
             <tr>
                 <th>Date</th>
                 <th>Service</th>
-                <th>Amount (₹)</th>
                 <th>Total Amount (₹)</th>
+                <th>Paid Amount (₹)</th>
+                <th>Pending Amount (₹)</th>
+                <th>Payment Mode</th>
+                <th>Payment Status</th>
                 <th>Description</th>
                 <th>Actions</th>
             </tr>
@@ -84,8 +88,11 @@
                 <tr>
                     <td>{{ investment.date.strftime('%d %b %Y') }}</td>
                     <td><strong>{{ investment.service }}</strong></td>
-                    <td>₹{{ "%.2f"|format(investment.amount) }}</td>
                     <td>₹{{ "%.2f"|format(investment.total_amount) }}</td>
+                    <td class="text-success">₹{{ "%.2f"|format(investment.paid_amount) }}</td>
+                    <td class="text-danger">₹{{ "%.2f"|format(investment.pending_amount) }}</td>
+                    <td><span class="badge {% if investment.payment_mode == 'Online' %}badge-info{% elif investment.payment_mode == 'Cash' %}badge-warning{% else %}badge-secondary{% endif %}">{{ investment.payment_mode or 'Cash' }}</span></td>
+                    <td><span class="badge {% if not investment.payment_status or investment.payment_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ investment.payment_status or 'Done' }}</span></td>
                     <td>{{ investment.description or '-' }}</td>
                     <td class="action-buttons">
                         <a href="/financial/investment/{{ investment.id }}/edit" class="btn-icon">✏️</a>

@@ -81,6 +81,8 @@
                 <th>Client Name</th>
                 <th>Editing Type</th>
                 <th>Amount (₹)</th>
+                <th>Paid Amount (₹)</th>
+                <th>Pending Amount (₹)</th>
                 <th>Payment Mode</th>
                 <th>Payment Status</th>
                 <th>Actions</th>
@@ -94,6 +96,8 @@
                     <td><strong>{{ project.client_name }}</strong></td>
                     <td>{{ project.editing_type }}</td>
                     <td>₹{{ "%.2f"|format(project.total_amount) }}</td>
+                    <td class="text-success">₹{{ "%.2f"|format(project.paid_amount) }}</td>
+                    <td class="text-danger">₹{{ "%.2f"|format(project.pending_amount) }}</td>
                     <td><span class="badge {% if project.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ project.payment_status }}</span></td>
                     <td><span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span></td>
                     <td class="action-buttons">
@@ -104,7 +108,7 @@
                 {% endfor %}
             {% else %}
             <tr>
-                <td colspan="7" class="text-center text-muted">No editing projects found.</td>
+                <td colspan="9" class="text-center text-muted">No editing projects found.</td>
             </tr>
             {% endif %}
         </tbody>

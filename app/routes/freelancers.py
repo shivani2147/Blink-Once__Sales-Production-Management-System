@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, and_
 from app.database import get_db
-from app.models import Freelancer, FreelancerWork
+from app.models import Freelancer, FreelancerWork, PreProduction, OnProduction, PostProduction, MonthlyFinancialReport
 from app.config import UPLOAD_DIR, ALLOWED_EXTENSIONS
 from app.routes.monthly_financial import number_to_words
 from datetime import datetime, date
@@ -53,6 +53,31 @@ def delete_file(filename: str):
             except Exception as e:
                 print(f"Error deleting file {filepath}: {e}")
 
+def get_all_project_names(db: Session):
+    """Retrieve distinct project names from across modules."""
+    _all_names = set()
+    for c in db.query(PreProduction.couple_name).distinct().all():
+        if c[0]: _all_names.add(c[0])
+    for c in db.query(OnProduction.couple_name).distinct().all():
+        if c[0]: _all_names.add(c[0])
+    for c in db.query(PostProduction.couple_name).distinct().all():
+        if c[0]: _all_names.add(c[0])
+    for c in db.query(MonthlyFinancialReport.project_name).distinct().all():
+        if c[0]: _all_names.add(c[0])
+    for c in db.query(FreelancerWork.project_name).distinct().all():
+        if c[0]: _all_names.add(c[0])
+    return sorted(_all_names)
+
+from fastapi import Query
+@router.get("/api/project_amount")
+async def get_project_amount(project_name: str = Query(...), db: Session = Depends(get_db)):
+    """Get the sum of amount_charged for all FreelancerWork records linked to the given project_name."""
+    try:
+        total = db.query(func.sum(FreelancerWork.total_amount)).filter(FreelancerWork.project_name == project_name).scalar() or 0.0
+        return {"total_amount": float(total)}
+    except Exception as e:
+        print(f"Error in project amount api: {e}")
+        return {"total_amount": 0.0}
 
 @router.get("/", response_class=HTMLResponse)
 async def list_freelancers(
@@ -106,7 +131,7 @@ async def list_freelancers(
         # Standard months mapping
         months_list = [(i, calendar.month_name[i]) for i in range(1, 13)]
 
-        selected_year = year if year else "all"
+        selected_year = year if year else str(current_year)
         selected_month = month if month else "all"
 
         y_filter_val = None
@@ -625,6 +650,7 @@ async def add_work_form(
             "page_title": f"Log Work Assignment: {freelancer.name}",
             "freelancer": freelancer,
             "roles": roles,
+            "all_project_names": get_all_project_names(db),
             "is_edit": False
         }
         
@@ -641,15 +667,8 @@ async def add_work_form(
 
 @router.post("/{freelancer_id}/work/add")
 async def create_work_log(
+    request: Request,
     freelancer_id: int,
-    project_name: str = Form(...),
-    work_date: str = Form(...),
-    role_assigned: str = Form(...),
-    amount_charged: float = Form(0.0),
-    payment_status: str = Form("Pending"),
-    payment_date: str = Form(None),
-    payment_mode: str = Form(None),
-    remarks: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """Create a new work assignment and payment log."""
@@ -658,18 +677,42 @@ async def create_work_log(
         if not freelancer:
             raise HTTPException(status_code=404, detail="Freelancer not found")
             
-        # Parse dates
-        w_date = datetime.strptime(work_date, "%Y-%m-%d").date()
+        form_data = await request.form()
+        project_name = form_data.get("project_name")
+        role_assigned = form_data.get("role_assigned")
+        amount_charged = float(form_data.get("amount_charged", 0.0))
+        num_days = int(form_data.get("num_days", 1))
+        total_amount = float(form_data.get("total_amount", 0.0))
+        payment_status = form_data.get("payment_status", "Pending")
+        payment_date = form_data.get("payment_date")
+        payment_mode = form_data.get("payment_mode")
+        remarks = form_data.get("remarks")
+        
+        work_dates = form_data.getlist("work_date[]")
+        if not work_dates and form_data.get("work_date"):
+            work_dates = [form_data.get("work_date")]
+            
+        first_date_str = work_dates[0] if work_dates else str(datetime.utcnow().date())
+        w_date = datetime.strptime(first_date_str, "%Y-%m-%d").date()
+        
+        # Parse payment date
         p_date = None
         if payment_date and payment_status == "Paid":
             p_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
+            
+        # Optional: Save multiple dates into remarks if more than one
+        if len(work_dates) > 1:
+            date_str = ", ".join(work_dates)
+            remarks = f"{remarks}\nWork Dates: {date_str}" if remarks else f"Work Dates: {date_str}"
             
         record = FreelancerWork(
             freelancer_id=freelancer.id,
             project_name=project_name,
             work_date=w_date,
             role_assigned=role_assigned,
+            num_days=num_days,
             amount_charged=amount_charged,
+            total_amount=total_amount,
             payment_status=payment_status,
             payment_date=p_date,
             payment_mode=payment_mode if payment_status == "Paid" else None,
@@ -713,6 +756,7 @@ async def edit_work_form(
             "freelancer": freelancer,
             "work": work,
             "roles": roles,
+            "all_project_names": get_all_project_names(db),
             "is_edit": True
         }
         
@@ -729,16 +773,9 @@ async def edit_work_form(
 
 @router.post("/{freelancer_id}/work/{work_id}/edit")
 async def update_work_log(
+    request: Request,
     freelancer_id: int,
     work_id: int,
-    project_name: str = Form(...),
-    work_date: str = Form(...),
-    role_assigned: str = Form(...),
-    amount_charged: float = Form(0.0),
-    payment_status: str = Form("Pending"),
-    payment_date: str = Form(None),
-    payment_mode: str = Form(None),
-    remarks: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """Update work assignment and payment log details."""
@@ -747,16 +784,39 @@ async def update_work_log(
         if not work:
             raise HTTPException(status_code=404, detail="Work record not found")
             
-        # Parse dates
-        w_date = datetime.strptime(work_date, "%Y-%m-%d").date()
+        form_data = await request.form()
+        project_name = form_data.get("project_name")
+        role_assigned = form_data.get("role_assigned")
+        amount_charged = float(form_data.get("amount_charged", 0.0))
+        num_days = int(form_data.get("num_days", 1))
+        total_amount = float(form_data.get("total_amount", 0.0))
+        payment_status = form_data.get("payment_status", "Pending")
+        payment_date = form_data.get("payment_date")
+        payment_mode = form_data.get("payment_mode")
+        remarks = form_data.get("remarks")
+        
+        work_dates = form_data.getlist("work_date[]")
+        if not work_dates and form_data.get("work_date"):
+            work_dates = [form_data.get("work_date")]
+            
+        first_date_str = work_dates[0] if work_dates else str(datetime.utcnow().date())
+        w_date = datetime.strptime(first_date_str, "%Y-%m-%d").date()
+        
         p_date = None
         if payment_date and payment_status == "Paid":
             p_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
             
+        # Optional: Save multiple dates into remarks if more than one
+        if len(work_dates) > 1:
+            date_str = ", ".join(work_dates)
+            remarks = f"{remarks}\nWork Dates: {date_str}" if remarks else f"Work Dates: {date_str}"
+            
         work.project_name = project_name
         work.work_date = w_date
         work.role_assigned = role_assigned
+        work.num_days = num_days
         work.amount_charged = amount_charged
+        work.total_amount = total_amount
         work.payment_status = payment_status
         work.payment_date = p_date
         work.payment_mode = payment_mode if payment_status == "Paid" else None

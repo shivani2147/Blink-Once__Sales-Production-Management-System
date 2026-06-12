@@ -13,23 +13,34 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="date_input">Date</label>
-                    <input type="date" id="date_input" name="date_input" required 
-                           value="{% if project %}{{ project.date.strftime('%Y-%m-%d') }}{% endif %}">
+                    <input type="date" id="date_input" name="date_input" required
+                        value="{% if project %}{{ project.date.strftime('%Y-%m-%d') }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="client_name">Client Name</label>
-                    <input type="text" id="client_name" name="client_name" required 
-                           value="{% if project %}{{ project.client_name }}{% endif %}">
+                    <input type="text" id="client_name" name="client_name" required
+                        value="{% if project %}{{ project.client_name }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="editing_type">Editing Type</label>
-                    <input type="text" id="editing_type" name="editing_type" required 
-                           value="{% if project %}{{ project.editing_type }}{% endif %}" placeholder="e.g., Video, Photo, Reel">
+                    <input type="text" id="editing_type" name="editing_type" required
+                        value="{% if project %}{{ project.editing_type }}{% endif %}"
+                        placeholder="e.g., Video, Photo, Reel">
                 </div>
                 <div class="form-group">
                     <label for="total_amount">Amount (₹)</label>
-                    <input type="number" id="total_amount" name="total_amount" step="0.01" required 
-                           value="{% if project %}{{ project.total_amount }}{% endif %}">
+                    <input type="number" id="total_amount" name="total_amount" step="0.01" required
+                        value="{% if project %}{{ project.total_amount }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="paid_amount">Paid Amount (₹)</label>
+                    <input type="number" id="paid_amount" name="paid_amount" step="0.01" required
+                        value="{% if project %}{{ project.paid_amount }}{% else %}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="pending_amount">Pending Amount (₹)</label>
+                    <input type="number" id="pending_amount" name="pending_amount" step="0.01" readonly
+                        value="{% if project %}{{ project.pending_amount }}{% else %}0.00{% endif %}">
                 </div>
             </div>
         </div>
@@ -41,16 +52,20 @@
                     <label for="payment_status">Payment Mode</label>
                     <select id="payment_status" name="payment_status" required>
                         <option value="">Select Payment Mode</option>
-                        <option value="Online" {% if project and project.payment_status == 'Online' %}selected{% endif %}>Online</option>
-                        <option value="Cash" {% if project and project.payment_status == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="Online" {% if project and project.payment_status=='Online' %}selected{% endif %}>
+                            Online</option>
+                        <option value="Cash" {% if project and project.payment_status=='Cash' %}selected{% endif %}>Cash
+                        </option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="work_status">Payment Status</label>
                     <select id="work_status" name="work_status" required>
                         <option value="">Select Payment Status</option>
-                        <option value="Pending" {% if project and project.work_status == 'Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Done" {% if project and project.work_status == 'Done' %}selected{% endif %}>Done</option>
+                        <option value="Pending" {% if project and project.work_status=='Pending' %}selected{% endif %}>
+                            Pending</option>
+                        <option value="Done" {% if project and project.work_status=='Done' %}selected{% endif %}>Done
+                        </option>
                     </select>
                 </div>
             </div>
@@ -60,14 +75,34 @@
             <h3>Description</h3>
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4">{% if project %}{{ project.description }}{% endif %}</textarea>
+                <textarea id="description" name="description"
+                    rows="4">{% if project %}{{ project.description }}{% endif %}</textarea>
             </div>
         </div>
 
         <div class="form-actions">
             <a href="/financial/editing/" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Project{% else %}Create Project{% endif %}</button>
+            <button type="submit" class="btn btn-primary">{% if is_edit %}Update Project{% else %}Create Project{% endif
+                %}</button>
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const totalAmountInput = document.getElementById('total_amount');
+        const paidAmountInput = document.getElementById('paid_amount');
+        const pendingAmountInput = document.getElementById('pending_amount');
+
+        function calculatePendingAmount() {
+            const total = parseFloat(totalAmountInput.value) || 0;
+            const paid = parseFloat(paidAmountInput.value) || 0;
+            const pending = total - paid;
+            pendingAmountInput.value = pending >= 0 ? pending.toFixed(2) : "0.00";
+        }
+
+        totalAmountInput.addEventListener('input', calculatePendingAmount);
+        paidAmountInput.addEventListener('input', calculatePendingAmount);
+    });
+</script>
 {% endblock %}
