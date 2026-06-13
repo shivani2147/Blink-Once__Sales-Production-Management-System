@@ -80,11 +80,11 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th>Month</th>
                 <th>Client Name</th>
                 <th>Project Name</th>
-                <th>Event Type</th>
+                <th>Month</th>
                 <th>Event Dates</th>
+                <th>Event Type</th>
                 <th>Total Amount</th>
                 <th>Paid</th>
                 <th>Pending</th>
@@ -100,12 +100,12 @@
             {% if reports %}
             {% for report in reports %}
             <tr>
-                <td>{{ report.month }} {{ report.year }}</td>
                 <td><strong>{{ report.client_name }}</strong></td>
                 <td>{{ report.project_name or '-' }}</td>
-                <td>{{ report.event_type }}</td>
+                <td>{{ report.month }} {{ report.year }}</td>
                 <td>{% if report.event_date is string %}{{ report.event_date | replace(',', ', ') }}{% elif
                     report.event_date %}{{ report.event_date.strftime('%Y-%m-%d') }}{% else %}-{% endif %}</td>
+                <td>{{ report.event_type }}</td>
                 <td>₹{{ "%.2f"|format(report.total_amount) }}</td>
                 <td class="text-success">₹{{ "%.2f"|format(report.paid_amount) }}</td>
                 <td class="text-warning">₹{{ "%.2f"|format(report.pending_amount) }}</td>

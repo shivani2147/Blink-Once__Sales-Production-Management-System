@@ -10,6 +10,7 @@ from sqlalchemy import extract
 from app.database import get_db
 from app.models import PostProduction
 from datetime import datetime, date
+import calendar
 import os
 
 router = APIRouter(prefix="/post-production", tags=["Post-Production"])
@@ -48,12 +49,16 @@ async def list_post_production(
     try:
         query = db.query(PostProduction).order_by(PostProduction.created_at.desc())
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         if search:
             query = query.filter(PostProduction.couple_name.ilike(f"%{search}%"))
         if year:
-            query = query.filter(extract('year', PostProduction.created_at) == int(year))
+            query = query.filter(PostProduction.year == int(year))
         if month:
-            query = query.filter(extract('month', PostProduction.created_at) == int(month))
+            query = query.filter(PostProduction.month == month)
         
         records = query.all()
         
@@ -64,6 +69,10 @@ async def list_post_production(
             "search_query": search or "",
             "selected_year": year or "",
             "selected_month": month or "",
+            "years": years,
+            "months": months,
+            "current_year": current_year,
+            "current_month": calendar.month_name[datetime.utcnow().month]
         }
         
         return templates.TemplateResponse("post_production/list.html", context)
@@ -80,9 +89,17 @@ async def list_post_production(
 @router.get("/add", response_class=HTMLResponse)
 async def add_post_production_form(request: Request):
     """Display form for adding new post-production record."""
+    current_year = datetime.utcnow().year
+    years = list(range(2020, current_year + 1))
+    months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
     context = {
         "request": request,
         "page_title": "Add Post-Production Record",
+        "years": years,
+        "months": months,
+        "current_year": current_year,
+        "current_month": calendar.month_name[datetime.utcnow().month],
+        "is_edit": False
     }
     return templates.TemplateResponse("post_production/form.html", context)
 
@@ -112,6 +129,8 @@ async def create_post_production(
     photobook_delivered: bool = Form(False),
     digital_portfolio_album: bool = Form(False),
     payment_recovery: bool = Form(False),
+    year: int = Form(None),
+    month: str = Form(None),
     remarks: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -146,6 +165,8 @@ async def create_post_production(
             digital_portfolio_album=digital_portfolio_album,
             payment_recovery=payment_recovery,
             closure_date=datetime.strptime(closure_date, "%Y-%m-%d").date() if closure_date else None,
+            year=year,
+            month=month,
             remarks=remarks,
             created_by="Admin"
         )
@@ -214,10 +235,17 @@ async def edit_post_production_form(
                 status_code=404
             )
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         context = {
             "request": request,
             "page_title": f"Edit Post-Production: {record.couple_name}",
             "record": record,
+            "years": years,
+            "months": months,
+            "is_edit": True
         }
         
         return templates.TemplateResponse("post_production/form.html", context)
@@ -257,6 +285,8 @@ async def update_post_production(
     photobook_delivered: bool = Form(False),
     digital_portfolio_album: bool = Form(False),
     payment_recovery: bool = Form(False),
+    year: int = Form(None),
+    month: str = Form(None),
     remarks: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -295,6 +325,8 @@ async def update_post_production(
         record.photobook_delivered = photobook_delivered
         record.digital_portfolio_album = digital_portfolio_album
         record.payment_recovery = payment_recovery
+        record.year = year
+        record.month = month
         record.remarks = remarks
         record.updated_at = datetime.utcnow()
         

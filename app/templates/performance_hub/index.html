@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       Premium Monthly Performance Hub Styling
+       ========================================================================== */
+    :root {
+        --theme-primary: #5856d6;
+        --theme-secondary: #af52de;
+        --theme-success: #34c759;
+        --theme-warning: #ff9500;
+        --theme-danger: #ff3b30;
+        --theme-info: #007aff;
+        --card-border: 1px solid rgba(0, 0, 0, 0.06);
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+        --text-muted: #8e8e93;
+        --text-dark: #1c1c1e;
+        --border-radius-sm: 8px;
+        --border-radius-md: 14px;
+        --border-radius-lg: 20px;
+    }
+
+    .hub-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 1600px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .hub-intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .hub-intro h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    /* Filters */
+    .hub-filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        padding: 6px 12px;
+        border-radius: var(--border-radius-sm);
+        border: var(--card-border);
+        box-shadow: var(--card-shadow);
+    }
+
+    .filter-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .filter-item span {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-item select {
+        border: none;
+        background: transparent;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+        outline: none;
+        padding: 2px 4px;
+        font-family: inherit;
+    }
+
+    /* KPI Cards */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .premium-kpi-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        border: var(--card-border);
+        box-shadow: var(--card-shadow);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .premium-kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: rgba(88, 86, 214, 0.2);
+    }
+
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .kpi-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-badge-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .kpi-main-val {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1.2;
+    }
+
+    .icon-revenue { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
+    .icon-expenses { background: linear-gradient(135deg, #f857a6, #ff5858); color: white; }
+    .icon-profit { background: linear-gradient(135deg, #56ab2f, #a8e063); color: white; }
+    .icon-leads { background: linear-gradient(135deg, #7f00ff, #e100ff); color: white; }
+    .icon-clients { background: linear-gradient(135deg, #ff5e62, #ff9966); color: white; }
+    .icon-camera { background: linear-gradient(135deg, #3a7bd5, #3a6073); color: white; }
+
+    /* Tables */
+    .premium-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        border: var(--card-border);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .premium-card-header {
+        padding: 18px 24px;
+        border-bottom: var(--card-border);
+        background: rgba(250, 250, 250, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .premium-card-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .premium-table th {
+        background: #f8f9fa;
+        text-align: left;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e9ecef;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    .premium-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e9ecef;
+        color: var(--text-dark);
+        vertical-align: middle;
+    }
+
+    .premium-table tbody tr:hover {
+        background-color: #f8f9fc;
+    }
+    
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-done { background: var(--theme-success-light); color: var(--theme-success); }
+    .status-pending { background: var(--theme-warning-light); color: var(--theme-warning); }
+    
+    /* Charts */
+    .charts-flex-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+        .charts-flex-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        padding: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hub-wrapper">
+    <!-- Header & Filters -->
+    <div class="hub-intro">
+        <div>
+            <h2>Monthly Performance Hub</h2>
+            <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem;">
+                Consolidated month-wise and client-wise business summary.
+            </p>
+        </div>
+        <div class="hub-filters">
+            <div class="filter-item">
+                <span>Year:</span>
+                <select id="filter-year" onchange="applyFilters()">
+                    <option value="all">All</option>
+                    {% for yr in years_list %}
+                    <option value="{{ yr }}" {% if selected_year == yr|string %}selected{% endif %}>{{ yr }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.08);"></div>
+            <div class="filter-item">
+                <span>Month:</span>
+                <select id="filter-month" onchange="applyFilters()">
+                    <option value="all">All</option>
+                    {% for m_num, m_name in months_list %}
+                    <option value="{{ m_num }}" {% if selected_month == m_num|string %}selected{% endif %}>{{ m_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive Summary Cards -->
+    <div class="kpi-row">
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Total Revenue</span>
+                <div class="kpi-badge-icon icon-revenue">₹</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">₹{{ "{:,.2f}".format(exec_summary['Total Revenue']) }}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                    Confirmed: ₹{{ "{:,.2f}".format(exec_summary['Confirmed Revenue']) }}
+                </span>
+            </div>
+        </div>
+
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Total Expenses</span>
+                <div class="kpi-badge-icon icon-expenses">💸</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">₹{{ "{:,.2f}".format(exec_summary['Total Expenses']) }}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                    Freelancers: ₹{{ "{:,.2f}".format(exec_summary['Freelancer Expenses']) }} | Inv: ₹{{ "{:,.2f}".format(exec_summary['Total Investments']) }}
+                </span>
+            </div>
+        </div>
+
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Net Profit</span>
+                <div class="kpi-badge-icon icon-profit">📈</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val" style="color: {% if exec_summary['Total Profit'] >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
+                    ₹{{ "{:,.2f}".format(exec_summary['Total Profit']) }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Leads Overview</span>
+                <div class="kpi-badge-icon icon-leads">🎯</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">{{ exec_summary['Total Leads'] }} Leads</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                    ✅ {{ exec_summary['Confirmed Clients'] }} Confirmed | ❌ {{ exec_summary['Rejected Leads'] }} Rejected
+                </span>
+            </div>
+        </div>
+        
+        <div class="premium-kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Pending Payments</span>
+                <div class="kpi-badge-icon icon-camera">⏳</div>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-main-val">₹{{ "{:,.2f}".format(exec_summary['Pending Payments']) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-flex-row">
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>📊 Financial Trends (Month-wise)</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="hubFinancialChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h3>🏆 Top 5 Clients by Revenue</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="hubClientsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Month-wise Breakdown -->
+    <div class="premium-card">
+        <div class="premium-card-header">
+            <h3>📅 Month-wise Breakdown</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total Rev</th>
+                        <th>Potential Rev</th>
+                        <th>Total Exp</th>
+                        <th>Freelancer Exp</th>
+                        <th>Investments</th>
+                        <th>Total Profit</th>
+                        <th>Leads / Confirmed</th>
+                        <th>Editing Rev</th>
+                        <th>Camera Rev</th>
+                        <th>Proj (Pre/On/Post)</th>
+                        <th>Ongoing/Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m_key, s in monthly_stats.items() %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ m_key }}</td>
+                        <td style="color: var(--theme-success); font-weight: 600;">₹{{ "{:,.2f}".format(s['Total Revenue']) }}</td>
+                        <td>₹{{ "{:,.2f}".format(s['Potential Revenue']) }}</td>
+                        <td style="color: var(--theme-danger);">₹{{ "{:,.2f}".format(s['Total Expenses']) }}</td>
+                        <td>₹{{ "{:,.2f}".format(s['Freelancer Expenses']) }}</td>
+                        <td>₹{{ "{:,.2f}".format(s['Total Investments']) }}</td>
+                        <td style="font-weight: 700; color: {% if s['Total Profit'] >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
+                            ₹{{ "{:,.2f}".format(s['Total Profit']) }}
+                        </td>
+                        <td>{{ s['Total Leads'] }} / {{ s['Confirmed Clients'] }}</td>
+                        <td>₹{{ "{:,.2f}".format(s['Editing Revenue']) }}</td>
+                        <td>₹{{ "{:,.2f}".format(s['Camera Rent Revenue']) }}</td>
+                        <td>{{ s['Pre-Production Projects'] }} / {{ s['On-Production Projects'] }} / {{ s['Post-Production Projects'] }}</td>
+                        <td>{{ s['Ongoing Projects'] }} / {{ s['Completed Projects'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Client-wise Breakdown -->
+    <div class="premium-card">
+        <div class="premium-card-header">
+            <h3>👥 Client Performance Summary</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Event Type</th>
+                        <th>Month</th>
+                        <th>Revenue</th>
+                        <th>Expenses</th>
+                        <th>Freelancer Cost</th>
+                        <th>Profit Earned</th>
+                        <th>Stage</th>
+                        <th>Work Status</th>
+                        <th>Payment Status</th>
+                        <th>History/Logs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in client_stats %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ c['Client Name'] }}</td>
+                        <td>{{ c['Event Type'] or '-' }}</td>
+                        <td>{{ c['Month'] or '-' }}</td>
+                        <td style="color: var(--theme-success); font-weight: 600;">₹{{ "{:,.2f}".format(c['Total Revenue Generated']) }}</td>
+                        <td style="color: var(--theme-danger);">₹{{ "{:,.2f}".format(c['Total Expenses']) }}</td>
+                        <td>₹{{ "{:,.2f}".format(c['Freelancer Cost']) }}</td>
+                        <td style="font-weight: 700; color: {% if c['Profit Earned'] >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
+                            ₹{{ "{:,.2f}".format(c['Profit Earned']) }}
+                        </td>
+                        <td><span class="status-badge" style="background: var(--theme-info-light); color: var(--theme-info);">{{ c['Current Project Stage'] }}</span></td>
+                        <td>
+                            <span class="status-badge {% if c['Work Status'] == 'Done' %}status-done{% else %}status-pending{% endif %}">
+                                {{ c['Work Status'] }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge {% if c['Payment Status'] in ['Done', 'Online', 'Cash'] %}status-done{% else %}status-pending{% endif %}">
+                                {{ c['Payment Status'] }}
+                            </span>
+                        </td>
+                        <td><small style="color: var(--text-muted); max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis;">{{ c['HistoryStr'] }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function applyFilters() {
+        const year = document.getElementById('filter-year').value;
+        const month = document.getElementById('filter-month').value;
+        let url = new URL(window.location.href);
+        if (year !== "all") url.searchParams.set('year', year);
+        else url.searchParams.delete('year');
+        if (month !== "all") url.searchParams.set('month', month);
+        else url.searchParams.delete('month');
+        window.location.href = url.href;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const chartLabels = {{ chart_labels | tojson }};
+        const chartRev = {{ chart_revenue | tojson }};
+        const chartExp = {{ chart_expenses | tojson }};
+        const chartProfit = {{ chart_profit | tojson }};
+        
+        // Financial Trends Chart
+        const ctxFin = document.getElementById('hubFinancialChart').getContext('2d');
+        new Chart(ctxFin, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: chartRev,
+                        backgroundColor: 'rgba(52, 199, 89, 0.7)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Expenses',
+                        data: chartExp,
+                        backgroundColor: 'rgba(255, 59, 48, 0.7)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Profit',
+                        data: chartProfit,
+                        type: 'line',
+                        borderColor: '#007aff',
+                        backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '₹' + value.toLocaleString(); }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Top Clients Chart
+        const topClientNames = {{ top_client_names | tojson }};
+        const topClientRevs = {{ top_client_revs | tojson }};
+        const ctxClients = document.getElementById('hubClientsChart').getContext('2d');
+        new Chart(ctxClients, {
+            type: 'doughnut',
+            data: {
+                labels: topClientNames,
+                datasets: [{
+                    data: topClientRevs,
+                    backgroundColor: [
+                        '#5856d6', '#34c759', '#ff9500', '#ff3b30', '#007aff'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

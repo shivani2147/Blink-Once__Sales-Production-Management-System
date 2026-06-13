@@ -419,8 +419,8 @@ async def view_freelancer_profile(
             .order_by(FreelancerWork.work_date.desc()).all()
             
         # Calculate statistics
-        total_earned = sum(a.amount_charged for a in assignments if a.payment_status == "Paid")
-        total_pending = sum(a.amount_charged for a in assignments if a.payment_status == "Pending")
+        total_earned = sum(a.paid_amount for a in assignments)
+        total_pending = sum(a.pending_amount for a in assignments)
         total_assignments = len(assignments)
         
         context = {
@@ -676,13 +676,14 @@ async def create_work_log(
         freelancer = db.query(Freelancer).filter(Freelancer.id == freelancer_id).first()
         if not freelancer:
             raise HTTPException(status_code=404, detail="Freelancer not found")
-            
+
         form_data = await request.form()
         project_name = form_data.get("project_name")
         role_assigned = form_data.get("role_assigned")
-        amount_charged = float(form_data.get("amount_charged", 0.0))
-        num_days = int(form_data.get("num_days", 1))
-        total_amount = float(form_data.get("total_amount", 0.0))
+        amount_charged = float(form_data.get("amount_charged") or 0.0)
+        num_days = int(form_data.get("num_days") or 1)
+        total_amount = float(form_data.get("total_amount") or 0.0)
+        paid_amount = float(form_data.get("paid_amount") or 0.0)
         payment_status = form_data.get("payment_status", "Pending")
         payment_date = form_data.get("payment_date")
         payment_mode = form_data.get("payment_mode")
@@ -692,33 +693,48 @@ async def create_work_log(
         if not work_dates and form_data.get("work_date"):
             work_dates = [form_data.get("work_date")]
             
-        first_date_str = work_dates[0] if work_dates else str(datetime.utcnow().date())
+        valid_dates = []
+        for date_str in work_dates:
+            if date_str:
+                valid_dates.append(date_str.strip())
+
+        valid_dates = sorted(list(dict.fromkeys(valid_dates)))
+        if not valid_dates:
+            valid_dates = [str(datetime.utcnow().date())]
+
+        first_date_str = valid_dates[0]
         w_date = datetime.strptime(first_date_str, "%Y-%m-%d").date()
-        
-        # Parse payment date
+        work_dates_str = ", ".join(valid_dates)
+        num_days = len(valid_dates)
+        total_amount = amount_charged * num_days
+
+        if payment_status != "Paid":
+            paid_amount = 0.0
+            payment_date = None
+            payment_mode = None
+
+        pending_amount = total_amount - paid_amount
+
         p_date = None
         if payment_date and payment_status == "Paid":
             p_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
-            
-        # Optional: Save multiple dates into remarks if more than one
-        if len(work_dates) > 1:
-            date_str = ", ".join(work_dates)
-            remarks = f"{remarks}\nWork Dates: {date_str}" if remarks else f"Work Dates: {date_str}"
             
         record = FreelancerWork(
             freelancer_id=freelancer.id,
             project_name=project_name,
             work_date=w_date,
+            work_dates=work_dates_str,
             role_assigned=role_assigned,
             num_days=num_days,
             amount_charged=amount_charged,
             total_amount=total_amount,
+            paid_amount=paid_amount,
+            pending_amount=pending_amount,
             payment_status=payment_status,
             payment_date=p_date,
             payment_mode=payment_mode if payment_status == "Paid" else None,
             remarks=remarks
         )
-        
         db.add(record)
         db.commit()
         
@@ -790,6 +806,8 @@ async def update_work_log(
         amount_charged = float(form_data.get("amount_charged", 0.0))
         num_days = int(form_data.get("num_days", 1))
         total_amount = float(form_data.get("total_amount", 0.0))
+        paid_amount = float(form_data.get("paid_amount", 0.0))
+        pending_amount = total_amount - paid_amount
         payment_status = form_data.get("payment_status", "Pending")
         payment_date = form_data.get("payment_date")
         payment_mode = form_data.get("payment_mode")
@@ -799,30 +817,47 @@ async def update_work_log(
         if not work_dates and form_data.get("work_date"):
             work_dates = [form_data.get("work_date")]
             
-        first_date_str = work_dates[0] if work_dates else str(datetime.utcnow().date())
+        valid_dates = []
+        for date_str in work_dates:
+            if date_str:
+                valid_dates.append(date_str.strip())
+
+        valid_dates = sorted(list(dict.fromkeys(valid_dates)))
+        if not valid_dates:
+            valid_dates = [str(datetime.utcnow().date())]
+
+        first_date_str = valid_dates[0]
         w_date = datetime.strptime(first_date_str, "%Y-%m-%d").date()
-        
+        work_dates_str = ", ".join(valid_dates)
+        num_days = len(valid_dates)
+        total_amount = amount_charged * num_days
+
+        if payment_status != "Paid":
+            paid_amount = 0.0
+            payment_date = None
+            payment_mode = None
+
+        pending_amount = total_amount - paid_amount
+
         p_date = None
         if payment_date and payment_status == "Paid":
             p_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
-            
-        # Optional: Save multiple dates into remarks if more than one
-        if len(work_dates) > 1:
-            date_str = ", ".join(work_dates)
-            remarks = f"{remarks}\nWork Dates: {date_str}" if remarks else f"Work Dates: {date_str}"
-            
+
         work.project_name = project_name
         work.work_date = w_date
+        work.work_dates = work_dates_str
         work.role_assigned = role_assigned
         work.num_days = num_days
         work.amount_charged = amount_charged
         work.total_amount = total_amount
+        work.paid_amount = paid_amount
+        work.pending_amount = pending_amount
         work.payment_status = payment_status
         work.payment_date = p_date
         work.payment_mode = payment_mode if payment_status == "Paid" else None
         work.remarks = remarks
         work.updated_at = datetime.utcnow()
-        
+
         db.commit()
         
         return RedirectResponse(url=f"/freelancers/{freelancer_id}", status_code=303)

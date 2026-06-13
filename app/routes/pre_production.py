@@ -10,6 +10,7 @@ from sqlalchemy import extract
 from app.database import get_db
 from app.models import PreProduction
 from datetime import datetime, date
+import calendar
 import os
 
 router = APIRouter(prefix="/pre-production", tags=["Pre-Production"])
@@ -48,12 +49,16 @@ async def list_pre_production(
     try:
         query = db.query(PreProduction).order_by(PreProduction.created_at.desc())
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         if search:
             query = query.filter(PreProduction.couple_name.ilike(f"%{search}%"))
         if year:
-            query = query.filter(extract('year', PreProduction.created_at) == int(year))
+            query = query.filter(PreProduction.year == int(year))
         if month:
-            query = query.filter(extract('month', PreProduction.created_at) == int(month))
+            query = query.filter(PreProduction.month == month)
         
         records = query.all()
         
@@ -64,6 +69,10 @@ async def list_pre_production(
             "search_query": search or "",
             "selected_year": year or "",
             "selected_month": month or "",
+            "years": years,
+            "months": months,
+            "current_year": current_year,
+            "current_month": calendar.month_name[datetime.utcnow().month]
         }
         
         return templates.TemplateResponse("pre_production/list.html", context)
@@ -80,9 +89,17 @@ async def list_pre_production(
 @router.get("/add", response_class=HTMLResponse)
 async def add_pre_production_form(request: Request):
     """Display form for adding new pre-production record."""
+    current_year = datetime.utcnow().year
+    years = list(range(2020, current_year + 1))
+    months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
     context = {
         "request": request,
         "page_title": "Add Pre-Production Record",
+        "years": years,
+        "months": months,
+        "current_year": current_year,
+        "current_month": calendar.month_name[datetime.utcnow().month],
+        "is_edit": False
     }
     return templates.TemplateResponse("pre_production/form.html", context)
 
@@ -106,6 +123,8 @@ async def create_pre_production(
     music_choice_link_cra: bool = Form(False),
     invitation_video: bool = Form(False),
     whatsapp_group: bool = Form(False),
+    year: int = Form(None),
+    month: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -134,6 +153,8 @@ async def create_pre_production(
             music_choice_link_cra=music_choice_link_cra,
             invitation_video=invitation_video,
             whatsapp_group=whatsapp_group,
+            year=year,
+            month=month,
             notes=notes,
             created_by="Admin"
         )
@@ -202,10 +223,17 @@ async def edit_pre_production_form(
                 status_code=404
             )
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         context = {
             "request": request,
             "page_title": f"Edit Pre-Production: {record.couple_name}",
             "record": record,
+            "years": years,
+            "months": months,
+            "is_edit": True
         }
         
         return templates.TemplateResponse("pre_production/form.html", context)
@@ -239,6 +267,8 @@ async def update_pre_production(
     music_choice_link_cra: bool = Form(False),
     invitation_video: bool = Form(False),
     whatsapp_group: bool = Form(False),
+    year: int = Form(None),
+    month: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -271,6 +301,8 @@ async def update_pre_production(
         record.music_choice_link_cra = music_choice_link_cra
         record.invitation_video = invitation_video
         record.whatsapp_group = whatsapp_group
+        record.year = year
+        record.month = month
         record.notes = notes
         record.updated_at = datetime.utcnow()
         

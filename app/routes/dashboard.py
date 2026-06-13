@@ -110,12 +110,20 @@ async def dashboard(
                 query = query.filter(extract('month', col) == m_filter_val)
             return query
 
+        # Helper function for Production modules using new year/month columns
+        def filter_prod(query, model):
+            if y_filter_val:
+                query = query.filter(model.year == y_filter_val)
+            if m_filter_val:
+                query = query.filter(model.month == calendar.month_name[m_filter_val])
+            return query
+
         # ============================================
         # 1. CLIENT & PROJECT STATS
         # ============================================
-        clients_pre = {c[0] for c in filter_q(db.query(PreProduction.couple_name), PreProduction.created_at, is_datetime=True).distinct().all() if c[0]}
-        clients_on = {c[0] for c in filter_q(db.query(OnProduction.couple_name), OnProduction.created_at, is_datetime=True).distinct().all() if c[0]}
-        clients_post = {c[0] for c in filter_q(db.query(PostProduction.couple_name), PostProduction.created_at, is_datetime=True).distinct().all() if c[0]}
+        clients_pre = {c[0] for c in filter_prod(db.query(PreProduction.couple_name), PreProduction).distinct().all() if c[0]}
+        clients_on = {c[0] for c in filter_prod(db.query(OnProduction.couple_name), OnProduction).distinct().all() if c[0]}
+        clients_post = {c[0] for c in filter_prod(db.query(PostProduction.couple_name), PostProduction).distinct().all() if c[0]}
         
         # MonthlyFinancialReport is month-year based and doesn't use standard filter_q directly
         m_query = db.query(MonthlyFinancialReport)
@@ -159,33 +167,33 @@ async def dashboard(
             if c[0]: _all_names.add(c[0])
         all_client_names_modal = sorted(_all_names)
         
-        pre_prod_total = filter_q(db.query(PreProduction), PreProduction.created_at, is_datetime=True).count()
-        on_prod_total = filter_q(db.query(OnProduction), OnProduction.created_at, is_datetime=True).count()
-        post_prod_total = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).count()
+        pre_prod_total = filter_prod(db.query(PreProduction), PreProduction).count()
+        on_prod_total = filter_prod(db.query(OnProduction), OnProduction).count()
+        post_prod_total = filter_prod(db.query(PostProduction), PostProduction).count()
         checklist_total = filter_q(db.query(Checklist), Checklist.created_at, is_datetime=True).count()
 
         total_projects = pre_prod_total
 
         # Ongoing Projects: On-Production + Post-Production (Pending Closure)
-        pending_post_prod_count = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).filter(PostProduction.closure_date == None).count()
+        pending_post_prod_count = filter_prod(db.query(PostProduction), PostProduction).filter(PostProduction.closure_date == None).count()
         ongoing_projects = on_prod_total + pending_post_prod_count
 
         # Completed Projects: Post-Production with closure date
-        completed_projects = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).filter(PostProduction.closure_date != None).count()
+        completed_projects = filter_prod(db.query(PostProduction), PostProduction).filter(PostProduction.closure_date != None).count()
 
         # Dynamic Incomplete Tasks calculation (on filtered records)
         pending_tasks = 0
-        pre_prod_records = filter_q(db.query(PreProduction), PreProduction.created_at, is_datetime=True).all()
+        pre_prod_records = filter_prod(db.query(PreProduction), PreProduction).all()
         for p in pre_prod_records:
             fields = [p.advance_retainer_received, p.welcome_call, p.team_booking, p.story_designing_call, p.heartfelt_email_cra, p.terms_confirmation_cra, p.invoicing_cra, p.sending_jd_to_team, p.music_choice_link_cra, p.invitation_video, p.whatsapp_group]
             pending_tasks += sum(1 for f in fields if not f)
 
-        on_prod_records = filter_q(db.query(OnProduction), OnProduction.created_at, is_datetime=True).all()
+        on_prod_records = filter_prod(db.query(OnProduction), OnProduction).all()
         for o in on_prod_records:
             fields = [o.client_review, o.payment_received, o.bts_shoot, o.hospitality_gesture, o.story_designing_sheet_refer, o.checklist_shared_with_team]
             pending_tasks += sum(1 for f in fields if not f)
 
-        post_prod_records = filter_q(db.query(PostProduction), PostProduction.created_at, is_datetime=True).all()
+        post_prod_records = filter_prod(db.query(PostProduction), PostProduction).all()
         for p in post_prod_records:
             fields = [p.data_copy, p.best_couple_edits_3_days, p.all_raw_images, p.save_the_date, p.invite, p.countdown, p.celebrity_ai_reel, p.one_teaser, p.one_film, p.one_reel, p.full_length_film, p.edited_images_selection, p.edited_images_delivered, p.poster, p.albums_picture_selection, p.photobook_delivered, p.digital_portfolio_album, p.payment_recovery]
             pending_tasks += sum(1 for f in fields if not f)

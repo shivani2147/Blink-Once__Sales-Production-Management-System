@@ -27,6 +27,13 @@
                     <span class="label">Dashboard</span>
                 </a>
 
+                <!-- Monthly Performance Hub Link -->
+                <a href="/performance-hub"
+                    class="nav-link {% if page_title == 'Monthly Performance Hub' %}active{% endif %}">
+                    <span class="icon">🏆</span>
+                    <span class="label">Performance Hub</span>
+                </a>
+
                 <!-- Service Steps Mechanism Dropdown -->
                 <div class="nav-group">
                     <button class="nav-dropdown-toggle" onclick="toggleDropdown(this)">
@@ -95,7 +102,8 @@
                 </div>
 
                 <!-- Freelancers Link -->
-                <a href="/freelancers" class="nav-link {% if page_title.startswith('Freelancer') or page_title.startswith('Profile:') or page_title.startswith('Edit Profile:') or page_title.startswith('Add New Freelancer') %}active{% endif %}">
+                <a href="/freelancers"
+                    class="nav-link {% if page_title.startswith('Freelancer') or page_title.startswith('Profile:') or page_title.startswith('Edit Profile:') or page_title.startswith('Add New Freelancer') %}active{% endif %}">
                     <span class="icon">👥</span>
                     <span class="label">Freelancers</span>
                 </a>
@@ -205,7 +213,7 @@
                 });
                 const input = group.querySelector('.event_date_input');
                 input.value = fullDate ? fullDate : `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                input.addEventListener('change', function() {
+                input.addEventListener('change', function () {
                     updateHiddenValue(container);
                 });
                 return group;
@@ -339,6 +347,35 @@
                     updateHiddenValue(container);
                     updateRemoveButtons(container);
                 });
+
+                // Sync event_date_inputs with Year/Month dropdown changes
+                const yearEl = form.querySelector('#year');
+                const monthEl = form.querySelector('#month');
+                if (yearEl && monthEl) {
+                    function syncDateInputs() {
+                        const y = yearEl.value;
+                        const mStr = monthEl.value;
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        const mIdx = monthNames.indexOf(mStr);
+                        if (mIdx >= 0) {
+                            const m = String(mIdx + 1).padStart(2, '0');
+                            const inputs = container.querySelectorAll('.event_date_input');
+                            inputs.forEach(input => {
+                                if (input.value) {
+                                    const parts = input.value.split('-');
+                                    if (parts.length === 3) {
+                                        input.value = `${y}-${m}-${parts[2]}`;
+                                    }
+                                } else {
+                                    input.value = `${y}-${m}-01`;
+                                }
+                                input.dispatchEvent(new Event('change'));
+                            });
+                        }
+                    }
+                    yearEl.addEventListener('change', syncDateInputs);
+                    monthEl.addEventListener('change', syncDateInputs);
+                }
 
                 form.addEventListener('submit', function () {
                     updateHiddenValue(container);

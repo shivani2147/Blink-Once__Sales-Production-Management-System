@@ -28,7 +28,8 @@ from app.routes import (
     editing,
     camera_rent,
     upcoming_shoots,
-    freelancers
+    freelancers,
+    performance_hub
 )
 
 # Create FastAPI application
@@ -60,6 +61,7 @@ app.include_router(editing.router)
 app.include_router(camera_rent.router)
 app.include_router(upcoming_shoots.router)
 app.include_router(freelancers.router)
+app.include_router(performance_hub.router)
 
 
 @app.on_event("startup")

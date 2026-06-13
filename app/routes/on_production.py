@@ -10,6 +10,7 @@ from sqlalchemy import extract
 from app.database import get_db
 from app.models import OnProduction
 from datetime import datetime, date
+import calendar
 import os
 
 router = APIRouter(prefix="/on-production", tags=["On-Production"])
@@ -48,12 +49,16 @@ async def list_on_production(
     try:
         query = db.query(OnProduction).order_by(OnProduction.created_at.desc())
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         if search:
             query = query.filter(OnProduction.couple_name.ilike(f"%{search}%"))
         if year:
-            query = query.filter(extract('year', OnProduction.created_at) == int(year))
+            query = query.filter(OnProduction.year == int(year))
         if month:
-            query = query.filter(extract('month', OnProduction.created_at) == int(month))
+            query = query.filter(OnProduction.month == month)
         
         records = query.all()
         
@@ -64,6 +69,10 @@ async def list_on_production(
             "search_query": search or "",
             "selected_year": year or "",
             "selected_month": month or "",
+            "years": years,
+            "months": months,
+            "current_year": current_year,
+            "current_month": calendar.month_name[datetime.utcnow().month]
         }
         
         return templates.TemplateResponse("on_production/list.html", context)
@@ -80,9 +89,17 @@ async def list_on_production(
 @router.get("/add", response_class=HTMLResponse)
 async def add_on_production_form(request: Request):
     """Display form for adding new on-production record."""
+    current_year = datetime.utcnow().year
+    years = list(range(2020, current_year + 1))
+    months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
     context = {
         "request": request,
         "page_title": "Add On-Production Record",
+        "years": years,
+        "months": months,
+        "current_year": current_year,
+        "current_month": calendar.month_name[datetime.utcnow().month],
+        "is_edit": False
     }
     return templates.TemplateResponse("on_production/form.html", context)
 
@@ -100,6 +117,8 @@ async def create_on_production(
     checklist_shared_with_team: bool = Form(False),
     assigned_team_members: str = Form(None),
     team_feedback: str = Form(None),
+    year: int = Form(None),
+    month: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -122,6 +141,8 @@ async def create_on_production(
             checklist_shared_with_team=checklist_shared_with_team,
             assigned_team_members=assigned_team_members,
             team_feedback=team_feedback,
+            year=year,
+            month=month,
             notes=notes,
             created_by="Admin"
         )
@@ -189,10 +210,17 @@ async def edit_on_production_form(
                 status_code=404
             )
         
+        current_year = datetime.utcnow().year
+        years = list(range(2020, current_year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        
         context = {
             "request": request,
             "page_title": f"Edit On-Production: {record.couple_name}",
             "record": record,
+            "years": years,
+            "months": months,
+            "is_edit": True
         }
         
         return templates.TemplateResponse("on_production/form.html", context)
@@ -220,6 +248,8 @@ async def update_on_production(
     checklist_shared_with_team: bool = Form(False),
     assigned_team_members: str = Form(None),
     team_feedback: str = Form(None),
+    year: int = Form(None),
+    month: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -246,6 +276,8 @@ async def update_on_production(
         record.checklist_shared_with_team = checklist_shared_with_team
         record.assigned_team_members = assigned_team_members
         record.team_feedback = team_feedback
+        record.year = year
+        record.month = month
         record.notes = notes
         record.updated_at = datetime.utcnow()
         

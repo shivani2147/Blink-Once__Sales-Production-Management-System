@@ -21,6 +21,9 @@ class PreProduction(Base):
     event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
+    year = Column(Integer, nullable=True)
+    month = Column(String(20), nullable=True)
+    
     # Status tracking
     referral_program = Column(Boolean, default=False)
     advance_retainer_received = Column(Boolean, default=False)
@@ -62,6 +65,9 @@ class OnProduction(Base):
     event_date = Column(String(255), nullable=False)
     phone_number = Column(String(20), nullable=False)
     
+    year = Column(Integer, nullable=True)
+    month = Column(String(20), nullable=True)
+    
     # Status tracking
     client_review = Column(Boolean, default=False)
     payment_received = Column(Boolean, default=False)
@@ -100,6 +106,9 @@ class PostProduction(Base):
     event_date = Column(String(255), nullable=False)
     deadline = Column(Date, nullable=False)
     event_name = Column(String(255), nullable=True)
+    
+    year = Column(Integer, nullable=True)
+    month = Column(String(20), nullable=True)
     
     # Delivery tracking
     data_copy = Column(Boolean, default=False)
@@ -417,10 +426,13 @@ class FreelancerWork(Base):
     freelancer_id = Column(Integer, ForeignKey('freelancers.id', ondelete='CASCADE'), nullable=False)
     project_name = Column(String(255), nullable=False)
     work_date = Column(Date, nullable=False)
+    work_dates = Column(String(500), nullable=True)
     role_assigned = Column(String(100), nullable=False)
     num_days = Column(Integer, default=1, nullable=False)
     amount_charged = Column(Float, default=0.0)
     total_amount = Column(Float, default=0.0)
+    paid_amount = Column(Float, default=0.0)
+    pending_amount = Column(Float, default=0.0)
     payment_status = Column(String(50), default="Pending")  # Pending / Paid
     payment_date = Column(Date, nullable=True)
     payment_mode = Column(String(100), nullable=True)
@@ -429,4 +441,17 @@ class FreelancerWork(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     freelancer = relationship("Freelancer", back_populates="payments")
+
+    @property
+    def work_dates_display(self):
+        if self.work_dates:
+            try:
+                parts = [p.strip() for p in self.work_dates.split(',') if p.strip()]
+                formatted = [datetime.strptime(p, '%Y-%m-%d').strftime('%d-%m-%Y') for p in parts]
+                return ', '.join(formatted)
+            except Exception:
+                return self.work_dates
+        if self.work_date:
+            return self.work_date.strftime('%d-%m-%Y')
+        return '-'
 

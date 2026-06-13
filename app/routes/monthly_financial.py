@@ -11,7 +11,7 @@ from app.models import MonthlyFinancialReport
 from datetime import datetime, date, timedelta
 import os
 import calendar
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, case
 
 router = APIRouter(prefix="/financial/monthly", tags=["Monthly Financial Reports"])
 
@@ -59,8 +59,23 @@ async def list_monthly_reports(
 ):
     """List all monthly financial reports with filtering."""
     try:
+        month_order = case(
+            (MonthlyFinancialReport.month == 'January', 1),
+            (MonthlyFinancialReport.month == 'February', 2),
+            (MonthlyFinancialReport.month == 'March', 3),
+            (MonthlyFinancialReport.month == 'April', 4),
+            (MonthlyFinancialReport.month == 'May', 5),
+            (MonthlyFinancialReport.month == 'June', 6),
+            (MonthlyFinancialReport.month == 'July', 7),
+            (MonthlyFinancialReport.month == 'August', 8),
+            (MonthlyFinancialReport.month == 'September', 9),
+            (MonthlyFinancialReport.month == 'October', 10),
+            (MonthlyFinancialReport.month == 'November', 11),
+            (MonthlyFinancialReport.month == 'December', 12),
+            else_=99
+        )
         query = db.query(MonthlyFinancialReport).order_by(
-            MonthlyFinancialReport.year.desc(), MonthlyFinancialReport.month.desc()
+            MonthlyFinancialReport.year.asc(), month_order.asc()
         )
         
         if search:

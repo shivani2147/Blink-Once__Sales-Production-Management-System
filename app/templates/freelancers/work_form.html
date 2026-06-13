@@ -35,10 +35,15 @@
                     <label>Work Date <span class="text-danger">*</span></label>
                     <div id="work-dates-container">
                         {% if is_edit %}
-                        <div class="date-row">
-                            <input type="date" name="work_date[]" required value="{{ work.work_date }}"
-                                class="date-input">
-                        </div>
+                            {% set date_values = work.work_dates.split(',') if work.work_dates else [work.work_date.strftime('%Y-%m-%d')] %}
+                            {% for date_value in date_values %}
+                            <div class="date-row">
+                                <input type="date" name="work_date[]" required value="{{ date_value.strip() }}"
+                                    class="date-input">
+                                <button type="button" class="btn-remove-date" onclick="removeDateRow(this)"
+                                    title="Remove">✕</button>
+                            </div>
+                            {% endfor %}
                         {% else %}
                         <div class="date-row">
                             <input type="date" name="work_date[]" required class="date-input">
@@ -47,11 +52,9 @@
                         </div>
                         {% endif %}
                     </div>
-                    {% if not is_edit %}
                     <button type="button" class="btn-add-date" id="btn-add-date" onclick="addDateRow()">
                         + Add Another Date
                     </button>
-                    {% endif %}
                 </div>
 
                 <div class="form-group">
@@ -99,6 +102,21 @@
                 </div>
 
                 <div class="form-group payment-field" style="display: none;">
+                    <label for="paid_amount">Paid Amount (₹)</label>
+                    <input type="number" id="paid_amount" name="paid_amount" step="0.01"
+                        value="{% if is_edit %}{{ work.paid_amount or 0.00 }}{% else %}{% endif %}"
+                        oninput="calcPending()" placeholder="0.00">
+                </div>
+
+                <div class="form-group payment-field" style="display: none;">
+                    <label>Pending Amount (₹)</label>
+                    <div class="num-days-display" style="text-align: left; background: #fff8f8; border-color: #fca5a5;">
+                        ₹<span id="pending_value">{% if is_edit %}{{ "%.2f"|format(work.pending_amount or 0.00) }}{%
+                            else %}0.00{% endif %}</span>
+                    </div>
+                </div>
+
+                <div class="form-group payment-field" style="display: none;">
                     <label for="payment_date">Payment Date</label>
                     <input type="date" id="payment_date" name="payment_date"
                         value="{% if is_edit and work.payment_date %}{{ work.payment_date }}{% endif %}">
@@ -118,16 +136,6 @@
                             Online</option>
                     </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- Section 3: Remarks -->
-        <div class="form-section">
-            <h3>Remarks</h3>
-            <div class="form-group">
-                <label for="remarks">Remarks</label>
-                <textarea id="remarks" name="remarks" rows="2"
-                    placeholder="Add any details, payment info, or requirements...">{% if is_edit and work.remarks %}{{ work.remarks }}{% endif %}</textarea>
             </div>
         </div>
 
@@ -438,8 +446,16 @@
         const total = days * rate;
         document.getElementById('total_value').textContent = total.toFixed(2);
         document.getElementById('total_amount').value = total.toFixed(2);
+        calcPending();
     }
     // ---- End total calc ----
+
+    function calcPending() {
+        const total = parseFloat(document.getElementById('total_amount').value) || 0;
+        const paid = parseFloat(document.getElementById('paid_amount').value) || 0;
+        const pending = Math.max(0, total - paid);
+        document.getElementById('pending_value').textContent = pending.toFixed(2);
+    }
 
     function togglePaymentFields(status) {
         const fields = document.querySelectorAll('.payment-field');

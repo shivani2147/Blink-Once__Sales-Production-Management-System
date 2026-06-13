@@ -10,7 +10,8 @@
                 <h1>{{ freelancer.name }}</h1>
                 <p class="profile-subtitle">
                     <span class="badge badge-info">{{ freelancer.role }}</span>
-                    <span class="badge {% if freelancer.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                    <span
+                        class="badge {% if freelancer.status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
                         {{ freelancer.status }}
                     </span>
                     <span class="fl-id">ID: <strong>{{ freelancer.freelancer_id }}</strong></span>
@@ -21,7 +22,8 @@
             <a href="/freelancers/" class="btn btn-secondary">← Back</a>
             <a href="/freelancers/{{ freelancer.id }}/work/add" class="btn btn-primary">+ Assign Project / Add Work</a>
             <a href="/freelancers/{{ freelancer.id }}/edit" class="btn btn-secondary">✏️ Edit Profile</a>
-            <form action="/freelancers/{{ freelancer.id }}/delete" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this freelancer profile and all associated logs? This cannot be undone.')">
+            <form action="/freelancers/{{ freelancer.id }}/delete" method="post" style="display:inline-block;"
+                onsubmit="return confirm('Are you sure you want to delete this freelancer profile and all associated logs? This cannot be undone.')">
                 <button type="submit" class="btn btn-danger">🗑️ Delete</button>
             </form>
         </div>
@@ -44,11 +46,13 @@
                     </li>
                     <li>
                         <span class="label">📍 Address</span>
-                        <span class="value">{% if freelancer.address %}{{ freelancer.address }}{% else %}-{% endif %}</span>
+                        <span class="value">{% if freelancer.address %}{{ freelancer.address }}{% else %}-{% endif
+                            %}</span>
                     </li>
                     <li>
                         <span class="label">🕒 Reg. Date</span>
-                        <span class="value">{{ freelancer.created_at.strftime('%Y-%m-%d') if freelancer.created_at else '-' }}</span>
+                        <span class="value">{{ freelancer.created_at.strftime('%Y-%m-%d') if freelancer.created_at else
+                            '-' }}</span>
                     </li>
                 </ul>
             </div>
@@ -73,19 +77,19 @@
                 <h3>Uploaded Documents</h3>
                 <div class="docs-flex">
                     {% if freelancer.aadhar_card_path %}
-                        <a href="/freelancers/{{ freelancer.id }}/download/aadhar" class="doc-btn" target="_blank">
-                            <span class="doc-icon">📄</span> Download Aadhar
-                        </a>
+                    <a href="/freelancers/{{ freelancer.id }}/download/aadhar" class="doc-btn" target="_blank">
+                        <span class="doc-icon">📄</span> Download Aadhar
+                    </a>
                     {% else %}
-                        <div class="doc-placeholder text-muted">No Aadhar Card Uploaded</div>
+                    <div class="doc-placeholder text-muted">No Aadhar Card Uploaded</div>
                     {% endif %}
 
                     {% if freelancer.resume_path %}
-                        <a href="/freelancers/{{ freelancer.id }}/download/resume" class="doc-btn" target="_blank">
-                            <span class="doc-icon">📄</span> Download Resume
-                        </a>
+                    <a href="/freelancers/{{ freelancer.id }}/download/resume" class="doc-btn" target="_blank">
+                        <span class="doc-icon">📄</span> Download Resume
+                    </a>
                     {% else %}
-                        <div class="doc-placeholder text-muted">No Resume Uploaded</div>
+                    <div class="doc-placeholder text-muted">No Resume Uploaded</div>
                     {% endif %}
                 </div>
             </div>
@@ -96,35 +100,42 @@
                 <ul class="detail-list">
                     <li>
                         <span class="label">🏦 Bank Name</span>
-                        <span class="value">{% if freelancer.bank_name %}{{ freelancer.bank_name }}{% else %}-{% endif %}</span>
+                        <span class="value">{% if freelancer.bank_name %}{{ freelancer.bank_name }}{% else %}-{% endif
+                            %}</span>
                     </li>
                     <li>
                         <span class="label">🔢 Account No.</span>
-                        <span class="value">{% if freelancer.account_number %}{{ freelancer.account_number }}{% else %}-{% endif %}</span>
+                        <span class="value">{% if freelancer.account_number %}{{ freelancer.account_number }}{% else
+                            %}-{% endif %}</span>
                     </li>
                     <li>
                         <span class="label">🔑 IFSC Code</span>
-                        <span class="value" style="text-transform: uppercase;">{% if freelancer.ifsc_code %}{{ freelancer.ifsc_code }}{% else %}-{% endif %}</span>
+                        <span class="value" style="text-transform: uppercase;">{% if freelancer.ifsc_code %}{{
+                            freelancer.ifsc_code }}{% else %}-{% endif %}</span>
                     </li>
                     <li>
                         <span class="label">📱 UPI ID</span>
-                        <span class="value">{% if freelancer.upi_id %}{{ freelancer.upi_id }}{% else %}-{% endif %}</span>
+                        <span class="value">{% if freelancer.upi_id %}{{ freelancer.upi_id }}{% else %}-{% endif
+                            %}</span>
                     </li>
                     <li>
                         <span class="label">💳 PAN Number</span>
-                        <span class="value" style="text-transform: uppercase;">{% if freelancer.pan_number %}{{ freelancer.pan_number }}{% else %}-{% endif %}</span>
+                        <span class="value" style="text-transform: uppercase;">{% if freelancer.pan_number %}{{
+                            freelancer.pan_number }}{% else %}-{% endif %}</span>
                     </li>
                     <li>
                         <span class="label">🆔 Aadhar No.</span>
-                        <span class="value">{% if freelancer.aadhar_number %}{{ freelancer.aadhar_number }}{% else %}-{% endif %}</span>
+                        <span class="value">{% if freelancer.aadhar_number %}{{ freelancer.aadhar_number }}{% else %}-{%
+                            endif %}</span>
                     </li>
                 </ul>
             </div>
-            
+
             {% if freelancer.remarks %}
             <div class="sidebar-card">
                 <h3>Remarks</h3>
-                <p style="font-size: 0.85rem; color: #555; line-height: 1.4; white-space: pre-line;">{{ freelancer.remarks }}</p>
+                <p style="font-size: 0.85rem; color: #555; line-height: 1.4; white-space: pre-line;">{{
+                    freelancer.remarks }}</p>
             </div>
             {% endif %}
         </div>
@@ -134,7 +145,7 @@
             <!-- mini summary indicators -->
             <div class="profile-summary-bar">
                 <div class="mini-card text-success">
-                    <span class="label">Total Earned</span>
+                    <span class="label">Total Amount</span>
                     <span class="val">₹{{ "%.2f"|format(total_earned) }}</span>
                     <span class="sub">{{ total_earned_words }}</span>
                 </div>
@@ -165,44 +176,53 @@
                                         <th>Date</th>
                                         <th>Project Name</th>
                                         <th>Role Played</th>
-                                        <th>Amount</th>
+                                        <th>Total Amount (₹)</th>
+                                        <th>Paid Amount (₹)</th>
+                                        <th>Pending Amount (₹)</th>
                                         <th>Payment Status</th>
                                         <th>Payment Date</th>
                                         <th>Mode</th>
-                                        <th>Remarks</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% if assignments %}
-                                        {% for ass in assignments %}
-                                        <tr>
-                                            <td>{{ ass.work_date.strftime('%d-%m-%Y') if ass.work_date else '-' }}</td>
-                                            <td><strong>{{ ass.project_name }}</strong></td>
-                                            <td><span class="badge badge-info">{{ ass.role_assigned }}</span></td>
-                                            <td>₹{{ "%.2f"|format(ass.amount_charged) }}</td>
-                                            <td>
-                                                <span class="badge {% if ass.payment_status == 'Paid' %}badge-success{% else %}badge-warning{% endif %}">
-                                                    {{ ass.payment_status }}
-                                                </span>
-                                            </td>
-                                            <td>{{ ass.payment_date.strftime('%d-%m-%Y') if ass.payment_date else '-' }}</td>
-                                            <td>{{ ass.payment_mode or '-' }}</td>
-                                            <td>{{ ass.remarks or '-' }}</td>
-                                            <td class="action-buttons">
-                                                <a href="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/edit" class="btn-icon" title="Edit Log / Record Payment">✏️</a>
-                                                <form action="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/delete" method="post" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this work log?')">
-                                                    <button type="submit" class="btn-icon btn-danger" style="background:none; border:none; cursor:pointer;" title="Delete">🗑️</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
+                                    {% for ass in assignments %}
+                                    <tr>
+                                        <td>{{ ass.work_dates_display }}</td>
+                                        <td><strong>{{ ass.project_name }}</strong></td>
+                                        <td><span class="badge badge-info">{{ ass.role_assigned }}</span></td>
+                                        <td>₹{{ "%.2f"|format(ass.total_amount or 0) }}</td>
+                                        <td>₹{{ "%.2f"|format(ass.paid_amount or 0) }}</td>
+                                        <td>₹{{ "%.2f"|format(ass.pending_amount or 0) }}</td>
+                                        <td>
+                                            <span
+                                                class="badge {% if (ass.pending_amount or 0) > 0 %}badge-warning{% else %}badge-success{% endif %}">
+                                                {% if (ass.pending_amount or 0) > 0 %}Pending{% else %}Paid{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ ass.payment_date.strftime('%d-%m-%Y') if ass.payment_date else '-' }}
+                                        </td>
+                                        <td>{{ ass.payment_mode or '-' }}</td>
+                                        <td class="action-buttons">
+                                            <a href="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/edit"
+                                                class="btn-icon" title="Edit Log / Record Payment">✏️</a>
+                                            <form action="/freelancers/{{ freelancer.id }}/work/{{ ass.id }}/delete"
+                                                method="post" style="display:inline-block;"
+                                                onsubmit="return confirm('Are you sure you want to delete this work log?')">
+                                                <button type="submit" class="btn-icon btn-danger"
+                                                    style="background:none; border:none; cursor:pointer;"
+                                                    title="Delete">🗑️</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
                                     {% else %}
-                                        <tr>
-                                            <td colspan="9" class="text-center text-muted" style="padding: 40px 0;">
-                                                No work history found. Click "+ Assign Project" above to record one.
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td colspan="11" class="text-center text-muted" style="padding: 40px 0;">
+                                            No work history found. Click "+ Assign Project" above to record one.
+                                        </td>
+                                    </tr>
                                     {% endif %}
                                 </tbody>
                             </table>
@@ -217,7 +237,7 @@
 <style>
     .profile-container {
         max-width: 1400px;
-        margin: 0 auto;
+        margin: 1rem; /* align left within the page content */
     }
 
     .profile-header-card {
@@ -231,6 +251,8 @@
         margin-bottom: 2rem;
         flex-wrap: wrap;
         gap: 1rem;
+        width: 107%; /* prevent overflow and keep alignment */
+        box-sizing: border-box;
     }
 
     .profile-meta {
@@ -322,8 +344,10 @@
 
     .profile-grid {
         display: grid;
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 240px 1fr;
         gap: 2rem;
+        width: 107%;
+        box-sizing: border-box;
     }
 
     @media (max-width: 992px) {
