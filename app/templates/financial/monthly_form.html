@@ -317,29 +317,40 @@
         }
 
         function monthNameToNumber(name) {
+            // Accept both month names and numeric strings (e.g., "04")
             const monthNames = [
                 'January', 'February', 'March', 'April', 'May', 'June',
                 'July', 'August', 'September', 'October', 'November', 'December'
             ];
             const index = monthNames.indexOf(name);
-            return index < 0 ? null : String(index + 1).padStart(2, '0');
+            if (index >= 0) {
+                return String(index + 1).padStart(2, '0');
+            }
+            // If already a numeric month (01-12), ensure two digits
+            if (/^\d{1,2}$/.test(name)) {
+                return String(parseInt(name, 10)).padStart(2, '0');
+            }
+            return null;
         }
 
         function applyEventDateConstraints(input) {
             if (!input || !monthEl || !yearEl) return;
-            const selectedMonthName = monthEl.value;
+            const selectedMonth = monthEl.value; // numeric string (01-12) or name
             const selectedYear = yearEl.value;
-            if (!selectedMonthName || !selectedYear) return;
+            if (!selectedMonth || !selectedYear) return;
 
-            const monthNumber = monthNameToNumber(selectedMonthName);
+            const monthNumber = monthNameToNumber(selectedMonth);
             if (!monthNumber) return;
 
             const firstDay = `${selectedYear}-${monthNumber}-01`;
-            const lastDay = new Date(parseInt(selectedYear, 10), parseInt(monthNumber, 10), 0).toISOString().slice(0, 10);
+            // Calculate last day of the month correctly
+            const daysInMonth = new Date(parseInt(selectedYear, 10), parseInt(monthNumber, 10), 0).getDate();
+            const lastDay = `${selectedYear}-${monthNumber}-${String(daysInMonth).padStart(2, '0')}`;
 
             input.min = firstDay;
             input.max = lastDay;
-            if (!input.value || !input.value.startsWith(`${selectedYear}-${monthNumber}`)) {
+            // Preserve existing value if within range, otherwise set to firstDay
+            if (!input.value || input.value < firstDay || input.value > lastDay) {
                 input.value = firstDay;
             }
         }
