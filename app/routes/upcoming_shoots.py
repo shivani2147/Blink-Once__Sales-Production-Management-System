@@ -144,7 +144,7 @@ async def create_shoot(
     """Create new upcoming shoot."""
     try:
         # Normalize event_date and determine first event date
-        days = []
+        days_formatted = []
         first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
         if event_date:
             parts = [p.strip() for p in event_date.split(',')]
@@ -152,20 +152,16 @@ async def create_shoot(
                 if '-' in p:
                     try:
                         d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                        if len(days) == 1:
-                            first_date_obj = d_obj
+                        days_formatted.append(d_obj.strftime("%d-%m-%y"))
                     except ValueError:
                         pass
                 elif p.isdigit():
-                    days.append(str(int(p)))
-            if parts and all(p.isdigit() for p in parts if p):
-                try:
-                    day_val = int(parts[0])
-                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
-                except ValueError:
-                    pass
-        event_date_str = ", ".join(days)
+                    try:
+                        d_obj = date(first_date_obj.year, first_date_obj.month, int(p))
+                        days_formatted.append(d_obj.strftime("%d-%m-%y"))
+                    except ValueError:
+                        pass
+        event_date_str = ", ".join(days_formatted)
 
         shoot = UpcomingClientsShoot(
             date=first_date_obj,
@@ -231,7 +227,7 @@ async def edit_shoot(
             raise HTTPException(status_code=404, detail="Shoot not found")
         
         # Normalize event_date and determine first event date
-        days = []
+        days_formatted = []
         first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
         if event_date:
             parts = [p.strip() for p in event_date.split(',')]
@@ -239,20 +235,16 @@ async def edit_shoot(
                 if '-' in p:
                     try:
                         d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                        if len(days) == 1:
-                            first_date_obj = d_obj
+                        days_formatted.append(d_obj.strftime("%d-%m-%y"))
                     except ValueError:
                         pass
                 elif p.isdigit():
-                    days.append(str(int(p)))
-            if parts and all(p.isdigit() for p in parts if p):
-                try:
-                    day_val = int(parts[0])
-                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
-                except ValueError:
-                    pass
-        event_date_str = ", ".join(days)
+                    try:
+                        d_obj = date(first_date_obj.year, first_date_obj.month, int(p))
+                        days_formatted.append(d_obj.strftime("%d-%m-%y"))
+                    except ValueError:
+                        pass
+        event_date_str = ", ".join(days_formatted)
 
         shoot.date = first_date_obj
         shoot.client_name = client_name

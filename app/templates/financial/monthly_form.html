@@ -296,7 +296,7 @@
             const expenses = toNumber(expensesEl.value);
 
             const pending = total - paid;
-            const profit = total - freelancer - expenses;
+            const profit = paid - freelancer - expenses;
 
             if (pendingEl) pendingEl.value = pending.toFixed(2);
             if (profitEl) profitEl.value = profit.toFixed(2);

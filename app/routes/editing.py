@@ -50,8 +50,8 @@ async def list_editing(
         editing_projects = query.all()
         
         # Calculate totals for filtered results
-        # Total Revenue should only include projects where payment/work status is 'Done'
-        total_revenue = sum(p.total_amount for p in editing_projects if p.work_status == "Done") if editing_projects else 0.0
+        # Total Revenue is the sum of Paid Amount across all filtered projects
+        total_revenue = sum(p.paid_amount for p in editing_projects) if editing_projects else 0.0
         total_revenue_words = number_to_words(total_revenue)
         pending_count = sum(1 for p in editing_projects if p.pending_amount > 0)
         pending_amount = sum(p.pending_amount for p in editing_projects) if editing_projects else 0.0
