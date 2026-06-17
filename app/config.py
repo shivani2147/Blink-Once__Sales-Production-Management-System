@@ -5,17 +5,15 @@ Contains database connection settings, app settings, and environment variables.
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SQL Server Configuration
-# Server: BO-LAPTOP\SQLEXPRESS
-# Database: BlinkOnce__ProductionManagementSystem
-SQLALCHEMY_DATABASE_URL = (
-    "mssql+pyodbc://@BO-LAPTOP\\SQLEXPRESS/BlinkOnce__ProductionManagementSystem"
-    "?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
-)
+# SQL Server Configuration (loaded from .env)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 # FastAPI Settings
 APP_TITLE = "ProductionFlow CRM"
