@@ -419,8 +419,9 @@ async def view_freelancer_profile(
             .order_by(FreelancerWork.work_date.desc()).all()
             
         # Calculate statistics
-        total_earned = sum(a.paid_amount for a in assignments)
-        total_pending = sum(a.pending_amount for a in assignments)
+        # Safely calculate totals, handling possible None values
+        total_earned = sum((a.paid_amount or 0) for a in assignments)
+        total_pending = sum((a.pending_amount or 0) for a in assignments)
         total_assignments = len(assignments)
         
         context = {
