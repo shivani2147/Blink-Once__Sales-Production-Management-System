@@ -332,7 +332,7 @@ async def update_post_production(
         
         db.commit()
         
-        return RedirectResponse(url=f"/post-production/{record_id}", status_code=303)
+        return RedirectResponse(url="/post-production", status_code=303)
     
     except Exception as e:
         db.rollback()

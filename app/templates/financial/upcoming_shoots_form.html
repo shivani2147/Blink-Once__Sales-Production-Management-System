@@ -98,6 +98,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const displaySpan = document.querySelector('.current-date-display');
         const dateInput = document.getElementById('date_input');
+
         if (displaySpan && dateInput && !displaySpan.textContent.trim()) {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -107,6 +108,75 @@
             if (!dateInput.value) {
                 dateInput.value = `${yyyy}-${mm}-${dd}`;
             }
+        }
+
+        // Event date picker handling: collect day numbers into the hidden event_date input
+        const datePicker = document.querySelector('.event_date_input');
+        const addBtn = document.querySelector('.add-event-date-btn');
+        const hiddenField = document.querySelector('.event_date_hidden');
+
+        // Container to show selected day chips (create if missing)
+        let chipsContainer = document.querySelector('.event-date-chips');
+        if (!chipsContainer) {
+            chipsContainer = document.createElement('div');
+            chipsContainer.className = 'event-date-chips';
+            datePicker.parentNode.insertBefore(chipsContainer, datePicker.nextSibling);
+        }
+
+        // Parse existing hidden value into array
+        let eventDays = [];
+        if (hiddenField && hiddenField.value) {
+            eventDays = hiddenField.value.split(',').map(s => s.trim()).filter(s => s);
+            renderChips();
+        }
+
+        function renderChips() {
+            chipsContainer.innerHTML = '';
+            eventDays.forEach(d => {
+                const chip = document.createElement('span');
+                chip.className = 'date-chip';
+                chip.textContent = d;
+                chipsContainer.appendChild(chip);
+            });
+        }
+
+        if (addBtn && datePicker && hiddenField) {
+            addBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const val = datePicker.value;
+                if (!val) return;
+                try {
+                    const dt = new Date(val);
+                    if (isNaN(dt)) return;
+                    const day = String(dt.getDate());
+                    if (!eventDays.includes(day)) {
+                        eventDays.push(day);
+                        hiddenField.value = eventDays.join(', ');
+                        renderChips();
+                    }
+                } catch (err) {
+                    // ignore
+                }
+            });
+        }
+
+        // Ensure at least the selected date's day is submitted if user doesn't click add
+        const form = document.querySelector('.data-form');
+        if (form && datePicker && hiddenField) {
+            form.addEventListener('submit', function() {
+                if (eventDays.length === 0 && datePicker.value) {
+                    try {
+                        const dt = new Date(datePicker.value);
+                        if (!isNaN(dt)) {
+                            hiddenField.value = String(dt.getDate());
+                        }
+                    } catch (err) {
+                        // ignore
+                    }
+                } else {
+                    hiddenField.value = eventDays.join(', ');
+                }
+            });
         }
     });
 </script>

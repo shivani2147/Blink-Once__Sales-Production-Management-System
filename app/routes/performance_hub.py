@@ -17,6 +17,7 @@ from datetime import datetime, timedelta, date, time
 import os
 import calendar
 from collections import defaultdict
+from app.utils.number_to_words import number_to_words
 
 router = APIRouter(prefix="/performance-hub", tags=["Performance Hub"])
 
@@ -81,12 +82,15 @@ async def performance_hub(
         # Key: "YYYY-MM"
         monthly_stats = defaultdict(lambda: {
             "Total Revenue": 0.0,
+            "MFR Total Revenue": 0.0,
             "Potential Revenue": 0.0,
             "Confirmed Revenue": 0.0,
             "Total Expenses": 0.0,
+            "MFR Total Expenses": 0.0,
             "Freelancer Expenses": 0.0,
             "Total Investments": 0.0,
             "Total Profit": 0.0,
+            "MFR Total Profit": 0.0,
             "Total Leads": 0,
             "Confirmed Clients": 0,
             "Rejected Leads": 0,
@@ -127,10 +131,13 @@ async def performance_hub(
             
             # Month Stats
             monthly_stats[m_key]["Total Revenue"] += r.total_amount
+            monthly_stats[m_key]["MFR Total Revenue"] += r.paid_amount
             monthly_stats[m_key]["Confirmed Revenue"] += r.total_amount
             monthly_stats[m_key]["Total Expenses"] += r.expenses + r.freelancer_amount
+            monthly_stats[m_key]["MFR Total Expenses"] += r.expenses + r.freelancer_amount
             monthly_stats[m_key]["Freelancer Expenses"] += r.freelancer_amount
             monthly_stats[m_key]["Total Profit"] += r.profit
+            monthly_stats[m_key]["MFR Total Profit"] += r.profit
             monthly_stats[m_key]["Pending Payments"] += r.pending_amount
 
             # Client Stats
@@ -215,6 +222,7 @@ async def performance_hub(
             m_key = get_month_str(i.date)
             monthly_stats[m_key]["Total Expenses"] += i.total_amount
             monthly_stats[m_key]["Total Investments"] += i.total_amount
+            monthly_stats[m_key]["Pending Payments"] += i.pending_amount
 
         # 7. Pre, On, Post Production Stages
         for p in pre_prods:
@@ -289,19 +297,25 @@ async def performance_hub(
             
         # Top-level aggregates for Executive Summary Cards based on filtered
         exec_summary = {
-            "Total Revenue": sum(v["Total Revenue"] for v in filtered_monthly.values()),
+            "Total Revenue": sum(v["MFR Total Revenue"] for v in filtered_monthly.values()),
             "Potential Revenue": sum(v["Potential Revenue"] for v in filtered_monthly.values()),
             "Confirmed Revenue": sum(v["Confirmed Revenue"] for v in filtered_monthly.values()),
-            "Total Expenses": sum(v["Total Expenses"] for v in filtered_monthly.values()),
+            "Total Expenses": sum(v["MFR Total Expenses"] for v in filtered_monthly.values()),
             "Freelancer Expenses": sum(v["Freelancer Expenses"] for v in filtered_monthly.values()),
             "Total Investments": sum(v["Total Investments"] for v in filtered_monthly.values()),
-            "Total Profit": sum(v["Total Profit"] for v in filtered_monthly.values()),
+            "Total Profit": sum(v["MFR Total Profit"] for v in filtered_monthly.values()),
             "Total Leads": sum(v["Total Leads"] for v in filtered_monthly.values()),
             "Confirmed Clients": sum(v["Confirmed Clients"] for v in filtered_monthly.values()),
             "Rejected Leads": sum(v["Rejected Leads"] for v in filtered_monthly.values()),
             "Upcoming Shoots": sum(v["Upcoming Shoots"] for v in filtered_monthly.values()),
             "Pending Payments": sum(v["Pending Payments"] for v in filtered_monthly.values())
         }
+
+        # Add human-readable words for executive summary amounts
+        exec_summary["Total Revenue Words"] = number_to_words(exec_summary.get("Total Revenue", 0.0))
+        exec_summary["Total Expenses Words"] = number_to_words(exec_summary.get("Total Expenses", 0.0))
+        exec_summary["Total Profit Words"] = number_to_words(exec_summary.get("Total Profit", 0.0))
+        exec_summary["Pending Payments Words"] = number_to_words(exec_summary.get("Pending Payments", 0.0))
 
         # Format history string
         for c in filtered_clients:

@@ -293,6 +293,7 @@
                 <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
                     Confirmed: ₹{{ "{:,.2f}".format(exec_summary['Confirmed Revenue']) }}
                 </span>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">{{ exec_summary['Total Revenue Words'] }}</div>
             </div>
         </div>
 
@@ -306,6 +307,7 @@
                 <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
                     Freelancers: ₹{{ "{:,.2f}".format(exec_summary['Freelancer Expenses']) }} | Inv: ₹{{ "{:,.2f}".format(exec_summary['Total Investments']) }}
                 </span>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">{{ exec_summary['Total Expenses Words'] }}</div>
             </div>
         </div>
 
@@ -318,6 +320,7 @@
                 <span class="kpi-main-val" style="color: {% if exec_summary['Total Profit'] >= 0 %}var(--theme-success){% else %}var(--theme-danger){% endif %};">
                     ₹{{ "{:,.2f}".format(exec_summary['Total Profit']) }}
                 </span>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">{{ exec_summary['Total Profit Words'] }}</div>
             </div>
         </div>
         
@@ -341,6 +344,7 @@
             </div>
             <div class="kpi-body">
                 <span class="kpi-main-val">₹{{ "{:,.2f}".format(exec_summary['Pending Payments']) }}</span>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">{{ exec_summary['Pending Payments Words'] }}</div>
             </div>
         </div>
     </div>

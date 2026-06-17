@@ -1,0 +1,174 @@
+## Monthly Performance Hub page
+
+Overview
+- Purpose: a centralized dashboard that shows monthly performance KPIs for projects, clients, and freelancers. It summarizes revenue, payments, expenses, profitability and operational metrics for a selected month/year and provides filtering, drill-downs and exportable data.
+- Audience: finance team, production managers, project leads.
+
+Primary Goals
+- Quick glance summary of the month's health (revenue, paid, pending, expenses, profit).
+- Identify high/low performing projects and freelancers.
+- Provide filtering by year/month/client/project and search.
+- Enable exporting lists and printing monthly reports.
+
+Where it lives (suggested paths)
+- Route: `GET /performance/monthly` (server route handling filters + pagination)
+- Template: `app/templates/performance_hub/index.html` (or `performance_hub.html`)
+- Client assets: `app/static/js/performance_hub.js` and `app/static/css/performance_hub.css` (optional)
+
+Data sources
+- Primary table: `monthly_financial_reports` (or model `MonthlyFinancialReport`)
+  - Typical fields relevant to the hub:
+    - `id`
+    - `client_name`
+    - `project_name`
+    - `year`
+    - `month` (name or number)
+    - `event_date`
+    - `event_type`
+    - `total_amount`
+    - `paid_amount`
+    - `pending_amount`
+    - `expenses`
+    - `freelancer_amount`
+    - `profit` (optional, or derive as `paid_amount - expenses - freelancer_amount`)
+    - `work_status` (e.g., Done / In Progress)
+    - `payment_status` (Online / Offline)
+- Supplementary sources (optional):
+  - `invoices` or payments ledger for payment timestamps and types
+  - `freelancers` table for performance aggregation by freelancer
+  - `projects` table for project-level metadata
+
+Key Metrics and Calculations
+- Summary cards (top of page):
+  - Total Revenue: sum of `paid_amount` within the selected filters (year/month/client). Use the paid column as ground truth for cash-in.
+  - Total Expenses: sum of `expenses + freelancer_amount` within filters.
+  - Total Profit: Total Revenue - Total Expenses (or sum of `profit` if stored and trusted).
+  - Pending Payments: sum of `pending_amount` within filters.
+  
+  Summary cards — Pages included and fields used
+  - Total Revenue:
+    - Included pages: Monthly Financial Reports list (`/financial/monthly`), Performance Hub (`/performance/monthly`), exports and API aggregations that query monthly financials.
+    - Fields used: `paid_amount` from `monthly_financial_reports` (primary). If using a payments/invoices ledger, include `payments.amount` filtered by payment status 'received' and matching month/year.
+    - Notes: Apply the active filters (year, month, client, status). Treat NULL as 0.
+
+  - Total Expenses:
+    - Included pages: Monthly Financial Reports list, Expense/Costs pages (if present), Performance Hub.
+    - Fields used: `expenses` and `freelancer_amount` from `monthly_financial_reports` (sum of both). If a separate `expenses` table exists, include `expenses.amount` linked by `report_id` or month/year.
+    - Notes: Ensure expenses are normalized to the same currency/unit before summing.
+
+  - Total Profit:
+    - Included pages: Performance Hub and Monthly Financial Reports summary views.
+    - Fields used: Derived as `paid_amount - (expenses + freelancer_amount)` OR sum of stored `profit` field if the model includes it and it is consistently maintained.
+    - Notes: Use the same derivation across pages to avoid inconsistencies. When `profit` is stored, periodically validate it against derived values.
+
+  - Pending Payments:
+    - Included pages: Monthly Financial Reports list, Invoices/Payments pages (if present), Performance Hub.
+    - Fields used: `pending_amount` from `monthly_financial_reports` (primary). Alternatively derive as `total_amount - paid_amount` when `pending_amount` is not available.
+    - Notes: Include only records within applied filters; pending may include partially paid invoices depending on your data model.
+- Other useful KPIs:
+  - Average Ticket Size = Total Revenue / number of paid reports (avoid divide-by-zero)
+  - Collection Rate = Total Revenue / (Total Revenue + Pending) or Paid / (Paid + Pending)
+  - Top 5 clients by revenue (ORDER BY sum(paid_amount) DESC LIMIT 5)
+  - Top 5 projects by profit
+  - Freelancer payout share = sum(freelancer_amount)
+  - Conversion (Work Completed %) = count(work_status == 'Done') / total_count
+- Example SQL (filter by year=2025, month=6):
+  - Total paid: SELECT SUM(paid_amount) FROM monthly_financial_reports WHERE year=2025 AND month=6;
+  - Top clients: SELECT client_name, SUM(paid_amount) as total FROM monthly_financial_reports WHERE year=2025 AND month=6 GROUP BY client_name ORDER BY total DESC LIMIT 5;
+
+UI Layout and Behavior
+- Page header: title, brief description, add-new button.
+- Filters bar: search by client/project, dropdown for year, dropdown for month, status filters (work_status/payment_status), export button.
+- Summary cards row: the four metrics described above with numeric + words (number_to_words) + small trend icon.
+- Charts area (optional but valuable):
+  - Bar chart: revenue vs expenses by week (or by project)
+  - Pie chart: payment status distribution (paid/partial/pending)
+  - Line chart: month-over-month revenue (if multi-month selected)
+- Table: paginated list of reports with columns: Client, Project, Month, Dates, Event Type, Total, Paid, Pending, Freelancing, Expenses, Profit, Status, Payment, Actions.
+- Row actions: Edit, Delete, View, Mark payment received.
+- Drill-down: clicking a client/project name filters table to that entity or navigates to a detail page.
+
+### Month-wise Breakdown — Column explanations
+Each row in the Month-wise Breakdown table represents an aggregated month (keyed as YYYY-MM). Columns and their meaning:
+- Month: the YYYY-MM key (e.g. "2026-06"). Indicates the month for the aggregated metrics.
+- Total Rev: Sum of revenue recorded for that month across all sources (includes Monthly Financial Reports `total_amount`, Editing `total_amount`, Camera Rent `total_amount`, etc.). Use this to understand gross billed value for the month.
+- Potential Rev: Sum of estimated/lead revenue (followups, upcoming shoots not confirmed) that could become confirmed revenue.
+- Total Exp: Sum of all outflows recorded for the month (expenses from `monthly_financial_reports`, investment spend, and any other expense entries). Represents cash outflow related to operations.
+- Freelancer Exp: Sum of freelancer payouts recorded (`freelancer_amount`) for the month. This is included in Total Exp but shown separately for clarity.
+- Investments: Sum of investments/spend for growth (`InvestmentToGrowCompany.total_amount`) during the month. Appears under expenses but separated for analysis.
+- Total Profit: Calculated as `Total Rev - Total Exp` for the month; shows net position for that aggregated month.
+- Leads / Confirmed: Two-part column; first value is number of leads generated that month (followups), second is how many of those converted to confirmed clients.
+- Editing Rev: Revenue coming from `ClientsEditing.total_amount` for the month; useful to isolate sub-service income.
+- Camera Rev: Revenue coming from `CameraRent.total_amount` for the month; useful to isolate equipment rental income.
+- Proj (Pre/On/Post): Counts of projects in Pre-Production / On-Production / Post-Production stages that map to the month (helpful for workload planning).
+- Ongoing/Completed: Counts of ongoing vs completed projects in that month.
+
+Notes on month aggregation:
+- Null or missing numeric values should be treated as 0.0 when summing.
+- When data sources use explicit date objects, they are normalized to the YYYY-MM bucket using their `date`, `year`+`month`, or equivalent fields.
+- `Total Rev` is intentionally inclusive across sources; MFR-specific revenue (paid_amount) is surfaced separately in executive summary to reflect cash-in.
+
+### Client Performance Summary — Column explanations
+Each row in the Client Performance Summary represents aggregated metrics for an individual client (name as key). Columns and their meaning:
+- Client Name: Official client identifier (string). May be person or organization.
+- Event Type: The type of event associated with the client's records (Wedding, Corporate, Editing, etc.). Pulled from earliest available record.
+- Event Date: Representative event date for the client's work (first or primary record's event_date).
+- Total Revenue Generated: Sum of `total_amount` across all services for that client (Monthly Financial Reports, Editing, Camera Rent, etc.). Represents billed amount across services.
+- Total Expenses: Sum of direct expenses linked to the client's work (e.g., material costs, project-specific spend recorded on MonthlyFinancialReport or related tables).
+- Freelancer Cost: Sum of payouts to freelancers attributable to that client's projects (`freelancer_amount`).
+- Profit Earned: Derived as `Total Revenue Generated - Total Expenses - Freelancer Cost` for the client; indicates profitability per client.
+- Current Project Stage: One of Pre-Production / On-Production / Post-Production / Completed, derived from stage tables; helps track where the client's active work stands.
+- Payment Status: High-level payment summary for the client (e.g., 'Pending' if any pending amounts exist, otherwise 'Paid' or 'Online/Offline' where applicable).
+- Work Status: Textual status like Done / In Progress taken from the client's latest MonthlyFinancialReport or other relevant record.
+- Month: Representative month key for the client (YYYY-MM) used for filtering in the hub; may be empty if client has multi-month history aggregated elsewhere.
+- History: Short concatenated log entries about what records contributed to this client's stats (e.g., 'Financial Report Logged | Editing: Basic').
+
+Notes on client aggregation:
+- Clients with multiple records across months will appear with aggregated sums or may be filtered by the selected month depending on filter settings.
+- Profit calculations rely on consistent attribution of expenses and freelancer costs to client records — validate periodically if manual edits occur.
+- For exported CSVs or APIs, include both raw numeric columns and the human-readable `History`/`Payment Status` fields for context.
+
+Route / API design
+- `GET /performance/monthly` — render HTML page, accepts query params: `search`, `year`, `month`, `page`, `status`, `payment_status`.
+- `GET /api/performance/monthly` — returns JSON for charts and async filters (same params), useful for frontend charts.
+- `POST /performance/monthly/export` — trigger CSV export of current view.
+- `POST /performance/monthly/:id/mark-paid` — mark an entry as paid (updates `paid_amount`, `pending_amount`, `payment_status`).
+
+Backend considerations
+- Query performance: use appropriate indexes on `year`, `month`, `client_name`, `project_name`, and `payment_status`.
+- Aggregation: do heavy SUM/COUNT in DB (SQL) rather than fetching all rows into Python for large datasets.
+- Permission checks: ensure only authorized users see financial data and perform actions.
+- Timezone and currency: ensure amounts are consistent; use decimal types for money.
+
+Template examples (Jinja)
+- Summary card uses variables: `total_revenue`, `total_revenue_words`, `total_expenses`, `total_expenses_words`, `total_profit`, `total_profit_words`, `total_pending`, `total_pending_words`.
+- Render table rows with safe fallbacks: `{{ report.project_name or '-' }}` and format amounts: `{{ "%.2f"|format(report.paid_amount) }}`.
+- When deriving totals server-side, pass numbers and word strings to template to avoid logic in template.
+
+Testing and Validation
+- Unit tests for aggregation functions: mock DB rows and verify sums (paid, pending, expenses).
+- Integration test for route: request page with sample dataset and assert presence of summary numbers and at least one row.
+- Manual checks: verify filtering by month/year produces expected sums.
+
+Edge cases & troubleshooting
+- Missing values: treat null numeric fields as zero in sums.
+- Inconsistent months: if `month` stored as name, normalize user-supplied numeric month to month name before filtering.
+- Rounding: display currency to 2 decimals but store currency in DB as integer paise/cents or use Decimal.
+- Large data sets: enable server-side pagination and use aggregation queries for cards and charts.
+
+Accessibility & UX notes
+- Provide keyboard-accessible filters and clear focus states for inputs.
+- Use color + text labels on badges for status to be usable by colorblind users.
+- Provide CSV export and printable report.
+
+Suggested next steps to implement
+1. Add route and template scaffold: `GET /performance/monthly` and `app/templates/performance_hub/index.html`.
+2. Implement DB queries for summary cards with safe null handling.
+3. Add basic table with server-side pagination and filters.
+4. Add charts using Chart.js or similar and an API endpoint returning JSON aggregations.
+5. Add export endpoint and tests.
+
+Contact / owner
+- If you need me to implement template or route code, tell me which pieces to scaffold first and I will add them.
+
+-- End of document --

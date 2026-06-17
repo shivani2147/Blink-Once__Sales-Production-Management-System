@@ -99,8 +99,8 @@ async def list_monthly_reports(
         reports = query.all()
         
         # Calculate totals for filtered results
-        # Total Revenue should include only reports where work_status == 'Done'
-        total_revenue = sum(r.total_amount for r in reports if r.work_status == "Done") if reports else 0.0
+        # Total Revenue is the sum of Paid amounts
+        total_revenue = sum(r.paid_amount for r in reports) if reports else 0.0
         total_paid = sum(r.paid_amount for r in reports) if reports else 0.0
         total_pending = sum(r.pending_amount for r in reports) if reports else 0.0
         total_expenses = sum(r.expenses + r.freelancer_amount for r in reports) if reports else 0.0
@@ -245,6 +245,7 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
             "page_title": "Edit Monthly Financial Report",
             "report": report,
             "is_edit": True,
+            "years": years,
             "months": months,
             "event_types": event_types,
             "current_year": current_year,

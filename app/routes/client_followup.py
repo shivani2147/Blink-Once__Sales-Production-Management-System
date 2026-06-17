@@ -261,6 +261,8 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
         
         followup.event_date_list = parse_event_date_days(followup.event_date)
         
+        display_date = followup.date.strftime('%d/%m/%Y')
+        
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
             "page_title": "Edit Client Follow-up",
@@ -268,6 +270,8 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
             "is_edit": True,
             "status_options": STATUS_OPTIONS,
             "platform_options": PLATFORM_OPTIONS,
+            "current_date": followup.date.isoformat(),
+            "display_date": display_date,
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
