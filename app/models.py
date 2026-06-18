@@ -258,7 +258,8 @@ class MonthlyFinancialReport(Base):
     
     def calculate_profit(self):
         """Calculate profit."""
-        self.profit = self.total_amount - self.freelancer_amount - self.expenses
+        # Profit should reflect actual earnings: paid amount minus costs
+        self.profit = self.paid_amount - self.freelancer_amount - self.expenses
         return self.profit
 
 

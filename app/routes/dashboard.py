@@ -206,7 +206,8 @@ async def dashboard(
         # ============================================
         # 2. FINANCIAL DATA STATISTICS
         # ============================================
-        rev_monthly = sum(r.total_amount for r in monthly_reports)
+        # Use paid_amount from MonthlyFinancialReport so dashboard Total Revenue matches the Monthly Financial Reports page
+        rev_monthly = sum(float(r.paid_amount or 0.0) for r in monthly_reports)
         
         # Only include confirmed/received amounts (work_status == 'Done') for sub-service revenue
         editing_records_done = filter_q(db.query(ClientsEditing), ClientsEditing.date).filter(ClientsEditing.work_status == "Done").all()

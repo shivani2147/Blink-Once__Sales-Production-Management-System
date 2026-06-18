@@ -113,7 +113,7 @@ async def create_editing(
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     pending_amount: float = Form(default=0.0),
-    payment_status: str = Form(...),
+    payment_status: str = Form(default=""),
     work_status: str = Form(...),
     description: str = Form(default=""),
 ):
@@ -170,7 +170,7 @@ async def edit_editing(
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     pending_amount: float = Form(default=0.0),
-    payment_status: str = Form(...),
+    payment_status: str = Form(default=""),
     work_status: str = Form(...),
     description: str = Form(default=""),
 ):

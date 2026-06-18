@@ -91,8 +91,20 @@
                     <td>₹{{ "%.2f"|format(investment.total_amount) }}</td>
                     <td class="text-success">₹{{ "%.2f"|format(investment.paid_amount) }}</td>
                     <td class="text-danger">₹{{ "%.2f"|format(investment.pending_amount) }}</td>
-                    <td><span class="badge {% if investment.payment_mode == 'Online' %}badge-info{% elif investment.payment_mode == 'Cash' %}badge-warning{% else %}badge-secondary{% endif %}">{{ investment.payment_mode or 'Cash' }}</span></td>
-                    <td><span class="badge {% if not investment.payment_status or investment.payment_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ investment.payment_status or 'Done' }}</span></td>
+                    <td>
+                        {% if investment.paid_amount and investment.paid_amount > 0 %}
+                            <span class="badge {% if investment.payment_mode == 'Online' %}badge-info{% elif investment.payment_mode == 'Cash' %}badge-warning{% else %}badge-secondary{% endif %}">{{ investment.payment_mode or 'Pending' }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if investment.paid_amount and investment.paid_amount > 0 %}
+                            <span class="badge {% if not investment.payment_status or investment.payment_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ investment.payment_status or 'Pending' }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
                     <td>{{ investment.description or '-' }}</td>
                     <td class="action-buttons">
                         <a href="/financial/investment/{{ investment.id }}/edit" class="btn-icon">✏️</a>

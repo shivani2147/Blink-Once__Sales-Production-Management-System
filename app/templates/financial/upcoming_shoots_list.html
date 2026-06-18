@@ -80,7 +80,7 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th>Date</th>
+
                 <th>Client Name</th>
                 <th>Event Type</th>
                 <th>Event Date</th>
@@ -95,10 +95,9 @@
             {% if shoots %}
             {% for shoot in shoots %}
             <tr>
-                <td>{{ shoot.date.strftime('%d %b %Y') }}</td>
                 <td><strong>{{ shoot.client_name }}</strong></td>
                 <td>{{ shoot.event_type }}</td>
-                                <td>{{ shoot.event_date.replace(', ', ',<br>') | safe }}</td>
+                <td>{{ shoot.event_date.replace(', ', ',<br>') | safe }}</td>
                 <td>₹{{ "%.2f"|format(shoot.total_amount) }}</td>
                 <td>₹{{ "%.2f"|format(shoot.negotiation) }}</td>
                 <td>{{ shoot.confirmation if shoot.confirmation else '-' }}</td>
@@ -114,7 +113,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="9" class="text-center text-muted">No upcoming shoots scheduled.</td>
+                <td colspan="8" class="text-center text-muted">No upcoming shoots scheduled.</td>
             </tr>
             {% endif %}
         </tbody>

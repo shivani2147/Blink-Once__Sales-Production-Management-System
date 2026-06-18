@@ -156,6 +156,7 @@
     </div>
 
     {% block extra_js %}{% endblock %}
+    <script src="{{ url_for('static', path='/js/payment-helpers.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             function getDateValues(container) {

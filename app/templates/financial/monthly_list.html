@@ -120,10 +120,11 @@
                     </span>
                 </td>
                 <td>
-                    <span
-                        class="badge {% if report.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">
-                        {{ report.payment_status }}
-                    </span>
+                    {% if report.paid_amount and report.paid_amount > 0 %}
+                        <span class="badge {% if report.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ report.payment_status or 'Pending' }}</span>
+                    {% else %}
+                        -
+                    {% endif %}
                 </td>
                 <td class="action-buttons">
                     

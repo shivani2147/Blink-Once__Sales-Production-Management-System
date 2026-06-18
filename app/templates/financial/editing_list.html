@@ -98,7 +98,13 @@
                     <td>₹{{ "%.2f"|format(project.total_amount) }}</td>
                     <td class="text-success">₹{{ "%.2f"|format(project.paid_amount) }}</td>
                     <td class="text-danger">₹{{ "%.2f"|format(project.pending_amount) }}</td>
-                    <td><span class="badge {% if project.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ project.payment_status }}</span></td>
+                    <td>
+                        {% if project.paid_amount and project.paid_amount > 0 %}
+                            <span class="badge {% if project.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ project.payment_status or 'Pending' }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
                     <td><span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span></td>
                     <td class="action-buttons">
                         <a href="/financial/editing/{{ project.id }}/edit" class="btn-icon">✏️</a>

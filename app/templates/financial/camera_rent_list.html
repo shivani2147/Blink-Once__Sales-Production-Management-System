@@ -99,11 +99,9 @@
                 <td>{{ rental.description_of_goods }}</td>
                 <td>{{ rental.days }}</td>
                 <td>₹{{ "%.2f"|format(rental.total_amount) }}</td>
-                <td class="text-success">₹{{ "%.2f"|format(rental.paid_amount) }}</td>
-                <td class="text-danger">₹{{ "%.2f"|format(rental.pending_amount) }}</td>
-                <td><span
-                        class="badge {% if rental.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{
-                        rental.payment_status }}</span></td>
+                <td class="text-success">{% if rental.paid_amount and rental.paid_amount > 0 %}₹{{ "%.2f"|format(rental.paid_amount) }}{% else %}-{% endif %}</td>
+                <td class="text-danger">{% if rental.pending_amount and rental.pending_amount > 0 %}₹{{ "%.2f"|format(rental.pending_amount) }}{% else %}-{% endif %}</td>
+                <td>{% if rental.paid_amount and rental.paid_amount > 0 %}<span class="badge {% if rental.payment_status == 'Online' %}badge-info{% else %}badge-warning{% endif %}">{{ rental.payment_status or 'Pending' }}</span>{% else %}-{% endif %}</td>
                 <td><span
                         class="badge {% if rental.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{
                         rental.work_status }}</span></td>

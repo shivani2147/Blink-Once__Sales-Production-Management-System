@@ -116,12 +116,15 @@ async def create_investment(
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     pending_amount: float = Form(default=0.0),
-    payment_mode: str = Form(default="Cash"),
-    payment_status: str = Form(default="Done"),
+    payment_mode: str = Form(default=""),
+    payment_status: str = Form(default=""),
     description: str = Form(default=""),
 ):
     """Create new investment."""
     try:
+        if paid_amount and not payment_status:
+            payment_status = "Pending"
+
         investment = InvestmentToGrowCompany(
             date=datetime.strptime(date_input, "%Y-%m-%d").date(),
             service=service,
@@ -173,8 +176,8 @@ async def edit_investment(
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     pending_amount: float = Form(default=0.0),
-    payment_mode: str = Form(default="Cash"),
-    payment_status: str = Form(default="Done"),
+    payment_mode: str = Form(default=""),
+    payment_status: str = Form(default=""),
     description: str = Form(default=""),
 ):
     """Update investment with comma-separated amount handling."""
@@ -188,6 +191,9 @@ async def edit_investment(
         investment.date = datetime.strptime(date_input, "%Y-%m-%d").date()
         investment.service = service
         investment.total_amount = total_amount
+        if paid_amount and not payment_status:
+            payment_status = "Pending"
+
         investment.paid_amount = paid_amount
         investment.pending_amount = pending_amount
         investment.payment_mode = payment_mode

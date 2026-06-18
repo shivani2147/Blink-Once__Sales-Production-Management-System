@@ -11,11 +11,7 @@
         <div class="form-section">
             <h3>Shoot Information</h3>
             <div class="form-grid">
-                <div class="form-group">
-                    <label for="date_input"><strong>Date :</strong></label>
-                    <span class="current-date-display" style="font-size: 1rem; color: #333; font-weight: 500;">{% if shoot %}{{ shoot.date.strftime('%d/%m/%Y') }}{% else %}{{ display_date }}{% endif %}</span>
-                    <input type="hidden" id="date_input" name="date_input" value="{% if shoot %}{{ shoot.date.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}">
-                </div>
+                <input type="hidden" id="date_input" name="date_input" value="{% if shoot %}{{ shoot.date.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}">
                 <div class="form-group">
                     <label for="client_name">Client Name</label>
                     <input type="text" id="client_name" name="client_name" required 
@@ -41,7 +37,7 @@
                 </div>
                 <div class="form-group">
                     <label for="phone_number">Phone Number</label>
-                    <input type="tel" id="phone_number" name="phone_number" required 
+                    <input type="tel" id="phone_number" name="phone_number" 
                            value="{% if shoot %}{{ shoot.phone_number }}{% endif %}">
                 </div>
                 <div class="form-group">

@@ -74,7 +74,7 @@
                 </div>
                 <div class="form-group">
                     <label for="paid_amount">Paid Amount (₹)</label>
-                    <input type="number" id="paid_amount" name="paid_amount" step="0.01" required
+                    <input type="number" id="paid_amount" name="paid_amount" step="0.01"
                         value="{% if report %}{{ report.paid_amount }}{% endif %}" placeholder="0.00">
                 </div>
                 <div class="form-group">
@@ -105,7 +105,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="payment_status">Payment Mode</label>
-                    <select id="payment_status" name="payment_status" required>
+                    <select id="payment_status" name="payment_status">
                         <option value="">Select Payment Mode</option>
                         <option value="Online" {% if report and report.payment_status=='Online' %}selected{% endif %}>
                             Online</option>
