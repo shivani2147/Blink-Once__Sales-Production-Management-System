@@ -106,10 +106,12 @@ async def list_monthly_reports(
         total_expenses = sum(r.expenses + r.freelancer_amount for r in reports) if reports else 0.0
         total_profit = sum(r.profit for r in reports) if reports else 0.0
         
+        total_shoots = len(reports) if reports else 0
         return templates.TemplateResponse("financial/monthly_list.html", {
             "request": request,
             "page_title": "Monthly Financial Reports",
             "reports": reports,
+            "total_shoots": total_shoots,
             "total_revenue": total_revenue,
             "total_revenue_words": number_to_words(total_revenue),
             "total_paid": total_paid,

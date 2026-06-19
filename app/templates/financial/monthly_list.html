@@ -43,6 +43,14 @@
             <div class="card-subtext">{{ total_pending_words }}</div>
         </div>
     </div>
+    <div class="summary-card">
+        <div class="card-icon" style="background: linear-gradient(135deg, #9be15d 0%, #00e3ae 100%);">🎯</div>
+        <div class="card-content">
+            <div class="card-label">Total No. of Shoots</div>
+            <div class="card-value">{{ total_shoots }}</div>
+            <div class="card-subtext">Total records shown</div>
+        </div>
+    </div>
 </div>
 
 <!-- Filters Section -->
@@ -91,8 +99,8 @@
                 <th>Freelancing</th>
                 <th>Expenses</th>
                 <th>Profit</th>
-                <th>Status</th>
-                <th>Payment</th>
+                <th>Work Status</th>
+                <th>Payment Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -136,7 +144,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="13" class="text-center text-muted">No financial reports found. Start by creating one.</td>
+                <td colspan="14" class="text-center text-muted">No financial reports found. Start by creating one.</td>
             </tr>
             {% endif %}
         </tbody>

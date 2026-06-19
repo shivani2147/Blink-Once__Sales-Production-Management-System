@@ -104,23 +104,19 @@
             <h3>Status Information</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="payment_status">Payment Mode</label>
+                    <label for="payment_status">Payment Status</label>
                     <select id="payment_status" name="payment_status">
-                        <option value="">Select Payment Mode</option>
-                        <option value="Online" {% if report and report.payment_status=='Online' %}selected{% endif %}>
-                            Online</option>
-                        <option value="Cash" {% if report and report.payment_status=='Cash' %}selected{% endif %}>Cash
-                        </option>
+                        <option value="">Select Payment Status</option>
+                        <option value="Online" {% if report and report.payment_status=='Online' %}selected{% endif %}>Online</option>
+                        <option value="Cash" {% if report and report.payment_status=='Cash' %}selected{% endif %}>Cash</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="work_status">Payment Status</label>
+                    <label for="work_status">Work Status</label>
                     <select id="work_status" name="work_status" required>
-                        <option value="">Select Payment Status</option>
-                        <option value="Pending" {% if report and report.work_status=='Pending' %}selected{% endif %}>
-                            Pending</option>
-                        <option value="Done" {% if report and report.work_status=='Done' %}selected{% endif %}>Done
-                        </option>
+                        <option value="">Select Work Status</option>
+                        <option value="Pending" {% if report and report.work_status=='Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Done" {% if report and report.work_status=='Done' %}selected{% endif %}>Done</option>
                     </select>
                 </div>
             </div>

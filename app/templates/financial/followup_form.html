@@ -11,11 +11,7 @@
         <div class="form-section">
             <h3>Lead Information</h3>
             <div class="form-grid">
-                <div class="form-group">
-                    <label for="date_input"><strong>Date</strong></label>
-                    <span class="current-date-display">{{ display_date }}</span>
-                    <input type="hidden" id="date_input" name="date_input" value="{{ current_date }}">
-                </div>
+                <input type="hidden" id="date_input" name="date_input" value="{{ current_date }}">
                 <div class="form-group">
                     <label for="client_name">Client Name</label>
                     <input type="text" id="client_name" name="client_name" required
@@ -61,17 +57,17 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="client_budget">Client Budget (₹)</label>
-                    <input type="number" id="client_budget" name="client_budget" step="0.01" required
+                    <input type="number" id="client_budget" name="client_budget" step="0.01"
                         value="{% if followup %}{{ followup.client_budget }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="total_amount">Total Amount (₹)</label>
-                    <input type="number" id="total_amount" name="total_amount" step="0.01" required
+                    <input type="number" id="total_amount" name="total_amount" step="0.01"
                         value="{% if followup %}{{ followup.total_amount }}{% endif %}">
                 </div>
                 <div class="form-group">
                     <label for="confirmation">Confirmation Amount (₹)</label>
-                    <input type="number" id="confirmation" name="confirmation" step="0.01" required
+                    <input type="number" id="confirmation" name="confirmation" step="0.01"
                         value="{% if followup %}{{ followup.confirmation }}{% else %}{% endif %}">
                 </div>
                 <div class="form-group">

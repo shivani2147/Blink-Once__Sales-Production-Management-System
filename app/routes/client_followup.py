@@ -21,8 +21,19 @@ template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
 templates = Jinja2Templates(directory=template_dir)
 
 # Status options
-STATUS_OPTIONS = ["Done", "Pending", "Rejected", "Not replied", "Quotation sent", 
-                  "Quotation needs to be sent", "Meeting in Office", "Need to speak", "Hold"]
+STATUS_OPTIONS = [
+    "Done",
+    "Pending",
+    "Rejected",
+    "Not replied",
+    "Quotation sent",
+    "Quotation needs to be sent",
+    "Meeting in Office",
+    "Need to speak",
+    "Hold",
+    "Advance Payment is pending",
+    "Follow up",
+]
 
 PLATFORM_OPTIONS = ["JD", "Meta Ads", "Word of Mouth"]
 
@@ -193,8 +204,8 @@ async def create_followup(
     event_date: str = Form(default=""),
     location: str = Form(default=""),
     phone_number: str = Form(...),
-    client_budget: float = Form(...),
-    total_amount: float = Form(...),
+    client_budget: float = Form(default=0.0),
+    total_amount: float = Form(default=0.0),
     platform: str = Form(...),
     negotiation: bool = Form(default=False),
     confirmation: float = Form(0.0),
@@ -290,8 +301,8 @@ async def edit_followup(
     event_date: str = Form(default=""),
     location: str = Form(default=""),
     phone_number: str = Form(...),
-    client_budget: float = Form(...),
-    total_amount: float = Form(...),
+    client_budget: float = Form(default=0.0),
+    total_amount: float = Form(default=0.0),
     platform: str = Form(...),
     negotiation: bool = Form(default=False),
     confirmation: float = Form(0.0),

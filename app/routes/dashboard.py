@@ -222,7 +222,8 @@ async def dashboard(
         shoot_records = filter_q(db.query(UpcomingClientsShoot), UpcomingClientsShoot.date).all()
         rev_shoots = sum(r.total_amount for r in shoot_records)
 
-        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera) + float(rev_followup) + float(rev_shoots)
+        # Exclude client follow-up revenue from the dashboard Total Revenue summary
+        total_revenue = float(rev_monthly) + float(rev_editing) + float(rev_camera) + float(rev_shoots)
         exp_monthly = sum(r.expenses for r in monthly_reports)
         freelancer_expenses = sum(r.freelancer_amount for r in monthly_reports)
 
