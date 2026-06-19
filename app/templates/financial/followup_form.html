@@ -18,6 +18,24 @@
                         value="{% if followup %}{{ followup.client_name }}{% endif %}">
                 </div>
                 <div class="form-group">
+                    <label for="year">Year</label>
+                    <select id="year" name="year" required>
+                        <option value="">Select Year</option>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="month">Month</label>
+                    <select id="month" name="month" required>
+                        <option value="">Select Month</option>
+                        {% for val, label in months %}
+                        <option value="{{ val }}" {% if selected_month == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="event_type">Event Type</label>
                     <input type="text" id="event_type" name="event_type" required
                         value="{% if followup %}{{ followup.event_type }}{% endif %}">
@@ -184,5 +202,82 @@
         background-color: #5a6268;
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const yearSelect = document.getElementById('year');
+        const monthSelect = document.getElementById('month');
+        const eventDateContainer = document.getElementById('event_dates_container');
+
+        if (!yearSelect || !monthSelect) return;
+
+        const now = new Date();
+        const currentYear = now.getFullYear().toString();
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        const currentMonth = monthNames[now.getMonth()];
+
+        if (!yearSelect.value) {
+            const yearOption = Array.from(yearSelect.options).find(opt => opt.value === currentYear);
+            if (yearOption) yearOption.selected = true;
+        }
+
+        if (!monthSelect.value) {
+            const monthOption = Array.from(monthSelect.options).find(opt => opt.value === currentMonth);
+            if (monthOption) monthOption.selected = true;
+        }
+
+        function monthNameToNumber(name) {
+            const idx = monthNames.indexOf(name);
+            if (idx >= 0) return String(idx + 1).padStart(2, '0');
+            if (/^\d{1,2}$/.test(name)) return String(parseInt(name, 10)).padStart(2, '0');
+            return null;
+        }
+
+        function getEventDateInputs() {
+            return eventDateContainer ? Array.from(eventDateContainer.querySelectorAll('.event_date_input')) : [];
+        }
+
+        function applyEventDateConstraints(input) {
+            if (!input || !yearSelect || !monthSelect) return;
+            const selectedYear = yearSelect.value;
+            const selectedMonth = monthSelect.value;
+            if (!selectedYear || !selectedMonth) return;
+            const monthNumber = monthNameToNumber(selectedMonth);
+            if (!monthNumber) return;
+            const firstDay = `${selectedYear}-${monthNumber}-01`;
+            const daysInMonth = new Date(parseInt(selectedYear, 10), parseInt(monthNumber, 10), 0).getDate();
+            const lastDay = `${selectedYear}-${monthNumber}-${String(daysInMonth).padStart(2, '0')}`;
+            input.min = firstDay;
+            input.max = lastDay;
+            if (!input.value || input.value < firstDay || input.value > lastDay) {
+                input.value = firstDay;
+            }
+        }
+
+        function updateEventDateCalendar() {
+            const inputs = getEventDateInputs();
+            if (!inputs.length) return;
+            inputs.forEach(applyEventDateConstraints);
+        }
+
+        yearSelect.addEventListener('change', updateEventDateCalendar);
+        monthSelect.addEventListener('change', updateEventDateCalendar);
+
+        if (eventDateContainer) {
+            eventDateContainer.addEventListener('click', function (e) {
+                if (e.target && e.target.matches('.add-event-date-btn')) {
+                    // Delay to allow new input to be added to DOM
+                    setTimeout(updateEventDateCalendar, 0);
+                }
+            });
+        }
+
+        // Initialize existing event date inputs
+        updateEventDateCalendar();
+    });
+</script>
 
 {% endblock %}

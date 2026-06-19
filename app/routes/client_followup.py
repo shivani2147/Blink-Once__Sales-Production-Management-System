@@ -178,6 +178,9 @@ async def create_form(request: Request):
     try:
         today = datetime.now().date()
         display_date = today.strftime('%d/%m/%Y')
+        import calendar
+        years = list(range(2020, today.year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
             "page_title": "Client Follow-up",
@@ -186,6 +189,10 @@ async def create_form(request: Request):
             "platform_options": PLATFORM_OPTIONS,
             "current_date": today.isoformat(),
             "display_date": display_date,
+            "years": years,
+            "months": months,
+            "selected_year": today.year,
+            "selected_month": today.strftime('%B'),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -199,6 +206,8 @@ async def create_followup(
     request: Request,
     db: Session = Depends(get_db),
     date_input: str = Form(...),
+    year: int = Form(...),
+    month: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
     event_date: str = Form(default=""),
@@ -240,6 +249,8 @@ async def create_followup(
 
         followup = ThreeMonthsClientFollowup(
             date=first_date_obj,
+            year=year,
+            month=month,
             client_name=client_name,
             event_type=event_type,
             event_date=event_date_str,
@@ -273,7 +284,9 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
         followup.event_date_list = parse_event_date_days(followup.event_date)
         
         display_date = followup.date.strftime('%d/%m/%Y')
-        
+        import calendar
+        years = list(range(2020, followup.date.year + 1))
+        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
             "page_title": "Edit Client Follow-up",
@@ -283,6 +296,10 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
             "platform_options": PLATFORM_OPTIONS,
             "current_date": followup.date.isoformat(),
             "display_date": display_date,
+            "years": years,
+            "months": months,
+            "selected_year": followup.date.year,
+            "selected_month": followup.date.strftime('%B'),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -296,6 +313,8 @@ async def edit_followup(
     followup_id: int,
     db: Session = Depends(get_db),
     date_input: str = Form(...),
+    year: int = Form(...),
+    month: str = Form(...),
     client_name: str = Form(...),
     event_type: str = Form(...),
     event_date: str = Form(default=""),
@@ -340,6 +359,8 @@ async def edit_followup(
         event_date_str = ", ".join(days)
 
         followup.date = first_date_obj
+        followup.year = year
+        followup.month = month
         followup.client_name = client_name
         followup.event_type = event_type
         followup.event_date = event_date_str

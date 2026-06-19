@@ -270,6 +270,8 @@ class ThreeMonthsClientFollowup(Base):
     id = Column(Integer, primary_key=True, index=True)
     # Updated to DateTime to accept datetime values during inserts
     date = Column(Date, nullable=False, default=datetime.now().date(), index=True)
+    year = Column(Integer, nullable=False, default=datetime.now().year, index=True)
+    month = Column(String(50), nullable=False, default=datetime.now().strftime('%B'), index=True)
     client_name = Column(String(255), nullable=False, index=True)
     event_type = Column(String(255), nullable=False)
     event_date = Column(String(255), nullable=False)
