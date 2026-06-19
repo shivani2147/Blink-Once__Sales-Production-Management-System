@@ -41,6 +41,11 @@
                         value="{% if followup %}{{ followup.event_type }}{% endif %}">
                 </div>
                 <div class="form-group">
+                    <label for="requirements">Requirements</label>
+                    <input type="text" id="requirements" name="requirements"
+                        value="{% if followup %}{{ followup.requirements }}{% endif %}" placeholder="Brief requirements">
+                </div>
+                <div class="form-group">
                     <label for="event_date">Event Date</label>
                     <div class="event-date-container" id="event_dates_container" data-year="{% if followup %}{{ followup.date.year }}{% endif %}" data-month="{% if followup %}{{ followup.date.strftime('%m') }}{% endif %}">
                         <div class="date-input-group">

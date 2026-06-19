@@ -220,6 +220,7 @@ async def create_followup(
     confirmation: float = Form(0.0),
     status: str = Form(...),
     comment: str = Form(default=""),
+    requirements: str = Form(default=""),
 ):
     """Create new client follow-up."""
     try:
@@ -263,6 +264,7 @@ async def create_followup(
             confirmation=confirmation,
             status=status,
             comment=comment,
+            requirements=requirements,
         )
         
         db.add(followup)
@@ -327,6 +329,7 @@ async def edit_followup(
     confirmation: float = Form(0.0),
     status: str = Form(...),
     comment: str = Form(default=""),
+    requirements: str = Form(default=""),
 ):
     """Update client follow-up."""
     try:
@@ -373,6 +376,7 @@ async def edit_followup(
         followup.confirmation = confirmation
         followup.status = status
         followup.comment = comment
+        followup.requirements = requirements
         
         db.commit()
         return RedirectResponse(url="/financial/followup/", status_code=302)

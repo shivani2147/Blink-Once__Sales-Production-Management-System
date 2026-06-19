@@ -292,6 +292,7 @@ class ThreeMonthsClientFollowup(Base):
     
     # Additional fields
     comment = Column(Text, nullable=True)
+    requirements = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String(255), nullable=True)

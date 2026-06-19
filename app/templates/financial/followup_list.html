@@ -99,6 +99,7 @@
                 <th>Platform</th>
                 <th>Negotiation</th>
                 <th>Status</th>
+                <th>Requirements</th>
                 <th>Comment</th>
                 <th>Actions</th>
             </tr>
@@ -114,7 +115,7 @@
                     {% set event_date_value = followup.event_date %}
                     {{ event_date_value if event_date_value is string else event_date_value.strftime('%d %b %Y') }}
                 </td>
-                <td>{{ followup.location or 'N/A' }}</td>
+                <td>{{ followup.location or '-' }}</td>
                 <td>{{ followup.phone_number }}</td>
                 <td>₹{{ "%.2f"|format(followup.client_budget) }}</td>
                 <td>₹{{ "%.2f"|format(followup.total_amount) }}</td>
@@ -123,6 +124,7 @@
                 <td>{% if followup.negotiation %}<span class="badge badge-success">Yes</span>{% else %}<span
                         class="badge badge-secondary">No</span>{% endif %}</td>
                 <td><span class="badge {% if followup.status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ followup.status }}</span></td>
+                <td>{{ followup.requirements or '-' }}</td>
                 <td>{{ followup.comment or '-' }}</td>
                 <td class="action-buttons">
                     <a href="/financial/followup/{{ followup.id }}/edit" class="btn-icon">✏️</a>
