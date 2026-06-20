@@ -43,13 +43,13 @@
                 <div class="form-group">
                     <label for="per_day_charge">Per Day Charge (₹)</label>
                     <input type="number" id="per_day_charge" name="per_day_charge" step="0.01"
-                           value="{% if is_edit %}{{ freelancer.per_day_charge }}{% else %}0.00{% endif %}" placeholder="0.00">
+                           value="{% if is_edit %}{{ freelancer.per_day_charge }}{% endif %}">
                 </div>
 
                 <div class="form-group">
                     <label for="per_project_charge">Per Project Charge (₹)</label>
                     <input type="number" id="per_project_charge" name="per_project_charge" step="0.01"
-                           value="{% if is_edit %}{{ freelancer.per_project_charge }}{% else %}0.00{% endif %}" placeholder="0.00">
+                           value="{% if is_edit %}{{ freelancer.per_project_charge }}{% endif %}">
                 </div>
 
                 <div class="form-group">

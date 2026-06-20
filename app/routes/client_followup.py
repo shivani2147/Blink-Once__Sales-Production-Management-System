@@ -7,12 +7,48 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import ThreeMonthsClientFollowup
+from app.models import MonthlyFinancialReport, ThreeMonthsClientFollowup
 from datetime import datetime, date, timedelta
 import os
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, case
 from .monthly_financial import number_to_words
 import re
+
+
+def create_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: Session):
+    if followup.status != 'Done':
+        return
+
+    existing = db.query(MonthlyFinancialReport).filter(
+        MonthlyFinancialReport.client_name == followup.client_name,
+        MonthlyFinancialReport.year == followup.year,
+        MonthlyFinancialReport.month == followup.month,
+        MonthlyFinancialReport.event_type == followup.event_type,
+        MonthlyFinancialReport.event_date == followup.event_date,
+    ).first()
+
+    if existing:
+        return
+
+    report = MonthlyFinancialReport(
+        month=followup.month,
+        year=followup.year,
+        client_name=followup.client_name,
+        project_name='',
+        event_type=followup.event_type,
+        event_date=followup.event_date or '',
+        total_amount=followup.confirmation or 0.0,
+        paid_amount=0.0,
+        freelancer_amount=0.0,
+        expenses=0.0,
+        payment_status='',
+        work_status='Pending',
+        notes='',
+    )
+    report.calculate_pending()
+    report.calculate_profit()
+    db.add(report)
+    db.commit()
 
 router = APIRouter(prefix="/financial/followup", tags=["Client Follow-up"])
 
@@ -93,16 +129,38 @@ async def list_followups(
             query = query.filter(ThreeMonthsClientFollowup.client_name.ilike(f"%{search}%"))
         if year:
             try:
-                query = query.filter(extract('year', ThreeMonthsClientFollowup.date) == int(year))
+                query = query.filter(ThreeMonthsClientFollowup.year == int(year))
             except ValueError:
                 pass
         if month:
             try:
-                query = query.filter(extract('month', ThreeMonthsClientFollowup.date) == int(month))
-            except ValueError:
+                import calendar
+                month_name = month
+                if month.isdigit():
+                    month_num = int(month)
+                    if 1 <= month_num <= 12:
+                        month_name = calendar.month_name[month_num]
+                query = query.filter(ThreeMonthsClientFollowup.month == month_name)
+            except Exception:
                 pass
         
-        followups = query.order_by(ThreeMonthsClientFollowup.date.desc()).all()
+        month_order = case(
+            (ThreeMonthsClientFollowup.month == 'January', 1),
+            (ThreeMonthsClientFollowup.month == 'February', 2),
+            (ThreeMonthsClientFollowup.month == 'March', 3),
+            (ThreeMonthsClientFollowup.month == 'April', 4),
+            (ThreeMonthsClientFollowup.month == 'May', 5),
+            (ThreeMonthsClientFollowup.month == 'June', 6),
+            (ThreeMonthsClientFollowup.month == 'July', 7),
+            (ThreeMonthsClientFollowup.month == 'August', 8),
+            (ThreeMonthsClientFollowup.month == 'September', 9),
+            (ThreeMonthsClientFollowup.month == 'October', 10),
+            (ThreeMonthsClientFollowup.month == 'November', 11),
+            (ThreeMonthsClientFollowup.month == 'December', 12),
+            else_=0
+        )
+
+        followups = query.order_by(ThreeMonthsClientFollowup.year.asc(), month_order.asc(), ThreeMonthsClientFollowup.date.asc()).all()
         
         # Calculate analytics
         total_leads = len(followups)
@@ -269,7 +327,8 @@ async def create_followup(
         
         db.add(followup)
         db.commit()
-        
+
+        create_monthly_report_for_followup(followup, db)
         return RedirectResponse(url="/financial/followup/", status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -379,6 +438,7 @@ async def edit_followup(
         followup.requirements = requirements
         
         db.commit()
+        create_monthly_report_for_followup(followup, db)
         return RedirectResponse(url="/financial/followup/", status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
