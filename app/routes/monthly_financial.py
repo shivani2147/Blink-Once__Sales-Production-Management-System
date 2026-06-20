@@ -321,10 +321,13 @@ async def edit_report(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{report_id}/delete")
-async def delete_report(report_id: int, db: Session = Depends(get_db)):
+@router.post("/{report_id}/delete")
+async def delete_report(request: Request, report_id: int, db: Session = Depends(get_db)):
     """Delete monthly financial report."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         report = db.query(MonthlyFinancialReport).filter(MonthlyFinancialReport.id == report_id).first()
         if not report:
             raise HTTPException(status_code=404, detail="Report not found")

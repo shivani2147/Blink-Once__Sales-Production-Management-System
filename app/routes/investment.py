@@ -223,10 +223,13 @@ async def edit_investment(
 #     except Exception as e:
 #         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{investment_id}/delete")
-async def delete_investment(investment_id: int, db: Session = Depends(get_db)):
+@router.post("/{investment_id}/delete")
+async def delete_investment(request: Request, investment_id: int, db: Session = Depends(get_db)):
     """Delete investment."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         investment = db.query(InvestmentToGrowCompany).filter(
             InvestmentToGrowCompany.id == investment_id
         ).first()

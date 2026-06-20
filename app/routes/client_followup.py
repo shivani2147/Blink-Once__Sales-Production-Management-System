@@ -444,10 +444,13 @@ async def edit_followup(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{followup_id}/delete")
-async def delete_followup(followup_id: int, db: Session = Depends(get_db)):
+@router.post("/{followup_id}/delete")
+async def delete_followup(request: Request, followup_id: int, db: Session = Depends(get_db)):
     """Delete client follow-up."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")

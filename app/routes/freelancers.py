@@ -553,12 +553,15 @@ async def update_freelancer(
 
 
 @router.post("/{freelancer_id}/delete")
-async def delete_freelancer(
+async def delete_freelancer(request: Request,
     freelancer_id: int,
     db: Session = Depends(get_db)
 ):
     """Delete freelancer profile and cleanup physical documents."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         freelancer = db.query(Freelancer).filter(Freelancer.id == freelancer_id).first()
         if not freelancer:
             raise HTTPException(status_code=404, detail="Freelancer not found")
@@ -870,13 +873,16 @@ async def update_work_log(
 
 
 @router.post("/{freelancer_id}/work/{work_id}/delete")
-async def delete_work_log(
+async def delete_work_log(request: Request,
     freelancer_id: int,
     work_id: int,
     db: Session = Depends(get_db)
 ):
     """Delete a work assignment/payment log."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         work = db.query(FreelancerWork).filter(FreelancerWork.id == work_id).first()
         if not work:
             raise HTTPException(status_code=404, detail="Work record not found")

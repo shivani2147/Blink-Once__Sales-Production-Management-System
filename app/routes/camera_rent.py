@@ -204,10 +204,13 @@ async def edit_rental(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{rental_id}/delete")
-async def delete_rental(rental_id: int, db: Session = Depends(get_db)):
+@router.post("/{rental_id}/delete")
+async def delete_rental(request: Request, rental_id: int, db: Session = Depends(get_db)):
     """Delete camera rent."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         rental = db.query(CameraRent).filter(CameraRent.id == rental_id).first()
         if not rental:
             raise HTTPException(status_code=404, detail="Rental not found")

@@ -126,7 +126,10 @@
                 <td>{{ followup.comment or '-' }}</td>
                 <td class="action-buttons">
                     <a href="/financial/followup/{{ followup.id }}/edit" class="btn-icon">✏️</a>
-                    <a href="/financial/followup/{{ followup.id }}/delete" class="btn-icon btn-danger"
+                    <form method="post" action="/financial/followup/{{ followup.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                        <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                        <button type="submit" class="btn-icon btn-danger">🗑️</button>
+                    </form>
                         onclick="return confirm('Are you sure?')">🗑️</a>
                 </td>
             </tr>

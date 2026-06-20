@@ -79,6 +79,7 @@
                                     <a href="/on-production/{{ record.id }}" class="btn-icon" title="View">👁️</a>
                                     <a href="/on-production/{{ record.id }}/edit" class="btn-icon" title="Edit">✏️</a>
                                     <form method="post" action="/on-production/{{ record.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                                         <button type="submit" class="btn-icon" title="Delete">🗑️</button>
                                     </form>
                                 </div>

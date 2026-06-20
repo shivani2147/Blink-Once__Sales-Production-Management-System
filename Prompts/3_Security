@@ -1,0 +1,28 @@
+Securely no Delete 
+
+Security Fix Required:
+
+Scan the entire codebase and identify all delete operations. Replace every delete route using `@router.get(.../delete)` with `@router.post(.../delete)`.
+
+Also update all HTML templates:
+
+Replace:
+
+<a href="/.../delete">Delete</a>
+
+with:
+
+<form method="post" action="/.../delete">
+    <button type="submit" onclick="return confirm('Are you sure you want to delete this record?')">
+        Delete
+    </button>
+</form>
+
+Ensure that no database record can be deleted through a GET request. Review all modules including Client Follow-up, Freelancers, Editing, Monthly Financial, Camera Rent, Upcoming Shoots, Pre-Production, On-Production, Post-Production, Investments, and any other CRUD modules.
+
+Additionally:
+
+* Add CSRF protection where applicable.
+* Prevent search engine bots/crawlers from triggering delete actions.
+* Keep existing UI styling unchanged.
+* Verify that all delete functionality continues to work correctly after conversion to POST requests.

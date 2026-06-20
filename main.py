@@ -6,14 +6,22 @@ Server: BO-LAPTOP\SQLEXPRESS
 Database: BlinkOnce__ProductionManagementSystem
 """
 
+import secrets
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+try:
+    from starlette.middleware.sessions import SessionMiddleware
+except Exception as e:
+    raise RuntimeError(
+        "Missing dependency for session middleware. Install requirements: `pip install -r requirements.txt`. "
+        f"Original error: {e}"
+    )
 import os
 
 # Import configuration and database
-from app.config import APP_TITLE, APP_VERSION, APP_DESCRIPTION, DEBUG, RELOAD
+from app.config import APP_TITLE, APP_VERSION, APP_DESCRIPTION, DEBUG, RELOAD, SECRET_KEY
 from app.database import init_db
 
 # Import route handlers
@@ -40,6 +48,21 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+# Ensure CSRF token is present in session for templates and form validation
+@app.middleware("http")
+async def ensure_csrf_token_middleware(request, call_next):
+    """Ensure a CSRF token exists in the user's session for form protection."""
+    try:
+        if request.session.get("csrf_token") is None:
+            request.session["csrf_token"] = secrets.token_urlsafe(32)
+    except Exception:
+        # If sessions are unavailable for some reason, continue without failing here.
+        pass
+    response = await call_next(request)
+    return response
 
 # Mount static files
 static_dir = os.path.join(os.path.dirname(__file__), "app", "static")

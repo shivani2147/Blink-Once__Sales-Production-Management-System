@@ -42,7 +42,7 @@ if errorlevel 1 (
     )
 )
 
-REM Start the application
+REM Start the application (activate venv and run uvicorn from venv)
 echo.
 echo ✓ All checks passed!
 echo.
@@ -53,9 +53,21 @@ echo.
 echo Press CTRL+C to stop the server
 echo.
 
-python main.py
+REM Activate virtual environment and run with venv python to ensure correct packages
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+) else (
+    echo Virtual environment not found at .venv\Scripts\activate.bat
+)
+
+REM Use the venv python to run uvicorn so the venv packages are used
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 REM Deactivate virtual environment on exit
-deactivate
+if defined VIRTUAL_ENV (
+    if exist "%VIRTUAL_ENV%\Scripts\deactivate.bat" (
+        deactivate
+    )
+)
 
 pause

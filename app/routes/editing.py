@@ -196,10 +196,13 @@ async def edit_editing(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{project_id}/delete")
-async def delete_editing(project_id: int, db: Session = Depends(get_db)):
+@router.post("/{project_id}/delete")
+async def delete_editing(request: Request, project_id: int, db: Session = Depends(get_db)):
     """Delete editing project."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         project = db.query(ClientsEditing).filter(ClientsEditing.id == project_id).first()
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")

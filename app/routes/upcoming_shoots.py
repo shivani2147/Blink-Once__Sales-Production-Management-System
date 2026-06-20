@@ -263,10 +263,13 @@ async def edit_shoot(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{shoot_id}/delete")
-async def delete_shoot(shoot_id: int, db: Session = Depends(get_db)):
+@router.post("/{shoot_id}/delete")
+async def delete_shoot(request: Request, shoot_id: int, db: Session = Depends(get_db)):
     """Delete upcoming shoot."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         shoot = db.query(UpcomingClientsShoot).filter(UpcomingClientsShoot.id == shoot_id).first()
         if not shoot:
             raise HTTPException(status_code=404, detail="Shoot not found")

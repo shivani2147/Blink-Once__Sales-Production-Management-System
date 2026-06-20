@@ -292,12 +292,15 @@ async def update_on_production(
 
 
 @router.post("/{record_id}/delete")
-async def delete_on_production(
+async def delete_on_production(request: Request,
     record_id: int,
     db: Session = Depends(get_db)
 ):
     """Delete on-production record."""
     try:
+        form = await request.form()
+        if form.get("csrf_token") != request.session.get("csrf_token"):
+            raise HTTPException(status_code=403, detail="Invalid CSRF token")
         record = db.query(OnProduction).filter(OnProduction.id == record_id).first()
         
         if not record:

@@ -104,7 +104,10 @@
                         shoot.status }}</span></td>
                 <td class="action-buttons">
                     <a href="/financial/upcoming-shoots/{{ shoot.id }}/edit" class="btn-icon">✏️</a>
-                    <a href="/financial/upcoming-shoots/{{ shoot.id }}/delete" class="btn-icon btn-danger"
+                    <form method="post" action="/financial/upcoming-shoots/{{ shoot.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                        <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                        <button type="submit" class="btn-icon btn-danger">🗑️</button>
+                    </form>
                         onclick="return confirm('Are you sure?')">🗑️</a>
                 </td>
             </tr>

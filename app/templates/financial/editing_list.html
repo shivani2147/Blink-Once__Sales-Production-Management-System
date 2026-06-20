@@ -106,7 +106,10 @@
                     <td><span class="badge {% if project.work_status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ project.work_status }}</span></td>
                     <td class="action-buttons">
                         <a href="/financial/editing/{{ project.id }}/edit" class="btn-icon">✏️</a>
-                        <a href="/financial/editing/{{ project.id }}/delete" class="btn-icon btn-danger" onclick="return confirm('Are you sure?')">🗑️</a>
+                        <form method="post" action="/financial/editing/{{ project.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                            <button type="submit" class="btn-icon btn-danger">🗑️</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}

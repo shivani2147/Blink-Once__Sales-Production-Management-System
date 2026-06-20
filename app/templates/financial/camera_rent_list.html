@@ -105,8 +105,10 @@
                         rental.work_status }}</span></td>
                 <td class="action-buttons">
                     <a href="/financial/camera-rent/{{ rental.id }}/edit" class="btn-icon">✏️</a>
-                    <a href="/financial/camera-rent/{{ rental.id }}/delete" class="btn-icon btn-danger"
-                        onclick="return confirm('Are you sure?')">🗑️</a>
+                    <form method="post" action="/financial/camera-rent/{{ rental.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                        <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+                        <button type="submit" class="btn-icon btn-danger">🗑️</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

@@ -89,7 +89,9 @@
 
     <div class="detail-actions">
         <a href="/financial/monthly/{{ report.id }}/edit" class="btn btn-primary">Edit</a>
-        <a href="/financial/monthly/{{ report.id }}/delete" class="btn btn-danger"
+        <form method="post" action="/financial/monthly/{{ report.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+            <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+            <button type="submit" class="btn btn-danger"
             onclick="return confirm('Are you sure?')">Delete</a>
     </div>
 </div>

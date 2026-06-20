@@ -12,6 +12,7 @@
             <div class="detail-actions">
                 <a href="/pre-production/{{ record.id }}/edit" class="btn btn-primary">Edit</a>
                 <form method="post" action="/pre-production/{{ record.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                    <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
                 <a href="/pre-production" class="btn btn-secondary">Back to List</a>

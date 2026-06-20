@@ -39,7 +39,7 @@ if [ $? -ne 0 ]; then
     fi
 fi
 
-# Start the application
+# Start the application (activate venv and run uvicorn from venv)
 echo ""
 echo "✓ All checks passed!"
 echo ""
@@ -50,7 +50,8 @@ echo ""
 echo "Press CTRL+C to stop the server"
 echo ""
 
-python main.py
+# Use the venv python to run uvicorn so the venv packages are used
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 # Deactivate virtual environment on exit
 deactivate
