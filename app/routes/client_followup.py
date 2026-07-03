@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import MonthlyFinancialReport, ThreeMonthsClientFollowup
 from datetime import datetime, date, timedelta
+import secrets
 import os
 from sqlalchemy import func, extract, case
 from .monthly_financial import number_to_words
@@ -201,6 +202,13 @@ async def list_followups(
             top_platform, top_platform_count = "-", 0
             top_platform_count_words = number_to_words(0)
         
+        # Ensure CSRF token exists in session before rendering the list page
+        try:
+            if request.session.get("csrf_token") is None:
+                request.session["csrf_token"] = secrets.token_urlsafe(32)
+        except Exception:
+            pass
+
         return templates.TemplateResponse("financial/followup_list.html", {
             "request": request,
             "page_title": "Client Follow-up",
@@ -230,11 +238,18 @@ async def list_followups(
         }, status_code=500)
 
 
+
 @router.get("/create", response_class=HTMLResponse)
 async def create_form(request: Request):
     """Display form to create new follow-up with auto-filled current date."""
     try:
         today = datetime.now().date()
+        # Ensure CSRF token exists in session before rendering
+        try:
+            if request.session.get("csrf_token") is None:
+                request.session["csrf_token"] = secrets.token_urlsafe(32)
+        except Exception:
+            pass
         display_date = today.strftime('%d/%m/%Y')
         import calendar
         years = list(range(2020, today.year + 1))
@@ -257,6 +272,7 @@ async def create_form(request: Request):
             "request": request,
             "error": str(e)
         }, status_code=500)
+
 
 
 @router.post("/create")
@@ -348,6 +364,13 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
         import calendar
         years = list(range(2020, followup.date.year + 1))
         months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
+        # Ensure CSRF token exists in session before rendering
+        try:
+            if request.session.get("csrf_token") is None:
+                request.session["csrf_token"] = secrets.token_urlsafe(32)
+        except Exception:
+            pass
+
         return templates.TemplateResponse("financial/followup_form.html", {
             "request": request,
             "page_title": "Edit Client Follow-up",
@@ -367,6 +390,7 @@ async def edit_form(request: Request, followup_id: int, db: Session = Depends(ge
             "request": request,
             "error": str(e)
         }, status_code=500)
+
 
 
 @router.post("/{followup_id}/edit")
@@ -448,9 +472,24 @@ async def edit_followup(
 async def delete_followup(request: Request, followup_id: int, db: Session = Depends(get_db)):
     """Delete client follow-up."""
     try:
+        # Read form and convert to plain dict for easier inspection
         form = await request.form()
-        if form.get("csrf_token") != request.session.get("csrf_token"):
-            raise HTTPException(status_code=403, detail="Invalid CSRF token")
+        form_dict = {k: v for k, v in form.items()}
+        form_token = form_dict.get("csrf_token")
+        session_token = None
+        try:
+            session_token = request.session.get("csrf_token")
+        except Exception:
+            session_token = None
+
+        # Debug prints to server console to help diagnose requests
+        print(f"[delete_followup] method={request.method} followup_id={followup_id} form_keys={list(form_dict.keys())} form_token={form_token!r} session_token={session_token!r}")
+
+        if form_token != session_token:
+            # Provide clearer error for client and server logs
+            detail = f"Invalid CSRF token (form={form_token!r}, session={session_token!r})"
+            print("[delete_followup] CSRF mismatch:", detail)
+            raise HTTPException(status_code=403, detail=detail)
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
@@ -459,8 +498,13 @@ async def delete_followup(request: Request, followup_id: int, db: Session = Depe
         db.commit()
         
         return RedirectResponse(url="/financial/followup/", status_code=302)
+    except HTTPException:
+        # Re-raise known HTTP errors unchanged so FastAPI handles status codes
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Log unexpected errors and return a clearer message
+        print(f"[delete_followup] unexpected error: {e}")
+        raise HTTPException(status_code=400, detail=f"Error deleting follow-up: {e}")
 
 
 @router.get("/{followup_id}/detail", response_class=HTMLResponse)
@@ -473,6 +517,13 @@ async def detail_followup(request: Request, followup_id: int, db: Session = Depe
         
         followup.event_date_list = parse_event_date_days(followup.event_date)
         
+        # Ensure CSRF token exists in session before rendering
+        try:
+            if request.session.get("csrf_token") is None:
+                request.session["csrf_token"] = secrets.token_urlsafe(32)
+        except Exception:
+            pass
+
         return templates.TemplateResponse("financial/followup_detail.html", {
             "request": request,
             "page_title": "Client Follow-up Details",

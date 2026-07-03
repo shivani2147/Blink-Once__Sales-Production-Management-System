@@ -42,7 +42,7 @@ ALTER COLUMN event_date VARCHAR(255);
 
 "search" option should also affect these things in summary card 
 
-Total Budget, 
+Total Client Budget, 
 Confirmation Amount, Total Amount
 
 ========================================================================
@@ -98,8 +98,7 @@ in the "Create Investment" page :
 
 create a dropdown for "Payment Mode" with Cash & Online
 
-and it should also display in the table of "Investment To Grow Company
-" page (and also the database table)
+and it should also display in the table of "Investment To Grow Company" page (and also the database table)
 
 ========================================================================
 
@@ -107,6 +106,4 @@ in the "Create Camera Rent" page ;
 
 create input "Amount" beside "Amount" and the "Pending Amount" should automatically be calculated 
 
-and it should also display in the table of "Create Camera Rent
-
-" page (and also the database table)
+and it should also display in the table of "Create Camera Rent" page (and also the database table)

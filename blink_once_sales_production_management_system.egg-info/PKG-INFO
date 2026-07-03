@@ -14,6 +14,14 @@ Requires-Dist: pydantic==2.5.0
 Requires-Dist: pydantic-settings==2.1.0
 Requires-Dist: starlette==0.27.0
 Requires-Dist: typing-extensions==4.8.0
+Requires-Dist: itsdangerous==2.1.2
+Requires-Dist: python-dotenv>=1.2.2
+Requires-Dist: bcrypt==4.1.1
+Requires-Dist: python-jose[cryptography]==3.3.0
+Requires-Dist: passlib[bcrypt]==1.7.4
+Requires-Dist: email-validator==2.1.0
+Requires-Dist: aiosmtplib==3.0.0
+Requires-Dist: pyotp==2.9.0
 
 # ProductionFlow CRM
 

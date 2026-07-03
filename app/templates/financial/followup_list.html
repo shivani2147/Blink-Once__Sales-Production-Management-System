@@ -21,7 +21,7 @@
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💼</div>
         <div class="card-content">
-            <div class="card-label">Total Budget</div>
+            <div class="card-label">Total Client Budget</div>
             <div class="card-value">₹{{ "%.2f"|format(total_budget) }}</div>
             <div class="card-subtext">{{ total_budget_words }}</div>
         </div>
@@ -130,13 +130,12 @@
                         <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                         <button type="submit" class="btn-icon btn-danger">🗑️</button>
                     </form>
-                        onclick="return confirm('Are you sure?')">🗑️</a>
                 </td>
             </tr>
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="13" class="text-center text-muted">No leads found.</td>
+                <td colspan="15" class="text-center text-muted">No leads found.</td>
             </tr>
             {% endif %}
         </tbody>
