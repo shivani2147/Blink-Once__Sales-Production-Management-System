@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/financial/upcoming-shoots/create" class="btn btn-primary">+ Schedule Shoot</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Upcoming Clients Shoot</h1>
-        <p>Manage upcoming shoots and event pipeline</p>
-    </div>
-    <a href="/financial/upcoming-shoots/create" class="btn btn-primary">+ Schedule Shoot</a>
-</div>
 
 <!-- Summary Cards -->
 <div class="summary-cards">

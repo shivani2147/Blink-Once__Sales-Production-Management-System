@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/financial/investment/create" class="btn btn-primary">+ Add Investment</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Investment To Grow Company</h1>
-        <p>Track investments and company growth expenses</p>
-    </div>
-    <a href="/financial/investment/create" class="btn btn-primary">+ Add Investment</a>
-</div>
 
 <!-- Summary Cards -->
 <div class="summary-cards">

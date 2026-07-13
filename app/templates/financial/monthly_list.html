@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/financial/monthly/create" class="btn btn-primary">+ Add New Report</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Monthly Financial Reports</h1>
-        <p>Track revenue, expenses, and profit on monthly basis</p>
-    </div>
-    <a href="/financial/monthly/create" class="btn btn-primary">+ Add New Report</a>
-</div>
 
 <!-- Summary Cards -->
 <div class="summary-cards">

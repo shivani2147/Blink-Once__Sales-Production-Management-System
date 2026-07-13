@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/on-production/add" class="btn btn-primary">+ Add New Record</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-container">
-    <!-- Action Bar -->
-    <div class="action-bar">
-        <a href="/on-production/add" class="btn btn-primary">+ Add New Record</a>
         
         <!-- Search Form -->
         <form method="get" class="search-form">
@@ -26,7 +26,6 @@
                 <a href="/on-production" class="btn btn-ghost">Clear</a>
             {% endif %}
         </form>
-    </div>
     
     <!-- Records Table -->
     <div class="card">

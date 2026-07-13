@@ -5,16 +5,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Freelancers Hub</h1>
-        <p>Manage freelancer database, assignments, payments, and view business analytics</p>
-    </div>
-    <a href="/freelancers/add" class="btn btn-primary">+ Add Freelancer</a>
-</div>
+{% block action_buttons %}
+<a href="/freelancers/add" class="btn btn-primary">+ Add Freelancer</a>
+{% endblock %}
 
-<!-- Core Summary Cards -->
+{% block content %}
 <div class="summary-cards">
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥</div>

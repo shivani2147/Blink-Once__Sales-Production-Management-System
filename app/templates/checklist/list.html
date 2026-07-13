@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/checklist/add" class="btn btn-primary">+ Add New Checklist</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-container">
-    <!-- Action Bar -->
-    <div class="action-bar">
-        <a href="/checklist/add" class="btn btn-primary">+ Add New Checklist</a>
         
         <!-- Search Form -->
         <form method="get" class="search-form">
@@ -35,7 +35,7 @@
                 <a href="/checklist" class="btn btn-ghost">Clear</a>
             {% endif %}
         </form>
-    </div>
+
     
     <!-- Records Table -->
     <div class="card">

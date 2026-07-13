@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/financial/camera-rent/create" class="btn btn-primary">+ Add Rental</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Camera Rent</h1>
-        <p>Track rental income and equipment usage</p>
-    </div>
-    <a href="/financial/camera-rent/create" class="btn btn-primary">+ Add Rental</a>
-</div>
 
 <!-- Summary Cards -->
 <div class="summary-cards">

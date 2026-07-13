@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
+{% block action_buttons %}
+<a href="/financial/editing/create" class="btn btn-primary">+ Add Editing Project</a>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div class="header-title">
-        <h1>Clients Editing</h1>
-        <p>Track editing workload and revenue</p>
-    </div>
-    <a href="/financial/editing/create" class="btn btn-primary">+ Add Editing Project</a>
-</div>
 
 <!-- Summary Cards -->
 <div class="summary-cards">
