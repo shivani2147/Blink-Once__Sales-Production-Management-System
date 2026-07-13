@@ -70,6 +70,12 @@
     <button type="submit" class="btn btn-secondary">Search</button>
 </form>
 
+<!-- Inline add form (must be outside table for valid HTML) -->
+<form id="inline-add-form" method="post" action="/financial/editing/create">
+    <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+    <input type="hidden" name="date_input" id="iaf-date-input">
+</form>
+
 <!-- Editing Projects Table -->
 <div class="table-responsive">
     <table class="data-table">
@@ -121,4 +127,62 @@
         </tbody>
     </table>
 </div>
+<style>
+    /* Inline add row */
+    #inline-add-row td {
+        background: #f5f3ff;
+        border-top: 2px solid #7c3aed;
+    }
+    .iaf-input {
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        font-size: 10px;
+        border: 1px solid #c4b5fd;
+        border-radius: 4px;
+        background: #fff;
+        color: #1e1b4b;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .iaf-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+    }
+    .iaf-save-btn {
+        background: #16a34a !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+    .iaf-save-btn:hover {
+        background: #15803d !important;
+    }
+</style>
+
+<script>
+    function showInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var todayStr = yyyy + '-' + mm + '-' + dd;
+        var dateInput = document.getElementById('iaf-date-input');
+        if (dateInput) dateInput.value = todayStr;
+        row.style.display = '';
+        if (btn) btn.style.display = 'none';
+        var first = row.querySelector('.iaf-input');
+        if (first) setTimeout(function(){ first.focus(); }, 50);
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cancelInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        row.style.display = 'none';
+        document.getElementById('inline-add-form').reset();
+        if (btn) btn.style.display = '';
+    }
+</script>
 {% endblock %}

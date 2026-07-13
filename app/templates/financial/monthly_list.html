@@ -81,6 +81,13 @@
     <button type="submit" class="btn btn-secondary">Search</button>
 </form>
 
+<!-- Inline add form (must be outside table for valid HTML) -->
+<form id="inline-add-form" method="post" action="/financial/monthly/create">
+    <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+    <input type="hidden" name="date_input" id="iaf-date-input">
+    <input type="hidden" name="year" id="iaf-year">
+</form>
+
 <!-- Reports Table -->
 <div class="table-responsive">
     <table class="data-table">
@@ -156,7 +163,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         padding-bottom: 1rem;
         border-bottom: 2px solid #f0f0f0;
     }
@@ -164,6 +171,8 @@
     .header-title h1 {
         margin: 0;
         color: #333;
+        font-size: 26px;
+        font-weight: 700;
     }
 
     .header-title p {
@@ -176,16 +185,16 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }
 
     .summary-card {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 0.75rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -197,19 +206,19 @@
 
     .card-subtext {
         margin-top: 0.35rem;
-        font-size: 0.82rem;
+        font-size: 0.75rem;
         color: #637381;
         line-height: 1.3;
     }
 
     .card-label {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #666;
         margin-bottom: 0.25rem;
     }
 
     .card-value {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: bold;
         color: #333;
     }
@@ -217,7 +226,7 @@
     .filters-section {
         display: flex;
         gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .search-input {
@@ -235,5 +244,64 @@
         background: white;
         cursor: pointer;
     }
+
+    /* Inline add row */
+    #inline-add-row td {
+        background: #f5f3ff;
+        border-top: 2px solid #7c3aed;
+    }
+    .iaf-input {
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        font-size: 10px;
+        border: 1px solid #c4b5fd;
+        border-radius: 4px;
+        background: #fff;
+        color: #1e1b4b;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .iaf-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+    }
+    .iaf-save-btn {
+        background: #16a34a !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+    .iaf-save-btn:hover {
+        background: #15803d !important;
+    }
 </style>
+
+<script>
+    function showInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var todayStr = yyyy + '-' + mm + '-' + dd;
+        var dateInput = document.getElementById('iaf-date-input');
+        if (dateInput) dateInput.value = todayStr;
+        var yearInput = document.getElementById('iaf-year');
+        if (yearInput) yearInput.value = yyyy;
+        row.style.display = '';
+        if (btn) btn.style.display = 'none';
+        var first = row.querySelector('.iaf-input');
+        if (first) setTimeout(function(){ first.focus(); }, 50);
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cancelInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        row.style.display = 'none';
+        document.getElementById('inline-add-form').reset();
+        if (btn) btn.style.display = '';
+    }
+</script>
 {% endblock %}

@@ -51,6 +51,21 @@ def create_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: 
     db.add(report)
     db.commit()
 
+
+def delete_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: Session):
+    """Delete monthly report when followup status is changed away from 'Done'."""
+    existing = db.query(MonthlyFinancialReport).filter(
+        MonthlyFinancialReport.client_name == followup.client_name,
+        MonthlyFinancialReport.year == followup.year,
+        MonthlyFinancialReport.month == followup.month,
+        MonthlyFinancialReport.event_type == followup.event_type,
+        MonthlyFinancialReport.event_date == followup.event_date,
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        db.commit()
+
 router = APIRouter(prefix="/financial/followup", tags=["Client Follow-up"])
 
 # Setup templates
@@ -241,113 +256,15 @@ async def list_followups(
 
 @router.get("/create", response_class=HTMLResponse)
 async def create_form(request: Request):
-    """Display form to create new follow-up with auto-filled current date."""
-    try:
-        today = datetime.now().date()
-        # Ensure CSRF token exists in session before rendering
-        try:
-            if request.session.get("csrf_token") is None:
-                request.session["csrf_token"] = secrets.token_urlsafe(32)
-        except Exception:
-            pass
-        display_date = today.strftime('%d/%m/%Y')
-        import calendar
-        years = list(range(2020, today.year + 1))
-        months = [(calendar.month_name[i], calendar.month_name[i]) for i in range(1, 13)]
-        return templates.TemplateResponse("financial/followup_form.html", {
-            "request": request,
-            "page_title": "Client Follow-up",
-            "is_edit": False,
-            "status_options": STATUS_OPTIONS,
-            "platform_options": PLATFORM_OPTIONS,
-            "current_date": today.isoformat(),
-            "display_date": display_date,
-            "years": years,
-            "months": months,
-            "selected_year": today.year,
-            "selected_month": today.strftime('%B'),
-        })
-    except Exception as e:
-        return templates.TemplateResponse("error.html", {
-            "request": request,
-            "error": str(e)
-        }, status_code=500)
+    """Create form is disabled. Redirect to main list."""
+    return RedirectResponse(url="/financial/followup/", status_code=302)
 
 
 
 @router.post("/create")
-async def create_followup(
-    request: Request,
-    db: Session = Depends(get_db),
-    date_input: str = Form(...),
-    year: int = Form(...),
-    month: str = Form(...),
-    client_name: str = Form(...),
-    event_type: str = Form(...),
-    event_date: str = Form(default=""),
-    location: str = Form(default=""),
-    phone_number: str = Form(...),
-    client_budget: float = Form(default=0.0),
-    total_amount: float = Form(default=0.0),
-    platform: str = Form(...),
-    negotiation: bool = Form(default=False),
-    confirmation: float = Form(0.0),
-    status: str = Form(...),
-    comment: str = Form(default=""),
-    requirements: str = Form(default=""),
-):
-    """Create new client follow-up."""
-    try:
-        # Process event_date and determine day numbers and first event date object
-        days = []
-        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
-        if event_date:
-            parts = [p.strip() for p in event_date.split(',')]
-            for p in parts:
-                if '-' in p:
-                    try:
-                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
-                        days.append(str(d_obj.day))
-                        if len(days) == 1:
-                            first_date_obj = d_obj
-                    except ValueError:
-                        pass
-                elif p.isdigit():
-                    days.append(str(int(p)))
-            if parts and all(p.isdigit() for p in parts if p):
-                try:
-                    day_val = int(parts[0])
-                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
-                except ValueError:
-                    pass
-        event_date_str = ", ".join(days)
-
-        followup = ThreeMonthsClientFollowup(
-            date=first_date_obj,
-            year=year,
-            month=month,
-            client_name=client_name,
-            event_type=event_type,
-            event_date=event_date_str,
-            location=location,
-            phone_number=phone_number,
-            client_budget=client_budget,
-            total_amount=total_amount,
-            platform=platform,
-            negotiation=negotiation,
-            confirmation=confirmation,
-            status=status,
-            comment=comment,
-            requirements=requirements,
-        )
-        
-        db.add(followup)
-        db.commit()
-
-        create_monthly_report_for_followup(followup, db)
-        return RedirectResponse(url="/financial/followup/", status_code=302)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+async def create_followup(request: Request):
+    """Create endpoint is disabled. Redirect to main list."""
+    return RedirectResponse(url="/financial/followup/", status_code=302)
 
 
 @router.get("/{followup_id}/edit", response_class=HTMLResponse)
@@ -416,9 +333,14 @@ async def edit_followup(
 ):
     """Update client follow-up."""
     try:
+        print(f"[edit_followup] Received data - followup_id={followup_id}, year={year}, month={month}, status={status}")
+        
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
+        
+        # Store the old status to check if it changed
+        old_status = followup.status
         
         # Process event_date and determine day numbers and first event date object
         days = []
@@ -462,9 +384,22 @@ async def edit_followup(
         followup.requirements = requirements
         
         db.commit()
-        create_monthly_report_for_followup(followup, db)
+        print(f"[edit_followup] Updated followup, old_status={old_status}, new_status={status}")
+        
+        # If status changed away from "Done", delete the monthly report
+        if old_status == 'Done' and status != 'Done':
+            print(f"[edit_followup] Status changed from Done to {status}, deleting monthly report")
+            delete_monthly_report_for_followup(followup, db)
+        else:
+            # If status is "Done", create or keep the monthly report
+            print(f"[edit_followup] Status is {status}, creating/maintaining monthly report")
+            create_monthly_report_for_followup(followup, db)
+        
         return RedirectResponse(url="/financial/followup/", status_code=302)
     except Exception as e:
+        print(f"[edit_followup] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -493,6 +428,9 @@ async def delete_followup(request: Request, followup_id: int, db: Session = Depe
         followup = db.query(ThreeMonthsClientFollowup).filter(ThreeMonthsClientFollowup.id == followup_id).first()
         if not followup:
             raise HTTPException(status_code=404, detail="Follow-up not found")
+        
+        # Delete associated monthly report if it exists
+        delete_monthly_report_for_followup(followup, db)
         
         db.delete(followup)
         db.commit()

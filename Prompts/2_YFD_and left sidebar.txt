@@ -107,3 +107,13 @@ in the "Create Camera Rent" page ;
 create input "Amount" beside "Amount" and the "Pending Amount" should automatically be calculated 
 
 and it should also display in the table of "Create Camera Rent" page (and also the database table)
+
+========================================================================
+
+Check box (red) & Add new row : 
+
+ - at the left side -- put a select box for each row -- if selected any then the entire row's color should change to red color
+ - now at the bottom left of the last row -- add a "+" icon -- if click on it then new row will appear to fill details
+
+ ========================================================================
+

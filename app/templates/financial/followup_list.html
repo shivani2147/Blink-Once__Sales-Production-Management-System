@@ -6,7 +6,6 @@
         <h1>Client Follow-up</h1>
         <p>Track leads and conversion analytics</p>
     </div>
-    <a href="/financial/followup/create" class="btn btn-primary">+ Add New Lead</a>
 </div>
 
 <!-- Summary Cards -->
@@ -80,11 +79,19 @@
     <button type="submit" class="btn btn-secondary">Search</button>
 </form>
 
+<!-- Inline add form (must be outside table for valid HTML) -->
+<form id="inline-add-form" method="post" action="/financial/followup/create">
+    <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
+    <input type="hidden" name="date_input" id="iaf-date-input">
+    <input type="hidden" name="year" id="iaf-year">
+</form>
+
 <!-- Leads Table -->
 <div class="table-responsive">
     <table class="data-table">
         <thead>
             <tr>
+                <th class="th-select-col"></th>
                 <th>Client Name</th>
                 <th>Event Type</th>
                 <th>Month</th>
@@ -96,7 +103,36 @@
                 <th>Confirmation Amount</th>
                 <th>Platform</th>
                 <th>Negotiation</th>
-                <th>Status</th>
+                <th class="th-status-filter">
+                    Status
+                    <span class="status-filter-wrap" id="statusFilterWrap">
+                        <button type="button" class="status-filter-btn" id="statusFilterBtn" title="Filter by Status" onclick="toggleStatusFilter(event)">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .354.854L10 10.707V13.5a.5.5 0 0 1-.276.447l-3 1.5A.5.5 0 0 1 6 15v-4.293L1.646 2.854A.5.5 0 0 1 1.5 2.5z"/>
+                            </svg>
+                        </button>
+                        <div class="status-filter-dropdown" id="statusFilterDropdown">
+                            <div class="sfd-header">
+                                <label class="sfd-select-all">
+                                    <input type="checkbox" id="sfd-all" checked onchange="statusSelectAll(this)"> Select All
+                                </label>
+                            </div>
+                            <div class="sfd-options">
+                                <label><input type="checkbox" class="sfd-opt" value="Done" checked onchange="applyStatusFilter()"> Done</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Pending" checked onchange="applyStatusFilter()"> Pending</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Rejected" checked onchange="applyStatusFilter()"> Rejected</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Not replied" checked onchange="applyStatusFilter()"> Not replied</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Quotation sent" checked onchange="applyStatusFilter()"> Quotation sent</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Quotation needs to be sent" checked onchange="applyStatusFilter()"> Quotation needs to be sent</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Meeting in Office" checked onchange="applyStatusFilter()"> Meeting in Office</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Need to speak" checked onchange="applyStatusFilter()"> Need to speak</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Hold" checked onchange="applyStatusFilter()"> Hold</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Advance Payment is pending" checked onchange="applyStatusFilter()"> Advance Payment is pending</label>
+                                <label><input type="checkbox" class="sfd-opt" value="Follow up" checked onchange="applyStatusFilter()"> Follow up</label>
+                            </div>
+                        </div>
+                    </span>
+                </th>
                 <th>Requirements</th>
                 <th>Comment</th>
                 <th>Actions</th>
@@ -106,6 +142,7 @@
             {% if followups %}
             {% for followup in followups %}
             <tr>
+                <td class="td-select-col"><input type="checkbox" class="row-select-cb" onchange="toggleRowHighlight(this)"></td>
                 <td><strong>{{ followup.client_name }}</strong></td>
                 <td>{{ followup.event_type }}</td>
                 <td>{{ followup.month }} {{ followup.year }}</td>
@@ -121,31 +158,91 @@
                 <td><span class="badge badge-info">{{ followup.platform }}</span></td>
                 <td>{% if followup.negotiation %}<span class="badge badge-success">Yes</span>{% else %}<span
                         class="badge badge-secondary">No</span>{% endif %}</td>
-                <td><span class="badge {% if followup.status == 'Done' %}badge-success{% else %}badge-warning{% endif %}">{{ followup.status }}</span></td>
+                <td data-status="{{ followup.status }}"><span class="badge badge-status-{{ followup.status|lower|replace(' ', '-') }}">{{ followup.status }}</span></td>
                 <td>{{ followup.requirements or '-' }}</td>
                 <td>{{ followup.comment or '-' }}</td>
                 <td class="action-buttons">
-                    <a href="/financial/followup/{{ followup.id }}/edit" class="btn-icon">✏️</a>
+                    <button type="button" class="btn-icon" title="Edit" onclick="showInlineEdit({{ followup.id }}, event)">✏️</button>
                     <form method="post" action="/financial/followup/{{ followup.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
                         <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-                        <button type="submit" class="btn-icon btn-danger">🗑️</button>
+                        <button type="submit" class="btn-icon btn-danger" title="Delete">🗑️</button>
                     </form>
                 </td>
             </tr>
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="15" class="text-center text-muted">No leads found.</td>
+                <td colspan="16" class="text-center text-muted">No leads found.</td>
             </tr>
             {% endif %}
+            <!-- Inline add row (hidden by default) -->
+            <tr id="inline-add-row" style="display:none;">
+                <td class="td-select-col"></td>
+                <td><input form="inline-add-form" type="text" name="client_name" class="iaf-input" placeholder="Client name *" required></td>
+                <td><input form="inline-add-form" type="text" name="event_type" class="iaf-input" placeholder="Event type *" required></td>
+                <td>
+                    <select form="inline-add-form" name="month" class="iaf-input" required>
+                        <option value="">Month *</option>
+                        <option>January</option><option>February</option><option>March</option>
+                        <option>April</option><option>May</option><option>June</option>
+                        <option>July</option><option>August</option><option>September</option>
+                        <option>October</option><option>November</option><option>December</option>
+                    </select>
+                </td>
+                <td><input form="inline-add-form" type="text" name="event_date" class="iaf-input" placeholder="Days e.g. 5, 10, 15"></td>
+                <td><input form="inline-add-form" type="text" name="location" class="iaf-input" placeholder="Location"></td>
+                <td><input form="inline-add-form" type="tel" name="phone_number" class="iaf-input" placeholder="Phone *" required></td>
+                <td><input form="inline-add-form" type="number" name="client_budget" class="iaf-input" placeholder="Budget" step="0.01" min="0"></td>
+                <td><input form="inline-add-form" type="number" name="total_amount" class="iaf-input" placeholder="Total amt" step="0.01" min="0"></td>
+                <td><input form="inline-add-form" type="number" name="confirmation" class="iaf-input" placeholder="Confirm amt" step="0.01" min="0"></td>
+                <td>
+                    <select form="inline-add-form" name="platform" class="iaf-input" required>
+                        <option value="">Platform *</option>
+                        <option>JD</option>
+                        <option>Meta Ads</option>
+                        <option>Word of Mouth</option>
+                    </select>
+                </td>
+                <td style="text-align:center;">
+                    <input form="inline-add-form" type="checkbox" name="negotiation" value="1" title="Negotiation" style="width:14px;height:14px;cursor:pointer;">
+                </td>
+                <td>
+                    <select form="inline-add-form" name="status" class="iaf-input" required>
+                        <option value="">Status *</option>
+                        <option>Done</option><option>Pending</option><option>Rejected</option>
+                        <option>Not replied</option><option>Quotation sent</option>
+                        <option>Quotation needs to be sent</option><option>Meeting in Office</option>
+                        <option>Need to speak</option><option>Hold</option>
+                        <option>Advance Payment is pending</option><option>Follow up</option>
+                    </select>
+                </td>
+                <td><input form="inline-add-form" type="text" name="requirements" class="iaf-input" placeholder="Requirements"></td>
+                <td><input form="inline-add-form" type="text" name="comment" class="iaf-input" placeholder="Comment"></td>
+                <td class="action-buttons">
+                    <button type="submit" form="inline-add-form" class="btn-icon iaf-save-btn" title="Save">✅</button>
+                    <button type="button" class="btn-icon btn-danger" title="Cancel" onclick="cancelInlineAdd()">✕</button>
+                </td>
+            </tr>
+
         </tbody>
     </table>
+    <!-- + Add Row button -->
+    <div style="padding: 6px 12px 2px 12px;">
+        <button type="button" id="add-row-btn" onclick="showInlineAdd()" title="Add new lead"
+            style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;font-size:12px;font-weight:600;
+                   background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:6px;
+                   cursor:pointer;transition:opacity 0.2s;">
+            <span style="font-size:16px;line-height:1;">+</span> Add Row
+        </button>
+    </div>
 </div>
 
 <style>
     .badge-info {
         background: #d1ecf1;
         color: #0c5460;
+        font-size: 9px;
+        padding: 3px 6px;
     }
 
     .badge-secondary {
@@ -153,9 +250,582 @@
         color: #383d41;
     }
 
+    /* Status badge colors */
+    .badge-status-done {
+        background: #d4edda;
+        color: #155724;
+        font-weight: 600;
+    }
+
+    .badge-status-pending {
+        background: #fff3cd;
+        color: #856404;
+        font-weight: 600;
+    }
+
+    .badge-status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+        font-weight: 600;
+    }
+
+    .badge-status-not-replied {
+        background: #e7d4f5;
+        color: #5a3b8f;
+        font-weight: 600;
+    }
+
+    .badge-status-quotation-sent {
+        background: #cce5ff;
+        color: #004085;
+        font-weight: 600;
+    }
+
+    .badge-status-quotation-needs-to-be-sent {
+        background: #ffeaa7;
+        color: #d63031;
+        font-weight: 600;
+    }
+
+    .badge-status-meeting-in-office {
+        background: #d1e7f5;
+        color: #1b5e77;
+        font-weight: 600;
+    }
+
+    .badge-status-need-to-speak {
+        background: #f5c6cb;
+        color: #721c24;
+        font-weight: 600;
+    }
+
+    .badge-status-hold {
+        background: #d4edda;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .badge-status-advance-payment-is-pending {
+        background: #ffeaa7;
+        color: #e17055;
+        font-weight: 600;
+    }
+
+    .badge-status-follow-up {
+        background: #d1ecf1;
+        color: #0c5460;
+        font-weight: 600;
+    }
+
     .card-subtext {
         font-size: 0.8rem;
         opacity: 0.85;
     }
+
+    /* Inline add row */
+    #inline-add-row td {
+        background: #f5f3ff;
+        border-top: 2px solid #7c3aed;
+    }
+    .iaf-input {
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        font-size: 10px;
+        border: 1px solid #c4b5fd;
+        border-radius: 4px;
+        background: #fff;
+        color: #1e1b4b;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .iaf-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+    }
+    .iaf-save-btn {
+        background: #16a34a !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+    .iaf-save-btn:hover {
+        background: #15803d !important;
+    }
+
+    /* Inline edit row */
+    tr.inline-edit-row td {
+        background: #f0fdf4;
+        border-top: 2px solid #16a34a;
+    }
+    .ief-input {
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        font-size: 10px;
+        border: 1px solid #86efac;
+        border-radius: 4px;
+        background: #fff;
+        color: #1e1b4b;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .ief-input:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 2px rgba(22,163,74,0.15);
+    }
+    .ief-save-btn {
+        background: #2563eb !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+    .ief-save-btn:hover {
+        background: #1d4ed8 !important;
+    }
+
+    /* Row select checkbox column */
+    .th-select-col {
+        width: 30px !important;
+        min-width: 30px;
+        max-width: 30px;
+        padding: 0 6px !important;
+        text-align: center;
+    }
+    .td-select-col {
+        width: 30px !important;
+        min-width: 30px;
+        max-width: 30px;
+        padding: 0 6px !important;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .row-select-cb {
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+        accent-color: #e11d48;
+    }
+    /* Red highlight when row is checked */
+    tr.row-highlighted td {
+        background-color: #ffe4e6 !important;
+        color: #9f1239 !important;
+    }
+    tr.row-highlighted td .badge {
+        opacity: 0.85;
+    }
+
+    /* Fix action-buttons td — keep edit & delete on same row */
+    td.action-buttons {
+        height: auto !important;
+        overflow: visible !important;
+        white-space: nowrap;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    td.action-buttons form {
+        display: inline-flex !important;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Status column filter */
+    .th-status-filter {
+        white-space: nowrap;
+    }
+    .status-filter-wrap {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 5px;
+    }
+    .status-filter-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        color: rgba(255,255,255,0.75);
+        display: inline-flex;
+        align-items: center;
+        transition: color 0.2s, background 0.2s;
+    }
+    .status-filter-btn:hover,
+    .status-filter-btn.active {
+        color: #fff;
+        background: rgba(255,255,255,0.18);
+    }
+    .status-filter-btn.filtered {
+        color: #ffd700;
+    }
+    .status-filter-dropdown {
+        display: none;
+        position: fixed;
+        min-width: 170px;
+        width: 170px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+        z-index: 9999;
+        overflow: hidden;
+    }
+    .status-filter-dropdown.open {
+        display: block;
+    }
+    .sfd-header {
+        padding: 8px 12px 6px 12px;
+        border-bottom: 1px solid #eee;
+        background: #f8f9fa;
+    }
+    .sfd-select-all {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #444;
+        cursor: pointer;
+        user-select: none;
+    }
+    .sfd-options {
+        max-height: 140px;
+        overflow-y: auto;
+        padding: 6px 0;
+    }
+    .sfd-options label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        font-size: 0.82rem;
+        color: #333;
+        cursor: pointer;
+        transition: background 0.15s;
+        user-select: none;
+    }
+    .sfd-options label:hover {
+        background: #f0f4ff;
+    }
+    .sfd-options input[type="checkbox"],
+    .sfd-header input[type="checkbox"] {
+        accent-color: #7c3aed;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
 </style>
+
+<script>
+    function toggleRowHighlight(cb) {
+        var row = cb.closest('tr');
+        if (cb.checked) {
+            row.classList.add('row-highlighted');
+        } else {
+            row.classList.remove('row-highlighted');
+        }
+    }
+
+    function toggleStatusFilter(event) {
+        event.stopPropagation();
+        var dropdown = document.getElementById('statusFilterDropdown');
+        var btn = document.getElementById('statusFilterBtn');
+        var isOpen = dropdown.classList.contains('open');
+        if (isOpen) {
+            dropdown.classList.remove('open');
+            btn.classList.remove('active');
+        } else {
+            // Position the fixed dropdown below the button
+            var rect = btn.getBoundingClientRect();
+            var dropW = 170;
+            var left = rect.left + rect.width / 2 - dropW / 2;
+            // Clamp to viewport
+            if (left < 6) left = 6;
+            if (left + dropW > window.innerWidth - 6) left = window.innerWidth - dropW - 6;
+            dropdown.style.top = (rect.bottom + 4) + 'px';
+            dropdown.style.left = left + 'px';
+            dropdown.classList.add('open');
+            btn.classList.add('active');
+        }
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        var wrap = document.getElementById('statusFilterWrap');
+        if (wrap && !wrap.contains(e.target)) {
+            document.getElementById('statusFilterDropdown').classList.remove('open');
+            document.getElementById('statusFilterBtn').classList.remove('active');
+        }
+    });
+
+    function statusSelectAll(cb) {
+        var opts = document.querySelectorAll('.sfd-opt');
+        opts.forEach(function(o) { o.checked = cb.checked; });
+        applyStatusFilter();
+    }
+
+    function applyStatusFilter() {
+        var opts = document.querySelectorAll('.sfd-opt');
+        var selected = [];
+        opts.forEach(function(o) { if (o.checked) selected.push(o.value); });
+
+        // Update select-all checkbox state
+        var allCb = document.getElementById('sfd-all');
+        if (allCb) {
+            allCb.checked = (selected.length === opts.length);
+            allCb.indeterminate = (selected.length > 0 && selected.length < opts.length);
+        }
+
+        // Update filter button color if not all selected
+        var btn = document.getElementById('statusFilterBtn');
+        if (selected.length < opts.length) {
+            btn.classList.add('filtered');
+        } else {
+            btn.classList.remove('filtered');
+        }
+
+        // Filter table rows
+        var rows = document.querySelectorAll('.data-table tbody tr');
+        rows.forEach(function(row) {
+            var statusCell = row.querySelector('td[data-status]');
+            if (!statusCell) {
+                if (row.id !== 'inline-add-row') {
+                    row.style.display = ''; // keep header/empty rows
+                }
+                return;
+            }
+            var rowStatus = statusCell.getAttribute('data-status');
+            if (selected.length === 0 || selected.indexOf(rowStatus) !== -1) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function showInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        // Set today's date into hidden date_input field
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var todayStr = yyyy + '-' + mm + '-' + dd;
+        var dateInput = document.getElementById('iaf-date-input');
+        if (dateInput) dateInput.value = todayStr;
+        var yearInput = document.getElementById('iaf-year');
+        if (yearInput) yearInput.value = yyyy;
+        row.style.display = '';
+        if (btn) btn.style.display = 'none';
+        // Focus first input
+        var first = row.querySelector('.iaf-input');
+        if (first) setTimeout(function(){ first.focus(); }, 50);
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cancelInlineAdd() {
+        var row = document.getElementById('inline-add-row');
+        var btn = document.getElementById('add-row-btn');
+        row.style.display = 'none';
+        document.getElementById('inline-add-form').reset();
+        if (btn) btn.style.display = '';
+    }
+
+    function showInlineEdit(followupId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Hide any existing edit row
+        var existingEditRow = document.querySelector('tr[data-edit-row-id]');
+        if (existingEditRow) {
+            var originalRow = document.querySelector('tr[data-original-row-id="' + existingEditRow.getAttribute('data-edit-row-id') + '"]');
+            if (originalRow) originalRow.style.display = '';
+            existingEditRow.remove();
+        }
+        
+        // Get the row data from the table row
+        var row = event.target.closest('tr');
+        if (!row) return;
+        
+        // Extract data from the visible row
+        var cells = row.querySelectorAll('td');
+        var monthYearText = cells[3]?.textContent.trim() || '';
+        var monthParts = monthYearText.split(' ');
+        var monthName = monthParts[0] || '';
+        var yearStr = monthParts[1] || new Date().getFullYear().toString();
+        
+        var data = {
+            id: followupId,
+            client_name: cells[1]?.textContent.trim() || '',
+            event_type: cells[2]?.textContent.trim() || '',
+            month: monthName,
+            year: yearStr,
+            event_date: cells[4]?.textContent.trim() || '',
+            location: cells[5]?.textContent.trim() === '-' ? '' : cells[5]?.textContent.trim() || '',
+            phone_number: cells[6]?.textContent.trim() || '',
+            client_budget: cells[7]?.textContent.replace('₹', '').trim() || '0',
+            total_amount: cells[8]?.textContent.replace('₹', '').trim() || '0',
+            confirmation: cells[9]?.textContent.replace('₹', '').trim() || '0',
+            platform: cells[10]?.textContent.trim() || '',
+            negotiation: cells[11]?.textContent.includes('Yes'),
+            status: cells[12]?.textContent.trim() || '',
+            requirements: cells[13]?.textContent.trim() === '-' ? '' : cells[13]?.textContent.trim() || '',
+            comment: cells[14]?.textContent.trim() === '-' ? '' : cells[14]?.textContent.trim() || ''
+        };
+        
+        // Get today's date in YYYY-MM-DD format
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var todayStr = yyyy + '-' + mm + '-' + dd;
+        
+        // Create the edit row HTML
+        var editRowHTML = `
+            <tr class="inline-edit-row" data-edit-row-id="${followupId}" data-date-input="${todayStr}" data-year="${yearStr}">
+                <td class="td-select-col"></td>
+                <td><input type="text" name="client_name" class="ief-input" placeholder="Client name *" value="${data.client_name}" required></td>
+                <td><input type="text" name="event_type" class="ief-input" placeholder="Event type *" value="${data.event_type}" required></td>
+                <td>
+                    <select name="month" class="ief-input" required>
+                        <option value="">Month *</option>
+                        <option ${data.month === 'January' ? 'selected' : ''}>January</option>
+                        <option ${data.month === 'February' ? 'selected' : ''}>February</option>
+                        <option ${data.month === 'March' ? 'selected' : ''}>March</option>
+                        <option ${data.month === 'April' ? 'selected' : ''}>April</option>
+                        <option ${data.month === 'May' ? 'selected' : ''}>May</option>
+                        <option ${data.month === 'June' ? 'selected' : ''}>June</option>
+                        <option ${data.month === 'July' ? 'selected' : ''}>July</option>
+                        <option ${data.month === 'August' ? 'selected' : ''}>August</option>
+                        <option ${data.month === 'September' ? 'selected' : ''}>September</option>
+                        <option ${data.month === 'October' ? 'selected' : ''}>October</option>
+                        <option ${data.month === 'November' ? 'selected' : ''}>November</option>
+                        <option ${data.month === 'December' ? 'selected' : ''}>December</option>
+                    </select>
+                </td>
+                <td><input type="text" name="event_date" class="ief-input" placeholder="Days e.g. 5, 10, 15" value="${data.event_date}"></td>
+                <td><input type="text" name="location" class="ief-input" placeholder="Location" value="${data.location}"></td>
+                <td><input type="tel" name="phone_number" class="ief-input" placeholder="Phone *" value="${data.phone_number}" required></td>
+                <td><input type="number" name="client_budget" class="ief-input" placeholder="Budget" step="0.01" min="0" value="${data.client_budget}"></td>
+                <td><input type="number" name="total_amount" class="ief-input" placeholder="Total amt" step="0.01" min="0" value="${data.total_amount}"></td>
+                <td><input type="number" name="confirmation" class="ief-input" placeholder="Confirm amt" step="0.01" min="0" value="${data.confirmation}"></td>
+                <td>
+                    <select name="platform" class="ief-input" required>
+                        <option value="">Platform *</option>
+                        <option ${data.platform === 'JD' ? 'selected' : ''}>JD</option>
+                        <option ${data.platform === 'Meta Ads' ? 'selected' : ''}>Meta Ads</option>
+                        <option ${data.platform === 'Word of Mouth' ? 'selected' : ''}>Word of Mouth</option>
+                    </select>
+                </td>
+                <td style="text-align:center;">
+                    <input type="checkbox" name="negotiation" value="1" title="Negotiation" class="ief-negotiation" ${data.negotiation ? 'checked' : ''} style="width:14px;height:14px;cursor:pointer;">
+                </td>
+                <td>
+                    <select name="status" class="ief-input" required>
+                        <option value="">Status *</option>
+                        <option ${data.status === 'Done' ? 'selected' : ''}>Done</option>
+                        <option ${data.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option ${data.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                        <option ${data.status === 'Not replied' ? 'selected' : ''}>Not replied</option>
+                        <option ${data.status === 'Quotation sent' ? 'selected' : ''}>Quotation sent</option>
+                        <option ${data.status === 'Quotation needs to be sent' ? 'selected' : ''}>Quotation needs to be sent</option>
+                        <option ${data.status === 'Meeting in Office' ? 'selected' : ''}>Meeting in Office</option>
+                        <option ${data.status === 'Need to speak' ? 'selected' : ''}>Need to speak</option>
+                        <option ${data.status === 'Hold' ? 'selected' : ''}>Hold</option>
+                        <option ${data.status === 'Advance Payment is pending' ? 'selected' : ''}>Advance Payment is pending</option>
+                        <option ${data.status === 'Follow up' ? 'selected' : ''}>Follow up</option>
+                    </select>
+                </td>
+                <td><input type="text" name="requirements" class="ief-input" placeholder="Requirements" value="${data.requirements}"></td>
+                <td><input type="text" name="comment" class="ief-input" placeholder="Comment" value="${data.comment}"></td>
+                <td class="action-buttons">
+                    <button type="button" class="btn-icon ief-save-btn" title="Save" onclick="saveInlineEdit(${followupId}, event)">✅</button>
+                    <button type="button" class="btn-icon btn-danger" title="Cancel" onclick="cancelInlineEdit(${followupId})">✕</button>
+                </td>
+            </tr>
+        `;
+        
+        // Mark the original row
+        row.setAttribute('data-original-row-id', followupId);
+        
+        // Insert edit row right after the original row
+        row.insertAdjacentHTML('afterend', editRowHTML);
+        
+        // Hide the original row
+        row.style.display = 'none';
+        
+        // Focus first input
+        var editRow = document.querySelector('tr[data-edit-row-id="' + followupId + '"]');
+        var first = editRow.querySelector('.ief-input');
+        if (first) setTimeout(function(){ first.focus(); }, 50);
+    }
+
+    function saveInlineEdit(followupId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        var editRow = document.querySelector('tr[data-edit-row-id="' + followupId + '"]');
+        if (!editRow) return;
+        
+        // Get date_input and year from the row attributes
+        var dateInput = editRow.getAttribute('data-date-input');
+        var year = parseInt(editRow.getAttribute('data-year')) || new Date().getFullYear();
+        
+        // Collect form data from the edit row
+        var formData = new FormData();
+        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+        formData.append('date_input', dateInput);
+        formData.append('year', year.toString());
+        
+        var inputs = editRow.querySelectorAll('input, select');
+        inputs.forEach(function(inp) {
+            if (inp.name && inp.name !== 'csrf_token') {
+                if (inp.type === 'checkbox') {
+                    // Always append checkbox, send "1" if checked, "0" if not
+                    formData.append(inp.name, inp.checked ? '1' : '0');
+                } else {
+                    formData.append(inp.name, inp.value);
+                }
+            }
+        });
+        
+        console.log('Form data being sent:');
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        // Submit the form
+        fetch('/financial/followup/' + followupId + '/edit', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // Reload the page to update dashboard and table
+                location.reload();
+            } else {
+                response.text().then(text => {
+                    console.error('Error response:', text);
+                    alert('Error saving changes: ' + text);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving changes: ' + error);
+        });
+    }
+
+    function cancelInlineEdit(followupId) {
+        var editRow = document.querySelector('tr[data-edit-row-id="' + followupId + '"]');
+        var originalRow = document.querySelector('tr[data-original-row-id="' + followupId + '"]');
+        
+        if (editRow) editRow.remove();
+        if (originalRow) originalRow.style.display = '';
+    }
+</script>
 {% endblock %}
