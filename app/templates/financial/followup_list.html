@@ -77,7 +77,6 @@
 <form id="inline-add-form" method="post" action="/financial/followup/create">
     <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
     <input type="hidden" name="date_input" id="iaf-date-input">
-    <input type="hidden" name="year" id="iaf-year">
 </form>
 
 <!-- Leads Table -->
@@ -90,6 +89,7 @@
                 <th>Event Type</th>
                 <th>Month</th>
                 <th>Event Date</th>
+                <th>Requirements</th>
                 <th>Location</th>
                 <th>Phone</th>
                 <th>Client Budget</th>
@@ -127,7 +127,6 @@
                         </div>
                     </span>
                 </th>
-                <th>Requirements</th>
                 <th>Comment</th>
                 <th>Actions</th>
             </tr>
@@ -144,6 +143,7 @@
                     {% set event_date_value = followup.event_date %}
                     {{ event_date_value if event_date_value is string else event_date_value.strftime('%d %b %Y') }}
                 </td>
+                <td>{{ followup.requirements or '-' }}</td>
                 <td>{{ followup.location or '-' }}</td>
                 <td>{{ followup.phone_number }}</td>
                 <td>₹{{ "%.2f"|format(followup.client_budget) }}</td>
@@ -153,7 +153,6 @@
                 <td>{% if followup.negotiation %}<span class="badge badge-success">Yes</span>{% else %}<span
                         class="badge badge-secondary">No</span>{% endif %}</td>
                 <td data-status="{{ followup.status }}"><span class="badge badge-status-{{ followup.status|lower|replace(' ', '-') }}">{{ followup.status }}</span></td>
-                <td>{{ followup.requirements or '-' }}</td>
                 <td>{{ followup.comment or '-' }}</td>
                 <td class="action-buttons">
                     <button type="button" class="btn-icon" title="Edit" onclick="showInlineEdit({{ followup.id }}, event)">✏️</button>
@@ -175,15 +174,27 @@
                 <td><input form="inline-add-form" type="text" name="client_name" class="iaf-input" placeholder="Client name *" required></td>
                 <td><input form="inline-add-form" type="text" name="event_type" class="iaf-input" placeholder="Event type *" required></td>
                 <td>
-                    <select form="inline-add-form" name="month" class="iaf-input" required>
-                        <option value="">Month *</option>
-                        <option>January</option><option>February</option><option>March</option>
-                        <option>April</option><option>May</option><option>June</option>
-                        <option>July</option><option>August</option><option>September</option>
-                        <option>October</option><option>November</option><option>December</option>
-                    </select>
+                    <div style="display: flex; gap: 4px;">
+                        <select form="inline-add-form" name="month" class="iaf-input" style="flex: 1;" required>
+                            <option value="">Month *</option>
+                            <option>January</option><option>February</option><option>March</option>
+                            <option>April</option><option>May</option><option>June</option>
+                            <option>July</option><option>August</option><option>September</option>
+                            <option>October</option><option>November</option><option>December</option>
+                        </select>
+                        <select form="inline-add-form" name="year" class="iaf-input" id="iaf-year-select" style="width: 55px;" required>
+                            <option value="">Year</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
                 </td>
                 <td><input form="inline-add-form" type="text" name="event_date" class="iaf-input" placeholder="Days e.g. 5, 10, 15"></td>
+                <td><input form="inline-add-form" type="text" name="requirements" class="iaf-input" placeholder="Requirements"></td>
                 <td><input form="inline-add-form" type="text" name="location" class="iaf-input" placeholder="Location"></td>
                 <td><input form="inline-add-form" type="tel" name="phone_number" class="iaf-input" placeholder="Phone *" required></td>
                 <td><input form="inline-add-form" type="number" name="client_budget" class="iaf-input" placeholder="Budget" step="0.01" min="0"></td>
@@ -210,7 +221,6 @@
                         <option>Advance Payment is pending</option><option>Follow up</option>
                     </select>
                 </td>
-                <td><input form="inline-add-form" type="text" name="requirements" class="iaf-input" placeholder="Requirements"></td>
                 <td><input form="inline-add-form" type="text" name="comment" class="iaf-input" placeholder="Comment"></td>
                 <td class="action-buttons">
                     <button type="submit" form="inline-add-form" class="btn-icon iaf-save-btn" title="Save">✅</button>
@@ -623,7 +633,7 @@
         var todayStr = yyyy + '-' + mm + '-' + dd;
         var dateInput = document.getElementById('iaf-date-input');
         if (dateInput) dateInput.value = todayStr;
-        var yearInput = document.getElementById('iaf-year');
+        var yearInput = document.getElementById('iaf-year-select');
         if (yearInput) yearInput.value = yyyy;
         row.style.display = '';
         if (btn) btn.style.display = 'none';
@@ -671,15 +681,15 @@
             month: monthName,
             year: yearStr,
             event_date: cells[4]?.textContent.trim() || '',
-            location: cells[5]?.textContent.trim() === '-' ? '' : cells[5]?.textContent.trim() || '',
-            phone_number: cells[6]?.textContent.trim() || '',
-            client_budget: cells[7]?.textContent.replace('₹', '').trim() || '0',
-            total_amount: cells[8]?.textContent.replace('₹', '').trim() || '0',
-            confirmation: cells[9]?.textContent.replace('₹', '').trim() || '0',
-            platform: cells[10]?.textContent.trim() || '',
-            negotiation: cells[11]?.textContent.includes('Yes'),
-            status: cells[12]?.textContent.trim() || '',
-            requirements: cells[13]?.textContent.trim() === '-' ? '' : cells[13]?.textContent.trim() || '',
+            requirements: cells[5]?.textContent.trim() === '-' ? '' : cells[5]?.textContent.trim() || '',
+            location: cells[6]?.textContent.trim() === '-' ? '' : cells[6]?.textContent.trim() || '',
+            phone_number: cells[7]?.textContent.trim() || '',
+            client_budget: cells[8]?.textContent.replace('₹', '').trim() || '0',
+            total_amount: cells[9]?.textContent.replace('₹', '').trim() || '0',
+            confirmation: cells[10]?.textContent.replace('₹', '').trim() || '0',
+            platform: cells[11]?.textContent.trim() || '',
+            negotiation: cells[12]?.textContent.includes('Yes'),
+            status: cells[13]?.textContent.trim() || '',
             comment: cells[14]?.textContent.trim() === '-' ? '' : cells[14]?.textContent.trim() || ''
         };
         
@@ -697,23 +707,34 @@
                 <td><input type="text" name="client_name" class="ief-input" placeholder="Client name *" value="${data.client_name}" required></td>
                 <td><input type="text" name="event_type" class="ief-input" placeholder="Event type *" value="${data.event_type}" required></td>
                 <td>
-                    <select name="month" class="ief-input" required>
-                        <option value="">Month *</option>
-                        <option ${data.month === 'January' ? 'selected' : ''}>January</option>
-                        <option ${data.month === 'February' ? 'selected' : ''}>February</option>
-                        <option ${data.month === 'March' ? 'selected' : ''}>March</option>
-                        <option ${data.month === 'April' ? 'selected' : ''}>April</option>
-                        <option ${data.month === 'May' ? 'selected' : ''}>May</option>
-                        <option ${data.month === 'June' ? 'selected' : ''}>June</option>
-                        <option ${data.month === 'July' ? 'selected' : ''}>July</option>
-                        <option ${data.month === 'August' ? 'selected' : ''}>August</option>
-                        <option ${data.month === 'September' ? 'selected' : ''}>September</option>
-                        <option ${data.month === 'October' ? 'selected' : ''}>October</option>
-                        <option ${data.month === 'November' ? 'selected' : ''}>November</option>
-                        <option ${data.month === 'December' ? 'selected' : ''}>December</option>
-                    </select>
+                    <div style="display: flex; gap: 4px;">
+                        <select name="month" class="ief-input" style="flex: 1;" required>
+                            <option value="">Month *</option>
+                            <option ${data.month === 'January' ? 'selected' : ''}>January</option>
+                            <option ${data.month === 'February' ? 'selected' : ''}>February</option>
+                            <option ${data.month === 'March' ? 'selected' : ''}>March</option>
+                            <option ${data.month === 'April' ? 'selected' : ''}>April</option>
+                            <option ${data.month === 'May' ? 'selected' : ''}>May</option>
+                            <option ${data.month === 'June' ? 'selected' : ''}>June</option>
+                            <option ${data.month === 'July' ? 'selected' : ''}>July</option>
+                            <option ${data.month === 'August' ? 'selected' : ''}>August</option>
+                            <option ${data.month === 'September' ? 'selected' : ''}>September</option>
+                            <option ${data.month === 'October' ? 'selected' : ''}>October</option>
+                            <option ${data.month === 'November' ? 'selected' : ''}>November</option>
+                            <option ${data.month === 'December' ? 'selected' : ''}>December</option>
+                        </select>
+                        <select name="year" class="ief-input" style="width: 55px;" required>
+                            <option value="2025" ${data.year === '2025' ? 'selected' : ''}>2025</option>
+                            <option value="2026" ${data.year === '2026' ? 'selected' : ''}>2026</option>
+                            <option value="2027" ${data.year === '2027' ? 'selected' : ''}>2027</option>
+                            <option value="2028" ${data.year === '2028' ? 'selected' : ''}>2028</option>
+                            <option value="2029" ${data.year === '2029' ? 'selected' : ''}>2029</option>
+                            <option value="2030" ${data.year === '2030' ? 'selected' : ''}>2030</option>
+                        </select>
+                    </div>
                 </td>
                 <td><input type="text" name="event_date" class="ief-input" placeholder="Days e.g. 5, 10, 15" value="${data.event_date}"></td>
+                <td><input type="text" name="requirements" class="ief-input" placeholder="Requirements" value="${data.requirements}"></td>
                 <td><input type="text" name="location" class="ief-input" placeholder="Location" value="${data.location}"></td>
                 <td><input type="tel" name="phone_number" class="ief-input" placeholder="Phone *" value="${data.phone_number}" required></td>
                 <td><input type="number" name="client_budget" class="ief-input" placeholder="Budget" step="0.01" min="0" value="${data.client_budget}"></td>
@@ -746,7 +767,6 @@
                         <option ${data.status === 'Follow up' ? 'selected' : ''}>Follow up</option>
                     </select>
                 </td>
-                <td><input type="text" name="requirements" class="ief-input" placeholder="Requirements" value="${data.requirements}"></td>
                 <td><input type="text" name="comment" class="ief-input" placeholder="Comment" value="${data.comment}"></td>
                 <td class="action-buttons">
                     <button type="button" class="btn-icon ief-save-btn" title="Save" onclick="saveInlineEdit(${followupId}, event)">✅</button>
@@ -777,15 +797,13 @@
         var editRow = document.querySelector('tr[data-edit-row-id="' + followupId + '"]');
         if (!editRow) return;
         
-        // Get date_input and year from the row attributes
+        // Get date_input from the row attributes
         var dateInput = editRow.getAttribute('data-date-input');
-        var year = parseInt(editRow.getAttribute('data-year')) || new Date().getFullYear();
         
         // Collect form data from the edit row
         var formData = new FormData();
         formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
         formData.append('date_input', dateInput);
-        formData.append('year', year.toString());
         
         var inputs = editRow.querySelectorAll('input, select');
         inputs.forEach(function(inp) {
