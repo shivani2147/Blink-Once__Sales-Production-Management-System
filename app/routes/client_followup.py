@@ -13,6 +13,7 @@ import secrets
 import os
 from sqlalchemy import func, extract, case
 from .monthly_financial import number_to_words
+import json
 import re
 
 
@@ -262,9 +263,89 @@ async def create_form(request: Request):
 
 
 @router.post("/create")
-async def create_followup(request: Request):
-    """Create endpoint is disabled. Redirect to main list."""
-    return RedirectResponse(url="/financial/followup/", status_code=302)
+async def create_followup(
+    request: Request,
+    db: Session = Depends(get_db),
+    date_input: str = Form(default=""),
+    year: int = Form(default=0),
+    month: str = Form(default=""),
+    client_name: str = Form(default=""),
+    event_type: str = Form(default=""),
+    event_date: str = Form(default=""),
+    location: str = Form(default=""),
+    phone_number: str = Form(default=""),
+    client_budget: float = Form(default=0.0),
+    total_amount: float = Form(default=0.0),
+    platform: str = Form(default=""),
+    negotiation: bool = Form(default=False),
+    confirmation: float = Form(default=0.0),
+    status: str = Form(default=""),
+    comment: str = Form(default=""),
+    requirements: str = Form(default=""),
+):
+    """Create a new client follow-up from the inline add row."""
+    try:
+        if not date_input:
+            date_input = datetime.now().strftime("%Y-%m-%d")
+
+        days = []
+        first_date_obj = datetime.strptime(date_input, "%Y-%m-%d").date()
+        if event_date:
+            parts = [p.strip() for p in event_date.split(',')]
+            for p in parts:
+                if '-' in p:
+                    try:
+                        d_obj = datetime.strptime(p, "%Y-%m-%d").date()
+                        days.append(str(d_obj.day))
+                        if len(days) == 1:
+                            first_date_obj = d_obj
+                    except ValueError:
+                        pass
+                elif p.isdigit():
+                    days.append(str(int(p)))
+            if parts and all(p.isdigit() for p in parts if p):
+                try:
+                    day_val = int(parts[0])
+                    first_date_obj = date(first_date_obj.year, first_date_obj.month, day_val)
+                except ValueError:
+                    pass
+        event_date_str = ", ".join(days)
+
+        if not month:
+            month = first_date_obj.strftime('%B')
+        if not year:
+            year = first_date_obj.year
+
+        followup = ThreeMonthsClientFollowup(
+            date=first_date_obj,
+            year=year,
+            month=month,
+            client_name=client_name,
+            event_type=event_type,
+            event_date=event_date_str,
+            location=location,
+            phone_number=phone_number,
+            client_budget=client_budget,
+            total_amount=total_amount,
+            platform=platform,
+            negotiation=negotiation,
+            confirmation=confirmation,
+            status=status,
+            comment=comment,
+            requirements=requirements,
+        )
+
+        db.add(followup)
+        db.commit()
+        db.refresh(followup)
+
+        create_monthly_report_for_followup(followup, db)
+        return RedirectResponse(url="/financial/followup/", status_code=302)
+    except Exception as e:
+        print(f"[create_followup] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{followup_id}/edit", response_class=HTMLResponse)
