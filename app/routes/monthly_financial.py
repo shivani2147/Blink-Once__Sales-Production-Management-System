@@ -172,6 +172,8 @@ async def create_report(
     project_name: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
+    location: str = Form(default=""),
+    requirements: str = Form(default=""),
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     freelancer_amount: float = Form(default=0.0),
@@ -195,7 +197,7 @@ async def create_report(
                         pass
                 elif p.isdigit():
                     days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_str = ", ".join(days) if days else event_date
 
         report = MonthlyFinancialReport(
             month=month,
@@ -204,6 +206,8 @@ async def create_report(
             project_name=project_name,
             event_type=event_type,
             event_date=event_date_str,
+            location=location,
+            requirements=requirements,
             total_amount=total_amount,
             paid_amount=paid_amount,
             freelancer_amount=freelancer_amount,
@@ -270,6 +274,8 @@ async def edit_report(
     project_name: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
+    location: str = Form(default=""),
+    requirements: str = Form(default=""),
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
     freelancer_amount: float = Form(default=0.0),
@@ -297,7 +303,7 @@ async def edit_report(
                         pass
                 elif p.isdigit():
                     days.append(str(int(p)))
-        event_date_str = ", ".join(days)
+        event_date_str = ", ".join(days) if days else event_date
 
         report.year = year
         report.month = month
@@ -305,6 +311,8 @@ async def edit_report(
         report.project_name = project_name
         report.event_type = event_type
         report.event_date = event_date_str
+        report.location = location
+        report.requirements = requirements
         report.total_amount = total_amount
         report.paid_amount = paid_amount
         report.freelancer_amount = freelancer_amount

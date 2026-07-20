@@ -93,6 +93,8 @@
                 <th>Month</th>
                 <th>Event Dates</th>
                 <th>Event Type</th>
+                <th>Location</th>
+                <th>Requirements</th>
                 <th>Total Amount</th>
                 <th>Paid</th>
                 <th>Pending</th>
@@ -114,6 +116,8 @@
                 <td>{% if report.event_date is string %}{{ report.event_date | replace(',', ', ') }}{% elif
                     report.event_date %}{{ report.event_date.strftime('%Y-%m-%d') }}{% else %}-{% endif %}</td>
                 <td>{{ report.event_type }}</td>
+                <td>{{ report.location or '-' }}</td>
+                <td>{{ report.requirements or '-' }}</td>
                 <td>₹{{ "%.2f"|format(report.total_amount) }}</td>
                 <td class="text-success">₹{{ "%.2f"|format(report.paid_amount) }}</td>
                 <td class="text-warning">₹{{ "%.2f"|format(report.pending_amount) }}</td>
@@ -146,7 +150,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="14" class="text-center text-muted">No financial reports found. Start by creating one.</td>
+                <td colspan="16" class="text-center text-muted">No financial reports found. Start by creating one.</td>
             </tr>
             {% endif %}
             <!-- Inline add row (hidden by default) -->
@@ -183,6 +187,8 @@
                 </td>
                 <td><input form="inline-add-form" type="text" name="event_date" class="iaf-input" placeholder="Days e.g. 5, 10, 15" required></td>
                 <td><input form="inline-add-form" type="text" name="event_type" class="iaf-input" placeholder="Event type *" required></td>
+                <td><input form="inline-add-form" type="text" name="location" class="iaf-input" placeholder="Location"></td>
+                <td><input form="inline-add-form" type="text" name="requirements" class="iaf-input" placeholder="Requirements"></td>
                 <td><input form="inline-add-form" type="number" id="iaf_total_amount" name="total_amount" class="iaf-input" placeholder="Total" step="0.01" required></td>
                 <td><input form="inline-add-form" type="number" id="iaf_paid_amount" name="paid_amount" class="iaf-input" placeholder="Paid" step="0.01" value="0"></td>
                 <td><input form="inline-add-form" type="number" id="iaf_pending_amount" name="pending_amount" class="iaf-input" placeholder="Pending" step="0.01" value="0" readonly></td>
@@ -336,6 +342,24 @@
     }
     .iaf-save-btn:hover {
         background: #15803d !important;
+    }
+
+    /* Fix action-buttons td — keep edit & delete on same row */
+    td.action-buttons {
+        height: auto !important;
+        overflow: visible !important;
+        white-space: nowrap;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    td.action-buttons form {
+        display: inline-flex !important;
+        align-items: center;
+        margin: 0;
+        padding: 0;
     }
 </style>
 

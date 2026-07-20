@@ -232,6 +232,8 @@ class MonthlyFinancialReport(Base):
     project_name = Column(String(255), nullable=True)
     event_type = Column(String(255), nullable=False)
     event_date = Column(String(255), nullable=False)
+    location = Column(String(255), nullable=True)
+    requirements = Column(Text, nullable=True)
     
     # Financial fields
     total_amount = Column(Float, nullable=False, default=0.0)

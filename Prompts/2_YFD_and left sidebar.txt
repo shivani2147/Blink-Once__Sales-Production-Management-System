@@ -117,3 +117,20 @@ Check box (red) & Add new row :
 
  ========================================================================
 
++ Add New Row 
+
+just like "Client Follow-up" page has '+ Add Row' btn -- same way 
+"Monthly Financial Reports
+" page should also have 
+
+NOTE : make sure the calculation & everything remains same as in 'Create Monthly Financial Report
+' has 
+
+and Dashboard should also reflect changes
+
+========================================================================
+
+in every pages : 
+if I scroll down (table) then the column should get freeze at the top (just like image) 
+
+NOTE : do not change anything else, just modify the code

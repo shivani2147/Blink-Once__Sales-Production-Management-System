@@ -21,15 +21,23 @@ def create_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: 
     if followup.status != 'Done':
         return
 
+    # Match by client + year + month + event_type (not event_date, which can change)
     existing = db.query(MonthlyFinancialReport).filter(
         MonthlyFinancialReport.client_name == followup.client_name,
         MonthlyFinancialReport.year == followup.year,
         MonthlyFinancialReport.month == followup.month,
         MonthlyFinancialReport.event_type == followup.event_type,
-        MonthlyFinancialReport.event_date == followup.event_date,
     ).first()
 
     if existing:
+        # Update existing report to keep it in sync with the followup
+        existing.event_date = followup.event_date or ''
+        existing.total_amount = followup.total_amount or followup.confirmation or 0.0
+        existing.location = followup.location or ''
+        existing.requirements = followup.requirements or ''
+        existing.calculate_pending()
+        existing.calculate_profit()
+        db.commit()
         return
 
     report = MonthlyFinancialReport(
@@ -39,7 +47,9 @@ def create_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: 
         project_name='',
         event_type=followup.event_type,
         event_date=followup.event_date or '',
-        total_amount=followup.confirmation or 0.0,
+        location=followup.location or '',
+        requirements=followup.requirements or '',
+        total_amount=followup.total_amount or followup.confirmation or 0.0,
         paid_amount=0.0,
         freelancer_amount=0.0,
         expenses=0.0,
@@ -55,12 +65,12 @@ def create_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: 
 
 def delete_monthly_report_for_followup(followup: ThreeMonthsClientFollowup, db: Session):
     """Delete monthly report when followup status is changed away from 'Done'."""
+    # Match by client + year + month + event_type (same key as create)
     existing = db.query(MonthlyFinancialReport).filter(
         MonthlyFinancialReport.client_name == followup.client_name,
         MonthlyFinancialReport.year == followup.year,
         MonthlyFinancialReport.month == followup.month,
         MonthlyFinancialReport.event_type == followup.event_type,
-        MonthlyFinancialReport.event_date == followup.event_date,
     ).first()
 
     if existing:

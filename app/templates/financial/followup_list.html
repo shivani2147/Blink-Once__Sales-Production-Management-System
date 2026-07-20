@@ -8,38 +8,38 @@
         <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🎯</div>
         <div class="card-content">
             <div class="card-label">Total Leads</div>
-            <div class="card-value">{{ total_leads }}</div>
+            <div class="card-value" id="summary-total-leads">{{ total_leads }}</div>
         </div>
     </div>
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💼</div>
         <div class="card-content">
             <div class="card-label">Total Client Budget</div>
-            <div class="card-value">₹{{ "%.2f"|format(total_budget) }}</div>
-            <div class="card-subtext">{{ total_budget_words }}</div>
+            <div class="card-value" id="summary-total-budget">₹{{ "%.2f"|format(total_budget) }}</div>
+            <div class="card-subtext" id="summary-total-budget-words">{{ total_budget_words }}</div>
         </div>
     </div>
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💵</div>
         <div class="card-content">
             <div class="card-label">Confirmation Amount</div>
-            <div class="card-value">₹{{ "%.2f"|format(total_confirmation) }}</div>
-            <div class="card-subtext">{{ total_confirmation_words }}</div>
+            <div class="card-value" id="summary-total-confirmation">₹{{ "%.2f"|format(total_confirmation) }}</div>
+            <div class="card-subtext" id="summary-total-confirmation-words">{{ total_confirmation_words }}</div>
         </div>
     </div>
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">💰</div>
         <div class="card-content">
             <div class="card-label">Total Amount</div>
-            <div class="card-value">₹{{ "%.2f"|format(total_amount) }}</div>
-            <div class="card-subtext">{{ total_amount_words }}</div>
+            <div class="card-value" id="summary-total-amount">₹{{ "%.2f"|format(total_amount) }}</div>
+            <div class="card-subtext" id="summary-total-amount-words">{{ total_amount_words }}</div>
         </div>
     </div>
     <div class="summary-card">
         <div class="card-icon" style="background: linear-gradient(135deg, #ffb347 0%, #ffcc33 100%);">📊</div>
         <div class="card-content">
             <div class="card-label">Top Platform</div>
-            <div class="card-value">{{ top_platform }}{% if top_platform_count %} ({{ top_platform_count }}){% endif %}
+            <div class="card-value" id="summary-top-platform">{{ top_platform }}{% if top_platform_count %} ({{ top_platform_count }}){% endif %}
             </div>
         </div>
     </div>
@@ -583,6 +583,96 @@
         applyStatusFilter();
     }
 
+    function updateSummaryCards() {
+        var rows = document.querySelectorAll('.data-table tbody tr');
+        var totalLeads = 0;
+        var totalBudget = 0;
+        var totalConfirmation = 0;
+        var totalAmount = 0;
+        var platforms = {};
+
+        rows.forEach(function(row) {
+            if (row.id === 'inline-add-row' || row.classList.contains('inline-edit-row')) return;
+            if (row.style.display === 'none') return;
+            var cells = row.querySelectorAll('td');
+            if (cells.length < 15) return; // Empty message row or similar
+
+            totalLeads++;
+
+            // Budget (Index 8)
+            var budgetText = cells[8].textContent.replace(/[^0-9.-]+/g,"");
+            var budget = parseFloat(budgetText) || 0;
+            totalBudget += budget;
+
+            // Total Amount (Index 9)
+            var amountText = cells[9].textContent.replace(/[^0-9.-]+/g,"");
+            var amount = parseFloat(amountText) || 0;
+            totalAmount += amount;
+
+            // Confirmation Amount (Index 10)
+            var confText = cells[10].textContent.replace(/[^0-9.-]+/g,"");
+            var conf = parseFloat(confText) || 0;
+            totalConfirmation += conf;
+
+            // Platform (Index 11)
+            var platform = cells[11].textContent.trim();
+            if (platform) {
+                platforms[platform] = (platforms[platform] || 0) + 1;
+            }
+        });
+
+        // Calculate Top Platform
+        var topPlatform = "None";
+        var topPlatformCount = 0;
+        for (var p in platforms) {
+            if (platforms[p] > topPlatformCount) {
+                topPlatformCount = platforms[p];
+                topPlatform = p;
+            }
+        }
+
+        // Helper to convert number to words
+        function numberToWords(num) {
+            if (num === 0) return "Zero";
+            if (num >= 10000000) {
+                return (num / 10000000).toFixed(2) + " Crore";
+            } else if (num >= 100000) {
+                return (num / 100000).toFixed(2) + " Lakh";
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + " Thousand";
+            }
+            return num.toString();
+        }
+
+        // Update DOM
+        var leadsEl = document.getElementById('summary-total-leads');
+        if (leadsEl) leadsEl.textContent = totalLeads;
+
+        var budgetEl = document.getElementById('summary-total-budget');
+        if (budgetEl) budgetEl.textContent = '₹' + totalBudget.toFixed(2);
+        var budgetWordsEl = document.getElementById('summary-total-budget-words');
+        if (budgetWordsEl) budgetWordsEl.textContent = numberToWords(totalBudget);
+
+        var confEl = document.getElementById('summary-total-confirmation');
+        if (confEl) confEl.textContent = '₹' + totalConfirmation.toFixed(2);
+        var confWordsEl = document.getElementById('summary-total-confirmation-words');
+        if (confWordsEl) confWordsEl.textContent = numberToWords(totalConfirmation);
+
+        var amountEl = document.getElementById('summary-total-amount');
+        if (amountEl) amountEl.textContent = '₹' + totalAmount.toFixed(2);
+        var amountWordsEl = document.getElementById('summary-total-amount-words');
+        if (amountWordsEl) amountWordsEl.textContent = numberToWords(totalAmount);
+
+        var platformEl = document.getElementById('summary-top-platform');
+        if (platformEl) {
+            if (topPlatformCount > 0) {
+                platformEl.textContent = topPlatform + ' (' + topPlatformCount + ')';
+            } else {
+                platformEl.textContent = topPlatform;
+            }
+        }
+    }
+
     function applyStatusFilter() {
         var opts = document.querySelectorAll('.sfd-opt');
         var selected = [];
@@ -620,6 +710,11 @@
                 row.style.display = 'none';
             }
         });
+
+        // Update summary cards based on visible rows
+        if (typeof updateSummaryCards === 'function') {
+            updateSummaryCards();
+        }
     }
 
     function showInlineAdd() {
