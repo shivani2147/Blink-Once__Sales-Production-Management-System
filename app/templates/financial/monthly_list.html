@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block action_buttons %}
-<a href="/financial/monthly/create" class="btn btn-primary">+ Add New Report</a>
 {% endblock %}
 
 {% block content %}
@@ -139,8 +138,7 @@
                     {% endif %}
                 </td>
                 <td class="action-buttons">
-                    
-                    <a href="/financial/monthly/{{ report.id }}/edit" class="btn-icon" title="Edit">✏️</a>
+                    <button type="button" class="btn-icon" title="Edit" onclick="showInlineEdit({{ report.id }}, event)">✏️</button>
                     <form method="post" action="/financial/monthly/{{ report.id }}/delete" style="display:inline;" onsubmit="return confirm('Are you sure?');">
                         <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
                         <button type="submit" class="btn-icon btn-danger" title="Delete">🗑️</button>
@@ -344,6 +342,36 @@
         background: #15803d !important;
     }
 
+    /* Inline edit row */
+    tr.inline-edit-row td {
+        background: #f0fdf4;
+        border-top: 2px solid #16a34a;
+    }
+    .ief-input {
+        width: 100%;
+        min-width: 60px;
+        padding: 2px 4px;
+        font-size: 10px;
+        border: 1px solid #86efac;
+        border-radius: 4px;
+        background: #fff;
+        color: #1e1b4b;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .ief-input:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 2px rgba(22,163,74,0.15);
+    }
+    .ief-save-btn {
+        background: #2563eb !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+    .ief-save-btn:hover {
+        background: #1d4ed8 !important;
+    }
+
     /* Fix action-buttons td — keep edit & delete on same row */
     td.action-buttons {
         height: auto !important;
@@ -433,6 +461,204 @@
         } catch(e) {
             console.error("Error fetching project amount:", e);
         }
+    }
+
+    function ief_recalc(id) {
+        const row = document.querySelector('tr[data-edit-row-id="' + id + '"]');
+        if(!row) return;
+        const total = parseFloat(row.querySelector('input[name="total_amount"]').value) || 0;
+        const paid = parseFloat(row.querySelector('input[name="paid_amount"]').value) || 0;
+        const freelancer = parseFloat(row.querySelector('input[name="freelancer_amount"]').value) || 0;
+        const expenses = parseFloat(row.querySelector('input[name="expenses"]').value) || 0;
+
+        const pending = total - paid;
+        const profit = paid - freelancer - expenses;
+
+        row.querySelector('input[name="pending_amount"]').value = pending.toFixed(2);
+        row.querySelector('input[name="profit"]').value = profit.toFixed(2);
+    }
+
+    window.fetchProjectAmountIEF = async function(projectName, id) {
+        if (!projectName) {
+            const row = document.querySelector('tr[data-edit-row-id="' + id + '"]');
+            if(row) {
+                row.querySelector('input[name="freelancer_amount"]').value = '';
+                ief_recalc(id);
+            }
+            return;
+        }
+        try {
+            const response = await fetch(`/freelancers/api/project_amount?project_name=${encodeURIComponent(projectName)}`);
+            if (response.ok) {
+                const data = await response.json();
+                const row = document.querySelector('tr[data-edit-row-id="' + id + '"]');
+                if (row) {
+                    const freelancerEl = row.querySelector('input[name="freelancer_amount"]');
+                    if (freelancerEl) {
+                        freelancerEl.value = parseFloat(data.total_amount || 0).toFixed(2);
+                        ief_recalc(id);
+                    }
+                }
+            }
+        } catch(e) {
+            console.error("Error fetching project amount:", e);
+        }
+    }
+
+    function showInlineEdit(reportId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        var existingEditRow = document.querySelector('tr[data-edit-row-id]');
+        if (existingEditRow) {
+            var originalRow = document.querySelector('tr[data-original-row-id="' + existingEditRow.getAttribute('data-edit-row-id') + '"]');
+            if (originalRow) originalRow.style.display = '';
+            existingEditRow.remove();
+        }
+        
+        var row = event.target.closest('tr');
+        if (!row) return;
+        
+        var cells = row.querySelectorAll('td');
+        var monthYearText = cells[2]?.textContent.trim() || '';
+        var monthParts = monthYearText.split(' ');
+        var monthName = monthParts[0] || '';
+        var yearStr = monthParts[1] || new Date().getFullYear().toString();
+        
+        var data = {
+            client_name: cells[0]?.textContent.trim() || '',
+            project_name: cells[1]?.textContent.trim() === '-' ? '' : cells[1]?.textContent.trim() || '',
+            month: monthName,
+            year: yearStr,
+            event_date: cells[3]?.textContent.trim() === '-' ? '' : cells[3]?.textContent.trim() || '',
+            event_type: cells[4]?.textContent.trim() || '',
+            location: cells[5]?.textContent.trim() === '-' ? '' : cells[5]?.textContent.trim() || '',
+            requirements: cells[6]?.textContent.trim() === '-' ? '' : cells[6]?.textContent.trim() || '',
+            total_amount: cells[7]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            paid_amount: cells[8]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            pending_amount: cells[9]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            freelancer_amount: cells[10]?.textContent.trim() === '-' ? '0' : cells[10]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            expenses: cells[11]?.textContent.trim() === '-' ? '0' : cells[11]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            profit: cells[12]?.textContent.replace('₹', '').replace(/,/g, '').trim() || '0',
+            work_status: cells[13]?.textContent.trim() || '',
+            payment_status: cells[14]?.textContent.trim() === '-' ? '' : cells[14]?.textContent.trim() || ''
+        };
+        
+        var editRowHTML = `
+            <tr class="inline-edit-row" data-edit-row-id="${reportId}">
+                <td><input type="text" name="client_name" class="ief-input" placeholder="Client name *" value="${data.client_name}" required></td>
+                <td><input type="text" name="project_name" class="ief-input" placeholder="Project name" value="${data.project_name}" onchange="window.fetchProjectAmountIEF(this.value, ${reportId})"></td>
+                <td>
+                    <div style="display: flex; gap: 4px;">
+                        <select name="month" class="ief-input" style="flex: 1;" required>
+                            <option value="">Month *</option>
+                            <option value="January" ${data.month === 'January' ? 'selected' : ''}>January</option>
+                            <option value="February" ${data.month === 'February' ? 'selected' : ''}>February</option>
+                            <option value="March" ${data.month === 'March' ? 'selected' : ''}>March</option>
+                            <option value="April" ${data.month === 'April' ? 'selected' : ''}>April</option>
+                            <option value="May" ${data.month === 'May' ? 'selected' : ''}>May</option>
+                            <option value="June" ${data.month === 'June' ? 'selected' : ''}>June</option>
+                            <option value="July" ${data.month === 'July' ? 'selected' : ''}>July</option>
+                            <option value="August" ${data.month === 'August' ? 'selected' : ''}>August</option>
+                            <option value="September" ${data.month === 'September' ? 'selected' : ''}>September</option>
+                            <option value="October" ${data.month === 'October' ? 'selected' : ''}>October</option>
+                            <option value="November" ${data.month === 'November' ? 'selected' : ''}>November</option>
+                            <option value="December" ${data.month === 'December' ? 'selected' : ''}>December</option>
+                        </select>
+                        <select name="year" class="ief-input" style="width: 55px;" required>
+                            <option value="2025" ${data.year === '2025' ? 'selected' : ''}>2025</option>
+                            <option value="2026" ${data.year === '2026' ? 'selected' : ''}>2026</option>
+                            <option value="2027" ${data.year === '2027' ? 'selected' : ''}>2027</option>
+                            <option value="2028" ${data.year === '2028' ? 'selected' : ''}>2028</option>
+                            <option value="2029" ${data.year === '2029' ? 'selected' : ''}>2029</option>
+                            <option value="2030" ${data.year === '2030' ? 'selected' : ''}>2030</option>
+                        </select>
+                    </div>
+                </td>
+                <td><input type="text" name="event_date" class="ief-input" placeholder="Days e.g. 5, 10, 15" value="${data.event_date}" required></td>
+                <td><input type="text" name="event_type" class="ief-input" placeholder="Event type *" value="${data.event_type}" required></td>
+                <td><input type="text" name="location" class="ief-input" placeholder="Location" value="${data.location}"></td>
+                <td><input type="text" name="requirements" class="ief-input" placeholder="Requirements" value="${data.requirements}"></td>
+                <td><input type="number" name="total_amount" class="ief-input" placeholder="Total" step="0.01" value="${data.total_amount}" oninput="ief_recalc(${reportId})" required></td>
+                <td><input type="number" name="paid_amount" class="ief-input" placeholder="Paid" step="0.01" value="${data.paid_amount}" oninput="ief_recalc(${reportId})"></td>
+                <td><input type="number" name="pending_amount" class="ief-input" placeholder="Pending" step="0.01" value="${data.pending_amount}" readonly></td>
+                <td><input type="number" name="freelancer_amount" class="ief-input" placeholder="Freelancer" step="0.01" value="${data.freelancer_amount}" readonly></td>
+                <td><input type="number" name="expenses" class="ief-input" placeholder="Expenses" step="0.01" value="${data.expenses}" oninput="ief_recalc(${reportId})"></td>
+                <td><input type="number" name="profit" class="ief-input" placeholder="Profit" step="0.01" value="${data.profit}" readonly></td>
+                <td>
+                    <select name="work_status" class="ief-input" required>
+                        <option value="">Work Status *</option>
+                        <option value="Pending" ${data.work_status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Done" ${data.work_status === 'Done' ? 'selected' : ''}>Done</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="payment_status" class="ief-input">
+                        <option value="">Payment Status</option>
+                        <option value="Online" ${data.payment_status === 'Online' ? 'selected' : ''}>Online</option>
+                        <option value="Cash" ${data.payment_status === 'Cash' ? 'selected' : ''}>Cash</option>
+                    </select>
+                </td>
+                <td class="action-buttons">
+                    <button type="button" class="btn-icon ief-save-btn" title="Save" onclick="saveInlineEdit(${reportId}, event)">✅</button>
+                    <button type="button" class="btn-icon btn-danger" title="Cancel" onclick="cancelInlineEdit(${reportId})">✕</button>
+                </td>
+            </tr>
+        `;
+        
+        row.setAttribute('data-original-row-id', reportId);
+        row.insertAdjacentHTML('afterend', editRowHTML);
+        row.style.display = 'none';
+        
+        var editRow = document.querySelector('tr[data-edit-row-id="' + reportId + '"]');
+        var first = editRow.querySelector('.ief-input');
+        if (first) setTimeout(function(){ first.focus(); }, 50);
+    }
+
+    function saveInlineEdit(reportId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        var editRow = document.querySelector('tr[data-edit-row-id="' + reportId + '"]');
+        if (!editRow) return;
+        
+        var formData = new FormData();
+        var csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        formData.append('csrf_token', csrfToken);
+        
+        var inputs = editRow.querySelectorAll('input, select');
+        inputs.forEach(function(inp) {
+            if (inp.name && inp.name !== 'csrf_token') {
+                formData.append(inp.name, inp.value);
+            }
+        });
+        
+        fetch('/financial/monthly/' + reportId + '/edit', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                response.text().then(text => {
+                    console.error('Error response:', text);
+                    alert('Error saving changes: ' + text);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving changes: ' + error);
+        });
+    }
+
+    function cancelInlineEdit(reportId) {
+        var editRow = document.querySelector('tr[data-edit-row-id="' + reportId + '"]');
+        var originalRow = document.querySelector('tr[data-original-row-id="' + reportId + '"]');
+        
+        if (editRow) editRow.remove();
+        if (originalRow) originalRow.style.display = '';
     }
 </script>
 {% endblock %}
