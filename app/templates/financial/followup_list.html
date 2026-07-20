@@ -851,5 +851,51 @@
         if (editRow) editRow.remove();
         if (originalRow) originalRow.style.display = '';
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        function highlightTodayComments() {
+            const today = new Date();
+            const d = today.getDate();
+            const m = today.getMonth() + 1; // 1-12
+            const y = today.getFullYear();
+            const yShort = y.toString().slice(-2);
+            
+            const suffix = '(?:st|nd|rd|th)?';
+            
+            const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+            const monthShortNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+            
+            const mFull = monthNames[m - 1];
+            const mShort = monthShortNames[m - 1];
+            
+            // Patterns to match today's date formats
+            // 1. "20 jul", "20th july", "20 july 2026", "20 jul 26"
+            const p1 = `\\b0?${d}${suffix}\\s*(?:${mShort}|${mFull})\\b(?:\\s*(?:${y}|${yShort}))?\\b`;
+            // 2. "jul 20", "july 20th", "jul 20 2026"
+            const p2 = `\\b(?:${mShort}|${mFull})\\s*0?${d}${suffix}\\b(?:\\s*(?:${y}|${yShort}))?\\b`;
+            // 3. "20/07", "20-7", "20.07", "20/07/2026", "20/07/26"
+            const p3 = `\\b0?${d}[\\/\\-\\.]0?${m}(?:[\\/\\-\\.\\,]?\\s*(?:${y}|${yShort}))?\\b`;
+            
+            const regex = new RegExp(`(?:${p1})|(?:${p2})|(?:${p3})`, 'i');
+            
+            const rows = document.querySelectorAll('.data-table tbody tr');
+            rows.forEach(row => {
+                if(row.id === 'inline-add-row' || row.classList.contains('inline-edit-row')) return;
+                const cells = row.querySelectorAll('td');
+                // The comment column is index 14
+                if(cells.length >= 15) {
+                    const commentCell = cells[14];
+                    const text = commentCell.textContent || commentCell.innerText;
+                    if(regex.test(text)) {
+                        commentCell.style.backgroundColor = '#d4edda';
+                        commentCell.style.color = '#155724';
+                        commentCell.style.fontWeight = '600';
+                        commentCell.style.borderRadius = '4px';
+                    }
+                }
+            });
+        }
+        highlightTodayComments();
+    });
 </script>
 {% endblock %}
