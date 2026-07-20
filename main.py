@@ -37,7 +37,8 @@ from app.routes import (
     camera_rent,
     upcoming_shoots,
     freelancers,
-    performance_hub
+    performance_hub,
+    auth
 )
 
 # Create FastAPI application
@@ -48,8 +49,6 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
-
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Ensure CSRF token is present in session for templates and form validation
 @app.middleware("http")
@@ -63,6 +62,23 @@ async def ensure_csrf_token_middleware(request, call_next):
         pass
     response = await call_next(request)
     return response
+
+@app.middleware("http")
+async def require_auth_middleware(request, call_next):
+    """Ensure user is authenticated for protected routes."""
+    path = request.url.path
+    # Allow static files, auth endpoints, and docs to be public
+    if path.startswith("/static") or path.startswith("/api/") or path.startswith("/openapi.json") or path in ["/login", "/logout", "/health"]:
+        return await call_next(request)
+    
+    # Check if user is authenticated
+    if not request.session.get("user"):
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login", status_code=303)
+        
+    return await call_next(request)
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Mount static files
 static_dir = os.path.join(os.path.dirname(__file__), "app", "static")
@@ -85,6 +101,7 @@ app.include_router(camera_rent.router)
 app.include_router(upcoming_shoots.router)
 app.include_router(freelancers.router)
 app.include_router(performance_hub.router)
+app.include_router(auth.router)
 
 
 @app.on_event("startup")

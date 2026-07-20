@@ -81,8 +81,6 @@
 <!-- Inline add form (must be outside table for valid HTML) -->
 <form id="inline-add-form" method="post" action="/financial/monthly/create">
     <input type="hidden" name="csrf_token" value="{{ request.session.csrf_token }}">
-    <input type="hidden" name="date_input" id="iaf-date-input">
-    <input type="hidden" name="year" id="iaf-year">
 </form>
 
 <!-- Reports Table -->
@@ -151,8 +149,76 @@
                 <td colspan="14" class="text-center text-muted">No financial reports found. Start by creating one.</td>
             </tr>
             {% endif %}
+            <!-- Inline add row (hidden by default) -->
+            <tr id="inline-add-row" style="display:none;">
+                <td><input form="inline-add-form" type="text" name="client_name" class="iaf-input" placeholder="Client name *" required></td>
+                <td><input form="inline-add-form" type="text" name="project_name" class="iaf-input" placeholder="Project name" onchange="window.fetchProjectAmount(this.value)"></td>
+                <td>
+                    <div style="display: flex; gap: 4px;">
+                        <select form="inline-add-form" name="month" class="iaf-input" style="flex: 1;" required>
+                            <option value="">Month *</option>
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                        <select form="inline-add-form" name="year" class="iaf-input" id="iaf-year-select" style="width: 55px;" required>
+                            <option value="">Year</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+                </td>
+                <td><input form="inline-add-form" type="text" name="event_date" class="iaf-input" placeholder="Days e.g. 5, 10, 15" required></td>
+                <td><input form="inline-add-form" type="text" name="event_type" class="iaf-input" placeholder="Event type *" required></td>
+                <td><input form="inline-add-form" type="number" id="iaf_total_amount" name="total_amount" class="iaf-input" placeholder="Total" step="0.01" required></td>
+                <td><input form="inline-add-form" type="number" id="iaf_paid_amount" name="paid_amount" class="iaf-input" placeholder="Paid" step="0.01" value="0"></td>
+                <td><input form="inline-add-form" type="number" id="iaf_pending_amount" name="pending_amount" class="iaf-input" placeholder="Pending" step="0.01" value="0" readonly></td>
+                <td><input form="inline-add-form" type="number" id="iaf_freelancer_amount" name="freelancer_amount" class="iaf-input" placeholder="Freelancer" step="0.01" value="0" readonly></td>
+                <td><input form="inline-add-form" type="number" id="iaf_expenses" name="expenses" class="iaf-input" placeholder="Expenses" step="0.01" value="0"></td>
+                <td><input form="inline-add-form" type="number" id="iaf_profit" name="profit" class="iaf-input" placeholder="Profit" step="0.01" value="0" readonly></td>
+                <td>
+                    <select form="inline-add-form" name="work_status" class="iaf-input" required>
+                        <option value="">Work Status *</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </td>
+                <td>
+                    <select form="inline-add-form" name="payment_status" class="iaf-input">
+                        <option value="">Payment Status</option>
+                        <option value="Online">Online</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </td>
+                <td class="action-buttons">
+                    <button type="submit" form="inline-add-form" class="btn-icon iaf-save-btn" title="Save">✅</button>
+                    <button type="button" class="btn-icon btn-danger" title="Cancel" onclick="cancelInlineAdd()">✕</button>
+                </td>
+            </tr>
         </tbody>
     </table>
+    <!-- + Add Row button -->
+    <div style="padding: 6px 12px 2px 12px;">
+        <button type="button" id="add-row-btn" onclick="showInlineAdd()" title="Add new report"
+            style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;font-size:12px;font-weight:600;
+                   background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:6px;
+                   cursor:pointer;transition:opacity 0.2s;">
+            <span style="font-size:16px;line-height:1;">+</span> Add Row
+        </button>
+    </div>
 </div>
 
 <style>
@@ -282,10 +348,10 @@
         var mm = String(today.getMonth() + 1).padStart(2, '0');
         var dd = String(today.getDate()).padStart(2, '0');
         var todayStr = yyyy + '-' + mm + '-' + dd;
-        var dateInput = document.getElementById('iaf-date-input');
-        if (dateInput) dateInput.value = todayStr;
-        var yearInput = document.getElementById('iaf-year');
-        if (yearInput) yearInput.value = yyyy;
+        
+        var yearSelect = document.getElementById('iaf-year-select');
+        if (yearSelect) yearSelect.value = yyyy;
+
         row.style.display = '';
         if (btn) btn.style.display = 'none';
         var first = row.querySelector('.iaf-input');
@@ -299,6 +365,50 @@
         row.style.display = 'none';
         document.getElementById('inline-add-form').reset();
         if (btn) btn.style.display = '';
+    }
+
+    function iaf_recalc() {
+        const total = parseFloat(document.getElementById('iaf_total_amount').value) || 0;
+        const paid = parseFloat(document.getElementById('iaf_paid_amount').value) || 0;
+        const freelancer = parseFloat(document.getElementById('iaf_freelancer_amount').value) || 0;
+        const expenses = parseFloat(document.getElementById('iaf_expenses').value) || 0;
+
+        const pending = total - paid;
+        const profit = paid - freelancer - expenses;
+
+        document.getElementById('iaf_pending_amount').value = pending.toFixed(2);
+        document.getElementById('iaf_profit').value = profit.toFixed(2);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        ['iaf_total_amount', 'iaf_paid_amount', 'iaf_freelancer_amount', 'iaf_expenses'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', iaf_recalc);
+                el.addEventListener('change', iaf_recalc);
+            }
+        });
+    });
+
+    window.fetchProjectAmount = async function(projectName) {
+        if (!projectName) {
+            document.getElementById('iaf_freelancer_amount').value = '';
+            iaf_recalc();
+            return;
+        }
+        try {
+            const response = await fetch(`/freelancers/api/project_amount?project_name=${encodeURIComponent(projectName)}`);
+            if (response.ok) {
+                const data = await response.json();
+                const freelancerEl = document.getElementById('iaf_freelancer_amount');
+                if (freelancerEl) {
+                    freelancerEl.value = parseFloat(data.total_amount || 0).toFixed(2);
+                    iaf_recalc();
+                }
+            }
+        } catch(e) {
+            console.error("Error fetching project amount:", e);
+        }
     }
 </script>
 {% endblock %}
