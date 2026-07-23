@@ -229,11 +229,13 @@ class MonthlyFinancialReport(Base):
     month = Column(String(50), nullable=False, index=True)  # Month name selected
     year = Column(Integer, nullable=False, index=True)  # Year selected
     client_name = Column(String(255), nullable=False, index=True)
-    project_name = Column(String(255), nullable=True)
+    team = Column(String(255), nullable=True)
     event_type = Column(String(255), nullable=False)
     event_date = Column(String(255), nullable=False)
     location = Column(String(255), nullable=True)
     requirements = Column(Text, nullable=True)
+    freelancer_details = Column(Text, nullable=True)  # JSON: [{"name":"...","price":0}, ...]
+    
     
     # Financial fields
     total_amount = Column(Float, nullable=False, default=0.0)
@@ -460,4 +462,73 @@ class FreelancerWork(Base):
         if self.work_date:
             return self.work_date.strftime('%d-%m-%Y')
         return '-'
+
+
+class Employee(Base):
+    """Employee profiles model for the company."""
+    __tablename__ = "employees"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    employee_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(255), nullable=False, index=True)
+    designation = Column(String(100), nullable=False) # e.g., CEO, Manager, Employee
+    phone_number = Column(String(20), nullable=False)
+    email = Column(String(255), nullable=False)
+    address = Column(Text, nullable=True)
+    base_salary = Column(Float, default=0.0)
+    bank_name = Column(String(255), nullable=True)
+    account_number = Column(String(100), nullable=True)
+    ifsc_code = Column(String(50), nullable=True)
+    upi_id = Column(String(255), nullable=True)
+    pan_number = Column(String(50), nullable=True)
+    aadhar_number = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, default="Active")
+    remarks = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    salary_payments = relationship("SalaryPayment", back_populates="employee", cascade="all, delete-orphan")
+
+
+class SalaryPayment(Base):
+    """Salary payment tracking for employees."""
+    __tablename__ = "salary_payments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    employee_id = Column(Integer, ForeignKey('employees.id', ondelete='CASCADE'), nullable=False)
+    month = Column(String(20), nullable=False, index=True)
+    year = Column(Integer, nullable=False, index=True)
+    base_salary = Column(Float, default=0.0)
+    bonus = Column(Float, default=0.0)
+    incentives = Column(Float, default=0.0)
+    deductions = Column(Float, default=0.0)
+    advance_salary = Column(Float, default=0.0)
+    net_salary = Column(Float, default=0.0)
+    payment_status = Column(String(50), default="Pending") # Pending / Paid
+    payment_date = Column(Date, nullable=True)
+    payment_mode = Column(String(100), nullable=True)
+    remarks = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    employee = relationship("Employee", back_populates="salary_payments")
+
+
+class BusinessExpense(Base):
+    """Business expenses tracking."""
+    __tablename__ = "business_expenses"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False, index=True)
+    month = Column(String(20), nullable=False, index=True)
+    year = Column(Integer, nullable=False, index=True)
+    category = Column(String(255), nullable=False, index=True)
+    amount = Column(Float, nullable=False, default=0.0)
+    payment_mode = Column(String(100), nullable=True)
+    payment_status = Column(String(50), default="Paid") # Paid / Pending
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
 

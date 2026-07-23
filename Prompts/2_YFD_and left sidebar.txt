@@ -123,8 +123,7 @@ just like "Client Follow-up" page has '+ Add Row' btn -- same way
 "Monthly Financial Reports
 " page should also have 
 
-NOTE : make sure the calculation & everything remains same as in 'Create Monthly Financial Report
-' has 
+NOTE : make sure the calculation & everything remains same as in 'Create Monthly Financial Report' has 
 
 and Dashboard should also reflect changes
 

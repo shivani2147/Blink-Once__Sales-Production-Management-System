@@ -1,6 +1,7 @@
 """
 Monthly Financial Reports routes - Track revenue, expenses, and profit on monthly basis.
 """
+import json
 
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -153,7 +154,6 @@ async def create_form(request: Request, db: Session = Depends(get_db)):
             "years": years,
             "event_types": event_types,
             "current_year": current_year,
-            "all_project_names": get_all_project_names(db),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -169,20 +169,27 @@ async def create_report(
     year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
-    project_name: str = Form(default=""),
+    team: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
     location: str = Form(default=""),
     requirements: str = Form(default=""),
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
-    freelancer_amount: float = Form(default=0.0),
+    freelancer_details: str = Form(default="[]"),
     expenses: float = Form(default=0.0),
     payment_status: str = Form(default=""),
     work_status: str = Form(...),
     notes: str = Form(default=""),
 ):
     """Create new monthly financial report."""
+    # Parse freelancer_details and compute total freelancer_amount
+    try:
+        fl_list = json.loads(freelancer_details) if freelancer_details else []
+    except Exception:
+        fl_list = []
+    freelancer_amount = sum(float(item.get('price', 0) or 0) for item in fl_list)
+    freelancer_details_clean = json.dumps(fl_list)
     try:
         # Normalize event_date to day numbers
         days = []
@@ -203,13 +210,14 @@ async def create_report(
             month=month,
             year=year,
             client_name=client_name,
-            project_name=project_name,
+            team=team,
             event_type=event_type,
             event_date=event_date_str,
             location=location,
             requirements=requirements,
             total_amount=total_amount,
             paid_amount=paid_amount,
+            freelancer_details=freelancer_details_clean,
             freelancer_amount=freelancer_amount,
             expenses=expenses,
             payment_status=payment_status,
@@ -255,7 +263,6 @@ async def edit_form(request: Request, report_id: int, db: Session = Depends(get_
             "months": months,
             "event_types": event_types,
             "current_year": current_year,
-            "all_project_names": get_all_project_names(db),
         })
     except Exception as e:
         return templates.TemplateResponse("error.html", {
@@ -271,20 +278,27 @@ async def edit_report(
     year: int = Form(...),
     month: str = Form(...),
     client_name: str = Form(...),
-    project_name: str = Form(default=""),
+    team: str = Form(default=""),
     event_type: str = Form(...),
     event_date: str = Form(...),
     location: str = Form(default=""),
     requirements: str = Form(default=""),
     total_amount: float = Form(...),
     paid_amount: float = Form(default=0.0),
-    freelancer_amount: float = Form(default=0.0),
+    freelancer_details: str = Form(default="[]"),
     expenses: float = Form(default=0.0),
     payment_status: str = Form(default=""),
     work_status: str = Form(...),
     notes: str = Form(default=""),
 ):
     """Update monthly financial report."""
+    # Parse freelancer_details and compute total freelancer_amount
+    try:
+        fl_list = json.loads(freelancer_details) if freelancer_details else []
+    except Exception:
+        fl_list = []
+    freelancer_amount = sum(float(item.get('price', 0) or 0) for item in fl_list)
+    freelancer_details_clean = json.dumps(fl_list)
     try:
         report = db.query(MonthlyFinancialReport).filter(MonthlyFinancialReport.id == report_id).first()
         if not report:
@@ -308,13 +322,14 @@ async def edit_report(
         report.year = year
         report.month = month
         report.client_name = client_name
-        report.project_name = project_name
+        report.team = team
         report.event_type = event_type
         report.event_date = event_date_str
         report.location = location
         report.requirements = requirements
         report.total_amount = total_amount
         report.paid_amount = paid_amount
+        report.freelancer_details = freelancer_details_clean
         report.freelancer_amount = freelancer_amount
         report.expenses = expenses
         report.payment_status = payment_status
