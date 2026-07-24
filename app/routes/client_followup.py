@@ -350,7 +350,7 @@ async def create_followup(
         db.refresh(followup)
 
         create_monthly_report_for_followup(followup, db)
-        return RedirectResponse(url="/financial/followup/", status_code=302)
+        return RedirectResponse(url="/financial/followup/#add-row-btn", status_code=302)
     except Exception as e:
         print(f"[create_followup] Error: {str(e)}")
         import traceback

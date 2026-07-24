@@ -230,7 +230,7 @@ async def create_report(
         db.add(report)
         db.commit()
         
-        return RedirectResponse(url="/financial/monthly/", status_code=302)
+        return RedirectResponse(url="/financial/monthly/#add-row-btn", status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
